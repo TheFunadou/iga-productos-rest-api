@@ -1,0 +1,2684 @@
+[
+  {
+    "id": 1,
+    "product_version_id": 1,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/CORAA006.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-005"
+    }
+  },
+  {
+    "id": 2,
+    "product_version_id": 1,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2023/11/Azul_001-1.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS2-AM1-005"
+    }
+  },
+  {
+    "id": 3,
+    "product_version_id": 1,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Azul_002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-005"
+    }
+  },
+  {
+    "id": 4,
+    "product_version_id": 1,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2023/11/Azul_005.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-005"
+    }
+  },
+  {
+    "id": 5,
+    "product_version_id": 1,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-005"
+    }
+  },
+  {
+    "id": 6,
+    "product_version_id": 2,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Amarillo_003.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS2-AM1-002"
+    }
+  },
+  {
+    "id": 7,
+    "product_version_id": 2,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Amarillo_002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-002"
+    }
+  },
+  {
+    "id": 8,
+    "product_version_id": 2,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Amarillo_005.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-002"
+    }
+  },
+  {
+    "id": 9,
+    "product_version_id": 2,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/CORAZA_AJUSTE_AMARILLO.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-002"
+    }
+  },
+  {
+    "id": 10,
+    "product_version_id": 2,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-002"
+    }
+  },
+  {
+    "id": 11,
+    "product_version_id": 3,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Verde_001.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS2-AM1-006"
+    }
+  },
+  {
+    "id": 12,
+    "product_version_id": 3,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Verde_003.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-006"
+    }
+  },
+  {
+    "id": 13,
+    "product_version_id": 3,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Verde_004.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-006"
+    }
+  },
+  {
+    "id": 14,
+    "product_version_id": 3,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/CORAZA_AJUSTE_VERDE.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-006"
+    }
+  },
+  {
+    "id": 15,
+    "product_version_id": 3,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-006"
+    }
+  },
+  {
+    "id": 16,
+    "product_version_id": 4,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Rojo_004.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS2-AM1-004"
+    }
+  },
+  {
+    "id": 17,
+    "product_version_id": 5,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_intervalo_amarillo-e1722380739491.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS3-AI2-002"
+    }
+  },
+  {
+    "id": 18,
+    "product_version_id": 5,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_amarillo-e1722380711626.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-002"
+    }
+  },
+  {
+    "id": 19,
+    "product_version_id": 5,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_intervalos_amarillo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-002"
+    }
+  },
+  {
+    "id": 20,
+    "product_version_id": 5,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-3.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-002"
+    }
+  },
+  {
+    "id": 21,
+    "product_version_id": 6,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_verde-1-e1722379329562.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS3-AI2-006"
+    }
+  },
+  {
+    "id": 22,
+    "product_version_id": 6,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_verde_AI_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-006"
+    }
+  },
+  {
+    "id": 23,
+    "product_version_id": 6,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_verde_AI_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-006"
+    }
+  },
+  {
+    "id": 24,
+    "product_version_id": 6,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HITv004.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-006"
+    }
+  },
+  {
+    "id": 25,
+    "product_version_id": 6,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-3.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-006"
+    }
+  },
+  {
+    "id": 26,
+    "product_version_id": 7,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_AZUL_INTER2-1-e1722383211957.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS3-AI2-005"
+    }
+  },
+  {
+    "id": 27,
+    "product_version_id": 7,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_azul-e1722383134648.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-005"
+    }
+  },
+  {
+    "id": 28,
+    "product_version_id": 7,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_azul_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-005"
+    }
+  },
+  {
+    "id": 29,
+    "product_version_id": 7,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_intervalos_azul-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-005"
+    }
+  },
+  {
+    "id": 30,
+    "product_version_id": 7,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-3.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-005"
+    }
+  },
+  {
+    "id": 31,
+    "product_version_id": 8,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/IMG_7697-copia-1-e1722380357898.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS3-AI2-001"
+    }
+  },
+  {
+    "id": 32,
+    "product_version_id": 8,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_blanco-e1722380278341.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-001"
+    }
+  },
+  {
+    "id": 33,
+    "product_version_id": 8,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_blanco_AI_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-001"
+    }
+  },
+  {
+    "id": 34,
+    "product_version_id": 8,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_intervalos_blanco-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-001"
+    }
+  },
+  {
+    "id": 35,
+    "product_version_id": 8,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-3.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-001"
+    }
+  },
+  {
+    "id": 36,
+    "product_version_id": 14,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_NARANJA_INTERVALOS_2.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS3-AI2-003"
+    }
+  },
+  {
+    "id": 37,
+    "product_version_id": 14,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_NARANJA_INTERVALOS-e1722380028751.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-003"
+    }
+  },
+  {
+    "id": 38,
+    "product_version_id": 14,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_naranaja_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-003"
+    }
+  },
+  {
+    "id": 39,
+    "product_version_id": 14,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_intervalos_naranja-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-003"
+    }
+  },
+  {
+    "id": 40,
+    "product_version_id": 14,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-3.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-003"
+    }
+  },
+  {
+    "id": 41,
+    "product_version_id": 15,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_ROJO_000.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS3-AI2-004"
+    }
+  },
+  {
+    "id": 42,
+    "product_version_id": 15,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_ROJO_INTERVALOS-e1722379705349.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-004"
+    }
+  },
+  {
+    "id": 43,
+    "product_version_id": 15,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_rojo_AI_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-004"
+    }
+  },
+  {
+    "id": 44,
+    "product_version_id": 15,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_rojo_intervalos-2.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-004"
+    }
+  },
+  {
+    "id": 45,
+    "product_version_id": 15,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-3.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AI2-004"
+    }
+  },
+  {
+    "id": 47,
+    "product_version_id": 32,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/Amarillo_001_cfe.png",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS2-AM1-002-CFE"
+    }
+  },
+  {
+    "id": 48,
+    "product_version_id": 32,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Amarillo_005.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-002-CFE"
+    }
+  },
+  {
+    "id": 49,
+    "product_version_id": 32,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/CORAZA_AJUSTE_AMARILLO.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-002-CFE"
+    }
+  },
+  {
+    "id": 50,
+    "product_version_id": 32,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-002-CFE"
+    }
+  },
+  {
+    "id": 51,
+    "product_version_id": 33,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/Blanco_001_cfe.png",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS2-AM1-001-CFE"
+    }
+  },
+  {
+    "id": 52,
+    "product_version_id": 33,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Blanco_004.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-001-CFE"
+    }
+  },
+  {
+    "id": 53,
+    "product_version_id": 33,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Blanco_002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-001-CFE"
+    }
+  },
+  {
+    "id": 54,
+    "product_version_id": 33,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/CORAZA_AJUSTE_BLANCO.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-001-CFE"
+    }
+  },
+  {
+    "id": 55,
+    "product_version_id": 33,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS2-AM1-001-CFE"
+    }
+  },
+  {
+    "id": 56,
+    "product_version_id": 34,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/001-scaled.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "BAR-001-001"
+    }
+  },
+  {
+    "id": 57,
+    "product_version_id": 34,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/014-scaled.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "BAR-001-001"
+    }
+  },
+  {
+    "id": 58,
+    "product_version_id": 34,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/002-scaled.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "BAR-001-001"
+    }
+  },
+  {
+    "id": 59,
+    "product_version_id": 35,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/009-scaled.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "BAR-001-002"
+    }
+  },
+  {
+    "id": 60,
+    "product_version_id": 35,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/008-1-scaled.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "BAR-001-002"
+    }
+  },
+  {
+    "id": 61,
+    "product_version_id": 35,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/005-scaled.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "BAR-001-002"
+    }
+  },
+  {
+    "id": 62,
+    "product_version_id": 35,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/007-scaled.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "BAR-001-002"
+    }
+  },
+  {
+    "id": 63,
+    "product_version_id": 36,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/010-scaled.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "BAR-001-003"
+    }
+  },
+  {
+    "id": 64,
+    "product_version_id": 36,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/4p_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "BAR-001-003"
+    }
+  },
+  {
+    "id": 65,
+    "product_version_id": 36,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/011-scaled.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "BAR-001-003"
+    }
+  },
+  {
+    "id": 66,
+    "product_version_id": 36,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/012-scaled.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "BAR-001-003"
+    }
+  },
+  {
+    "id": 67,
+    "product_version_id": 37,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/banda01.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "BAN-ANT-001"
+    }
+  },
+  {
+    "id": 68,
+    "product_version_id": 37,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/banda03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "BAN-ANT-001"
+    }
+  },
+  {
+    "id": 69,
+    "product_version_id": 37,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2025/10/BANDA-DE-SUDOR-01-scaled.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "BAN-ANT-001"
+    }
+  },
+  {
+    "id": 70,
+    "product_version_id": 38,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_intervalo_amarillo-e1722380739491.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS-AM2-002"
+    }
+  },
+  {
+    "id": 71,
+    "product_version_id": 38,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_amarillo-e1722380711626.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS-AM2-002"
+    }
+  },
+  {
+    "id": 72,
+    "product_version_id": 38,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_amarillo_AM_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS-AM2-002"
+    }
+  },
+  {
+    "id": 73,
+    "product_version_id": 38,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_matraca_amarillo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS-AM2-002"
+    }
+  },
+  {
+    "id": 74,
+    "product_version_id": 38,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-2.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS-AM2-002"
+    }
+  },
+  {
+    "id": 75,
+    "product_version_id": 39,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_AZUL_INTER2-1-e1722383211957.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS3-AM2-005"
+    }
+  },
+  {
+    "id": 76,
+    "product_version_id": 39,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_azul-e1722383134648.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-005"
+    }
+  },
+  {
+    "id": 77,
+    "product_version_id": 39,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_azul_AM_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-005"
+    }
+  },
+  {
+    "id": 78,
+    "product_version_id": 39,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_matraca_azul-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-005"
+    }
+  },
+  {
+    "id": 79,
+    "product_version_id": 39,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-2.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-005"
+    }
+  },
+  {
+    "id": 80,
+    "product_version_id": 40,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/IMG_7697-copia-1-e1722380357898.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS-AM2-001"
+    }
+  },
+  {
+    "id": 81,
+    "product_version_id": 40,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_blanco-e1722380278341.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS-AM2-001"
+    }
+  },
+  {
+    "id": 82,
+    "product_version_id": 40,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_blanco_AM_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS-AM2-001"
+    }
+  },
+  {
+    "id": 83,
+    "product_version_id": 40,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_MATRACA_blanco-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS-AM2-001"
+    }
+  },
+  {
+    "id": 84,
+    "product_version_id": 40,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-2.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS-AM2-001"
+    }
+  },
+  {
+    "id": 85,
+    "product_version_id": 41,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_NARANJA_INTERVALOS_2.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS3-AM2-003"
+    }
+  },
+  {
+    "id": 86,
+    "product_version_id": 41,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_NARANJA_INTERVALOS-e1722380028751.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-003"
+    }
+  },
+  {
+    "id": 87,
+    "product_version_id": 41,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_naranja_AM_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-003"
+    }
+  },
+  {
+    "id": 88,
+    "product_version_id": 41,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_MATRACA_naranja-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-003"
+    }
+  },
+  {
+    "id": 89,
+    "product_version_id": 41,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-2.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-003"
+    }
+  },
+  {
+    "id": 90,
+    "product_version_id": 42,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_ROJO_000.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS3-AM2-004"
+    }
+  },
+  {
+    "id": 91,
+    "product_version_id": 42,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_ROJO_INTERVALOS-e1722379705349.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-004"
+    }
+  },
+  {
+    "id": 92,
+    "product_version_id": 42,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_rojo_AM_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-004"
+    }
+  },
+  {
+    "id": 93,
+    "product_version_id": 42,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_rojo_matraca-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-004"
+    }
+  },
+  {
+    "id": 94,
+    "product_version_id": 42,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-2.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-004"
+    }
+  },
+  {
+    "id": 95,
+    "product_version_id": 43,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HIT_verde-1-e1722379329562.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS3-AM2-006"
+    }
+  },
+  {
+    "id": 96,
+    "product_version_id": 43,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/Hit_verde_AM_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-006"
+    }
+  },
+  {
+    "id": 97,
+    "product_version_id": 43,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/HITv005.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-006"
+    }
+  },
+  {
+    "id": 98,
+    "product_version_id": 43,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-2.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS3-AM2-006"
+    }
+  },
+  {
+    "id": 99,
+    "product_version_id": 44,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_amarillo_AM_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-002"
+    }
+  },
+  {
+    "id": 100,
+    "product_version_id": 44,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_amarillo_AI_02.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-002"
+    }
+  },
+  {
+    "id": 101,
+    "product_version_id": 44,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_amarillo_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-002"
+    }
+  },
+  {
+    "id": 102,
+    "product_version_id": 44,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_amarillo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-002"
+    }
+  },
+  {
+    "id": 103,
+    "product_version_id": 44,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-002"
+    }
+  },
+  {
+    "id": 104,
+    "product_version_id": 45,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_amarillo_AI_02.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-012"
+    }
+  },
+  {
+    "id": 105,
+    "product_version_id": 45,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_amarillo_AI_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-012"
+    }
+  },
+  {
+    "id": 106,
+    "product_version_id": 45,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_amarillo_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-012"
+    }
+  },
+  {
+    "id": 107,
+    "product_version_id": 45,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_fluo_intervalo_amarillo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-012"
+    }
+  },
+  {
+    "id": 108,
+    "product_version_id": 45,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-012"
+    }
+  },
+  {
+    "id": 109,
+    "product_version_id": 46,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/PLAGO_AZULCIELO_INT_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-005"
+    }
+  },
+  {
+    "id": 110,
+    "product_version_id": 46,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_azul_AI_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-005"
+    }
+  },
+  {
+    "id": 111,
+    "product_version_id": 46,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_azul_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-005"
+    }
+  },
+  {
+    "id": 112,
+    "product_version_id": 46,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_azulcielo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-005"
+    }
+  },
+  {
+    "id": 113,
+    "product_version_id": 46,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-005"
+    }
+  },
+  {
+    "id": 114,
+    "product_version_id": 47,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_marino_AI_03.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-006"
+    }
+  },
+  {
+    "id": 115,
+    "product_version_id": 47,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_marino_AI_02.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-006"
+    }
+  },
+  {
+    "id": 116,
+    "product_version_id": 47,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_marino_AI_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-006"
+    }
+  },
+  {
+    "id": 117,
+    "product_version_id": 47,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_azulmarino.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-006"
+    }
+  },
+  {
+    "id": 118,
+    "product_version_id": 47,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-006"
+    }
+  },
+  {
+    "id": 119,
+    "product_version_id": 48,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_beige_AI_03-1.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-008"
+    }
+  },
+  {
+    "id": 120,
+    "product_version_id": 48,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_beige_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-008"
+    }
+  },
+  {
+    "id": 121,
+    "product_version_id": 48,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_beige_AI_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-008"
+    }
+  },
+  {
+    "id": 122,
+    "product_version_id": 48,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_beige_intervalo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-008"
+    }
+  },
+  {
+    "id": 123,
+    "product_version_id": 48,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-008"
+    }
+  },
+  {
+    "id": 124,
+    "product_version_id": 49,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_blanco_AM_01.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-001"
+    }
+  },
+  {
+    "id": 125,
+    "product_version_id": 49,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_blanco_AI_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-001"
+    }
+  },
+  {
+    "id": 126,
+    "product_version_id": 49,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_blanco_AI_02-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-001"
+    }
+  },
+  {
+    "id": 127,
+    "product_version_id": 49,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_blanco.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-001"
+    }
+  },
+  {
+    "id": 128,
+    "product_version_id": 49,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-001"
+    }
+  },
+  {
+    "id": 129,
+    "product_version_id": 50,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_gris_AM_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-010"
+    }
+  },
+  {
+    "id": 130,
+    "product_version_id": 50,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_gris_AM_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-010"
+    }
+  },
+  {
+    "id": 131,
+    "product_version_id": 50,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_gris_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-010"
+    }
+  },
+  {
+    "id": 132,
+    "product_version_id": 50,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_gris_intervalo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-010"
+    }
+  },
+  {
+    "id": 133,
+    "product_version_id": 50,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-010"
+    }
+  },
+  {
+    "id": 134,
+    "product_version_id": 51,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_MATRACA_naranjzza.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-003"
+    }
+  },
+  {
+    "id": 135,
+    "product_version_id": 51,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_naranja_AI_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-003"
+    }
+  },
+  {
+    "id": 136,
+    "product_version_id": 51,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_naranja_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-003"
+    }
+  },
+  {
+    "id": 137,
+    "product_version_id": 51,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_naranja.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-003"
+    }
+  },
+  {
+    "id": 138,
+    "product_version_id": 51,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-003"
+    }
+  },
+  {
+    "id": 139,
+    "product_version_id": 52,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_naranja_AI_02.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-014"
+    }
+  },
+  {
+    "id": 140,
+    "product_version_id": 52,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/PLAGO_FLU_NARANJA_INT_002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-014"
+    }
+  },
+  {
+    "id": 141,
+    "product_version_id": 52,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_naranja_AI_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-014"
+    }
+  },
+  {
+    "id": 142,
+    "product_version_id": 52,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_fluo_intervalo_naranja.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-014"
+    }
+  },
+  {
+    "id": 143,
+    "product_version_id": 52,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-014"
+    }
+  },
+  {
+    "id": 144,
+    "product_version_id": 53,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_negro_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-011"
+    }
+  },
+  {
+    "id": 145,
+    "product_version_id": 53,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_negro_AM_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-011"
+    }
+  },
+  {
+    "id": 146,
+    "product_version_id": 53,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_negro_AI_03.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-011"
+    }
+  },
+  {
+    "id": 147,
+    "product_version_id": 53,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_negro.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-011"
+    }
+  },
+  {
+    "id": 148,
+    "product_version_id": 53,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-011"
+    }
+  },
+  {
+    "id": 149,
+    "product_version_id": 54,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_rojo_AM_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-004"
+    }
+  },
+  {
+    "id": 150,
+    "product_version_id": 54,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_rojo_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-004"
+    }
+  },
+  {
+    "id": 151,
+    "product_version_id": 54,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_rojo_AI_02.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-004"
+    }
+  },
+  {
+    "id": 152,
+    "product_version_id": 54,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_rojo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-004"
+    }
+  },
+  {
+    "id": 153,
+    "product_version_id": 54,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-004"
+    }
+  },
+  {
+    "id": 154,
+    "product_version_id": 55,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/plagosur_rosa_AI_02-2.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-009"
+    }
+  },
+  {
+    "id": 155,
+    "product_version_id": 55,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/plagosur_rosa_AI_01-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-009"
+    }
+  },
+  {
+    "id": 156,
+    "product_version_id": 55,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/plagosur_rosa_AI_03-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-009"
+    }
+  },
+  {
+    "id": 157,
+    "product_version_id": 55,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/plagosur_rosa_AI_05-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-009"
+    }
+  },
+  {
+    "id": 158,
+    "product_version_id": 55,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/PLAGO_ROSA_MAT_031.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-009"
+    }
+  },
+  {
+    "id": 159,
+    "product_version_id": 55,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-009"
+    }
+  },
+  {
+    "id": 160,
+    "product_version_id": 56,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_verde_AM_02-1.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-007"
+    }
+  },
+  {
+    "id": 161,
+    "product_version_id": 56,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_verde_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-007"
+    }
+  },
+  {
+    "id": 162,
+    "product_version_id": 56,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_verde_AI_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-007"
+    }
+  },
+  {
+    "id": 163,
+    "product_version_id": 56,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_verde.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-007"
+    }
+  },
+  {
+    "id": 164,
+    "product_version_id": 56,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-007"
+    }
+  },
+  {
+    "id": 165,
+    "product_version_id": 57,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_verde_AI_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI1-013"
+    }
+  },
+  {
+    "id": 166,
+    "product_version_id": 57,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_verde_AI_02.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-013"
+    }
+  },
+  {
+    "id": 167,
+    "product_version_id": 57,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_verde_AI_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-013"
+    }
+  },
+  {
+    "id": 168,
+    "product_version_id": 57,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_fluo_intervalo_verde.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-013"
+    }
+  },
+  {
+    "id": 169,
+    "product_version_id": 57,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI1-013"
+    }
+  },
+  {
+    "id": 170,
+    "product_version_id": 58,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_amarillo_AM_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI2-002"
+    }
+  },
+  {
+    "id": 171,
+    "product_version_id": 58,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_amarillo_AI_02.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-002"
+    }
+  },
+  {
+    "id": 172,
+    "product_version_id": 58,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_amarillo_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-002"
+    }
+  },
+  {
+    "id": 173,
+    "product_version_id": 58,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_amarillo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-002"
+    }
+  },
+  {
+    "id": 174,
+    "product_version_id": 58,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-002"
+    }
+  },
+  {
+    "id": 175,
+    "product_version_id": 59,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/PLAGO_AZULCIELO_INT_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI2-005"
+    }
+  },
+  {
+    "id": 176,
+    "product_version_id": 59,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_azul_AI_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-005"
+    }
+  },
+  {
+    "id": 177,
+    "product_version_id": 59,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_azulcielo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-005"
+    }
+  },
+  {
+    "id": 178,
+    "product_version_id": 59,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_azul_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-005"
+    }
+  },
+  {
+    "id": 179,
+    "product_version_id": 59,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-005"
+    }
+  },
+  {
+    "id": 180,
+    "product_version_id": 60,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_marino_AI_03.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI2-006"
+    }
+  },
+  {
+    "id": 181,
+    "product_version_id": 60,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_marino_AI_02.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-006"
+    }
+  },
+  {
+    "id": 182,
+    "product_version_id": 60,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_marino_AI_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-006"
+    }
+  },
+  {
+    "id": 183,
+    "product_version_id": 60,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_azulmarino.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-006"
+    }
+  },
+  {
+    "id": 184,
+    "product_version_id": 60,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-006"
+    }
+  },
+  {
+    "id": 185,
+    "product_version_id": 61,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_blanco_AM_01.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI2-001"
+    }
+  },
+  {
+    "id": 186,
+    "product_version_id": 61,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_blanco_AM_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-001"
+    }
+  },
+  {
+    "id": 187,
+    "product_version_id": 61,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_blanco_AI_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-001"
+    }
+  },
+  {
+    "id": 188,
+    "product_version_id": 61,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_blanco.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-001"
+    }
+  },
+  {
+    "id": 189,
+    "product_version_id": 61,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-001"
+    }
+  },
+  {
+    "id": 190,
+    "product_version_id": 62,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_MATRACA_naranjzza.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI2-003"
+    }
+  },
+  {
+    "id": 191,
+    "product_version_id": 62,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_naranja_AI_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-003"
+    }
+  },
+  {
+    "id": 192,
+    "product_version_id": 62,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_naranja_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-003"
+    }
+  },
+  {
+    "id": 193,
+    "product_version_id": 62,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_naranja.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-003"
+    }
+  },
+  {
+    "id": 194,
+    "product_version_id": 62,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-003"
+    }
+  },
+  {
+    "id": 195,
+    "product_version_id": 63,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_rojo_AM_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI2-004"
+    }
+  },
+  {
+    "id": 196,
+    "product_version_id": 63,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_rojo_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-004"
+    }
+  },
+  {
+    "id": 197,
+    "product_version_id": 63,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_rojo_AI_02.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-004"
+    }
+  },
+  {
+    "id": 198,
+    "product_version_id": 63,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_rojo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-004"
+    }
+  },
+  {
+    "id": 199,
+    "product_version_id": 63,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-004"
+    }
+  },
+  {
+    "id": 200,
+    "product_version_id": 64,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_verde_AM_02-1.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AI2-007"
+    }
+  },
+  {
+    "id": 201,
+    "product_version_id": 64,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_verde_AI_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-007"
+    }
+  },
+  {
+    "id": 202,
+    "product_version_id": 64,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_verde_AI_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-007"
+    }
+  },
+  {
+    "id": 203,
+    "product_version_id": 64,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_intervalo_verde.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-007"
+    }
+  },
+  {
+    "id": 204,
+    "product_version_id": 64,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AI2-007"
+    }
+  },
+  {
+    "id": 205,
+    "product_version_id": 65,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_amarillo_AM_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-002"
+    }
+  },
+  {
+    "id": 206,
+    "product_version_id": 65,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_amarillo_AI_02.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-002"
+    }
+  },
+  {
+    "id": 207,
+    "product_version_id": 65,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_amarillo_AM_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-002"
+    }
+  },
+  {
+    "id": 208,
+    "product_version_id": 65,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_MATRACA_amarillo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-002"
+    }
+  },
+  {
+    "id": 209,
+    "product_version_id": 65,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-002"
+    }
+  },
+  {
+    "id": 210,
+    "product_version_id": 66,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_amarillo_AI_02.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-012"
+    }
+  },
+  {
+    "id": 211,
+    "product_version_id": 66,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_amarillo_AI_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-012"
+    }
+  },
+  {
+    "id": 212,
+    "product_version_id": 66,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_amarillo_MAT_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-012"
+    }
+  },
+  {
+    "id": 213,
+    "product_version_id": 66,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_fluo_matraca_amarillo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-012"
+    }
+  },
+  {
+    "id": 214,
+    "product_version_id": 66,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-012"
+    }
+  },
+  {
+    "id": 215,
+    "product_version_id": 67,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/PLAGO_AZULCIELO_INT_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-005"
+    }
+  },
+  {
+    "id": 216,
+    "product_version_id": 67,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_azul_AM_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-005"
+    }
+  },
+  {
+    "id": 217,
+    "product_version_id": 67,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_matraca_azulcielo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-005"
+    }
+  },
+  {
+    "id": 218,
+    "product_version_id": 67,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_azul_AM_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-005"
+    }
+  },
+  {
+    "id": 219,
+    "product_version_id": 67,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-005"
+    }
+  },
+  {
+    "id": 220,
+    "product_version_id": 68,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_marino_AI_03.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-006"
+    }
+  },
+  {
+    "id": 221,
+    "product_version_id": 68,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_marino_AM_04-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-006"
+    }
+  },
+  {
+    "id": 222,
+    "product_version_id": 68,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_marino_AM_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-006"
+    }
+  },
+  {
+    "id": 223,
+    "product_version_id": 68,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_MATRACA_azulmarino.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-006"
+    }
+  },
+  {
+    "id": 224,
+    "product_version_id": 68,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-006"
+    }
+  },
+  {
+    "id": 225,
+    "product_version_id": 69,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_beige_AI_03-1.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-008"
+    }
+  },
+  {
+    "id": 226,
+    "product_version_id": 69,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/PLAGO_BEIGE_MAT_004-1-scaled.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-008"
+    }
+  },
+  {
+    "id": 227,
+    "product_version_id": 69,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/PLAGO_BEIGE_MAT_005.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-008"
+    }
+  },
+  {
+    "id": 228,
+    "product_version_id": 69,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_beige_matraca.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-008"
+    }
+  },
+  {
+    "id": 229,
+    "product_version_id": 69,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-008"
+    }
+  },
+  {
+    "id": 230,
+    "product_version_id": 70,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_blanco_AM_01.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-001"
+    }
+  },
+  {
+    "id": 231,
+    "product_version_id": 70,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_blanco_AM_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-001"
+    }
+  },
+  {
+    "id": 232,
+    "product_version_id": 70,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_blanco_AM_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-001"
+    }
+  },
+  {
+    "id": 233,
+    "product_version_id": 70,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_MATRACA_blanco.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-001"
+    }
+  },
+  {
+    "id": 234,
+    "product_version_id": 70,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-001"
+    }
+  },
+  {
+    "id": 235,
+    "product_version_id": 71,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_gris_AM_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-010"
+    }
+  },
+  {
+    "id": 236,
+    "product_version_id": 71,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_gris_AM_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-010"
+    }
+  },
+  {
+    "id": 237,
+    "product_version_id": 71,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_gris_AM_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-010"
+    }
+  },
+  {
+    "id": 238,
+    "product_version_id": 71,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_gris_MATRACA.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-010"
+    }
+  },
+  {
+    "id": 239,
+    "product_version_id": 71,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-010"
+    }
+  },
+  {
+    "id": 240,
+    "product_version_id": 72,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/hit_MATRACA_naranjzza.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-003"
+    }
+  },
+  {
+    "id": 241,
+    "product_version_id": 72,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_naranja_AM_02.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-003"
+    }
+  },
+  {
+    "id": 242,
+    "product_version_id": 72,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_naranja_AM_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-003"
+    }
+  },
+  {
+    "id": 243,
+    "product_version_id": 72,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_matraca_naranja.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-003"
+    }
+  },
+  {
+    "id": 244,
+    "product_version_id": 72,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-003"
+    }
+  },
+  {
+    "id": 245,
+    "product_version_id": 73,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_naranja_AI_02.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-014"
+    }
+  },
+  {
+    "id": 246,
+    "product_version_id": 73,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/PLAGO_FLU_NARANJA_INT_002.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-014"
+    }
+  },
+  {
+    "id": 247,
+    "product_version_id": 73,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_naranja_fluorencenteAM_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-014"
+    }
+  },
+  {
+    "id": 248,
+    "product_version_id": 73,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_fluo_matraca_naranja.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-014"
+    }
+  },
+  {
+    "id": 249,
+    "product_version_id": 73,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-014"
+    }
+  },
+  {
+    "id": 250,
+    "product_version_id": 74,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_negro_AI_04.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-011"
+    }
+  },
+  {
+    "id": 251,
+    "product_version_id": 74,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_negro_AM_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-011"
+    }
+  },
+  {
+    "id": 252,
+    "product_version_id": 74,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_negro_AM_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-011"
+    }
+  },
+  {
+    "id": 253,
+    "product_version_id": 74,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_MATRACA_negro.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-011"
+    }
+  },
+  {
+    "id": 254,
+    "product_version_id": 74,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-011"
+    }
+  },
+  {
+    "id": 255,
+    "product_version_id": 75,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_rojo_AM_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-004"
+    }
+  },
+  {
+    "id": 256,
+    "product_version_id": 75,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_rojo_AM_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-004"
+    }
+  },
+  {
+    "id": 257,
+    "product_version_id": 75,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_rojo_AM_02-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-004"
+    }
+  },
+  {
+    "id": 258,
+    "product_version_id": 75,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_MATRACA_rojo.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-004"
+    }
+  },
+  {
+    "id": 259,
+    "product_version_id": 75,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-004"
+    }
+  },
+  {
+    "id": 260,
+    "product_version_id": 76,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/plagosur_rosa_AI_02-2.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-009"
+    }
+  },
+  {
+    "id": 261,
+    "product_version_id": 76,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/plagosur_rosa_AI_01-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-009"
+    }
+  },
+  {
+    "id": 262,
+    "product_version_id": 76,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/PLAGO_ROSA_MAT_031.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-009"
+    }
+  },
+  {
+    "id": 263,
+    "product_version_id": 76,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/plago_rosa_matraca.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-009"
+    }
+  },
+  {
+    "id": 264,
+    "product_version_id": 76,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-009"
+    }
+  },
+  {
+    "id": 265,
+    "product_version_id": 77,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_verde_AM_02-1.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-007"
+    }
+  },
+  {
+    "id": 266,
+    "product_version_id": 77,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_verde_AM_04.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-007"
+    }
+  },
+  {
+    "id": 267,
+    "product_version_id": 77,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_verde_AM_03-1.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-007"
+    }
+  },
+  {
+    "id": 268,
+    "product_version_id": 77,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_MATRACA_verde.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-007"
+    }
+  },
+  {
+    "id": 269,
+    "product_version_id": 78,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_verde_AI_05.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "CAS1-AM1-013"
+    }
+  },
+  {
+    "id": 270,
+    "product_version_id": 78,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plagosur_fluo_verde_AI_02.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-013"
+    }
+  },
+  {
+    "id": 271,
+    "product_version_id": 78,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/PLAGO_FLU_VERDE_MAT_004.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-013"
+    }
+  },
+  {
+    "id": 272,
+    "product_version_id": 78,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/plago_fluo_matraca_verde.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-013"
+    }
+  },
+  {
+    "id": 273,
+    "product_version_id": 78,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "CAS1-AM1-013"
+    }
+  },
+  {
+    "id": 274,
+    "product_version_id": 79,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/ARTICO_02.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "LEN3-003-005"
+    }
+  },
+  {
+    "id": 275,
+    "product_version_id": 79,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/ARTICO_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "LEN3-003-005"
+    }
+  },
+  {
+    "id": 276,
+    "product_version_id": 79,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/ARTICO004-e1722383422509.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "LEN3-003-005"
+    }
+  },
+  {
+    "id": 283,
+    "product_version_id": 82,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/ARTICO_04.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "LEN3-003-002"
+    }
+  },
+  {
+    "id": 284,
+    "product_version_id": 82,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/ARTICO_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "LEN3-003-002"
+    }
+  },
+  {
+    "id": 285,
+    "product_version_id": 82,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/ARTICO002-e1722383511721.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "LEN3-003-002"
+    }
+  },
+  {
+    "id": 286,
+    "product_version_id": 83,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/ARTICO_06.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "LEN3-001-002"
+    }
+  },
+  {
+    "id": 287,
+    "product_version_id": 83,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/ARTICO_05.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "LEN3-001-002"
+    }
+  },
+  {
+    "id": 288,
+    "product_version_id": 83,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/ARTICO005.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "LEN3-001-002"
+    }
+  },
+  {
+    "id": 289,
+    "product_version_id": 84,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/MEDICA_P_01-1.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "LEN3-001-003"
+    }
+  },
+  {
+    "id": 290,
+    "product_version_id": 84,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/MEDICA_P_03.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "LEN3-001-003"
+    }
+  },
+  {
+    "id": 291,
+    "product_version_id": 84,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/MEDICA_P_01.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "LEN3-001-003"
+    }
+  },
+  {
+    "id": 292,
+    "product_version_id": 85,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-002.jpg",
+    "main_image": true,
+    "product_version": {
+      "sku": "SUS-AI1-001"
+    }
+  },
+  {
+    "id": 293,
+    "product_version_id": 85,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/00000-e1722383619686.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "SUS-AI1-001"
+    }
+  },
+  {
+    "id": 294,
+    "product_version_id": 85,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/00002-e1722383558165.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "SUS-AI1-001"
+    }
+  },
+  {
+    "id": 295,
+    "product_version_id": 86,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-3.jpeg",
+    "main_image": true,
+    "product_version": {
+      "sku": "SUS-AI2-001"
+    }
+  },
+  {
+    "id": 296,
+    "product_version_id": 86,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/00002-e1722383558165.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "SUS-AI2-001"
+    }
+  },
+  {
+    "id": 297,
+    "product_version_id": 86,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/00000-e1722383619686.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "SUS-AI2-001"
+    }
+  },
+  {
+    "id": 298,
+    "product_version_id": 87,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-2.jpeg",
+    "main_image": true,
+    "product_version": {
+      "sku": "SUS-AM2-001"
+    }
+  },
+  {
+    "id": 299,
+    "product_version_id": 87,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-004.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "SUS-AM2-001"
+    }
+  },
+  {
+    "id": 300,
+    "product_version_id": 87,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-1.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "SUS-AM2-001"
+    }
+  },
+  {
+    "id": 301,
+    "product_version_id": 87,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/00001-e1722383593887.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "SUS-AM2-001"
+    }
+  },
+  {
+    "id": 302,
+    "product_version_id": 88,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/00001-e1722383593887.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "SUS-AM1-001"
+    }
+  },
+  {
+    "id": 303,
+    "product_version_id": 88,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM.jpeg",
+    "main_image": true,
+    "product_version": {
+      "sku": "SUS-AM1-001"
+    }
+  },
+  {
+    "id": 304,
+    "product_version_id": 88,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/WhatsApp-Image-2024-07-04-at-5.46.15-PM-1.jpeg",
+    "main_image": false,
+    "product_version": {
+      "sku": "SUS-AM1-001"
+    }
+  },
+  {
+    "id": 305,
+    "product_version_id": 88,
+    "image_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/INTER-004.jpg",
+    "main_image": false,
+    "product_version": {
+      "sku": "SUS-AM1-001"
+    }
+  }
+]

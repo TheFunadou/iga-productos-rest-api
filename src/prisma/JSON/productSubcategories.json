@@ -1,0 +1,522 @@
+[
+  {
+    "product_id": 1,
+    "category_attribute_id": 1,
+    "category_attribute": {
+      "uuid": "gYGhgUO4GHBECXninMd9R"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO"
+    }
+  },
+  {
+    "product_id": 1,
+    "category_attribute_id": 2,
+    "category_attribute": {
+      "uuid": "FLGrHXv6Te8VmR56SY6hS"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO"
+    }
+  },
+  {
+    "product_id": 1,
+    "category_attribute_id": 4,
+    "category_attribute": {
+      "uuid": "K1cYZD21hXb4E-YuVJcD4"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO"
+    }
+  },
+  {
+    "product_id": 1,
+    "category_attribute_id": 5,
+    "category_attribute": {
+      "uuid": "9GD-yq-Y27goLwMOJD0Ub"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO"
+    }
+  },
+  {
+    "product_id": 2,
+    "category_attribute_id": 1,
+    "category_attribute": {
+      "uuid": "gYGhgUO4GHBECXninMd9R"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G INTERVALO"
+    }
+  },
+  {
+    "product_id": 2,
+    "category_attribute_id": 6,
+    "category_attribute": {
+      "uuid": "XyGUdWja-eBMNsXdN0Gvj"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G INTERVALO"
+    }
+  },
+  {
+    "product_id": 2,
+    "category_attribute_id": 7,
+    "category_attribute": {
+      "uuid": "DMeVpVLOpf4G1uyUgZ1Nk"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G INTERVALO"
+    }
+  },
+  {
+    "product_id": 2,
+    "category_attribute_id": 10,
+    "category_attribute": {
+      "uuid": "XKCigj1F7rh3901CNpQi4"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G INTERVALO"
+    }
+  },
+  {
+    "product_id": 3,
+    "category_attribute_id": 1,
+    "category_attribute": {
+      "uuid": "gYGhgUO4GHBECXninMd9R"
+    },
+    "product": {
+      "product_name": "Dummy Product"
+    }
+  },
+  {
+    "product_id": 3,
+    "category_attribute_id": 2,
+    "category_attribute": {
+      "uuid": "FLGrHXv6Te8VmR56SY6hS"
+    },
+    "product": {
+      "product_name": "Dummy Product"
+    }
+  },
+  {
+    "product_id": 3,
+    "category_attribute_id": 4,
+    "category_attribute": {
+      "uuid": "K1cYZD21hXb4E-YuVJcD4"
+    },
+    "product": {
+      "product_name": "Dummy Product"
+    }
+  },
+  {
+    "product_id": 3,
+    "category_attribute_id": 5,
+    "category_attribute": {
+      "uuid": "9GD-yq-Y27goLwMOJD0Ub"
+    },
+    "product": {
+      "product_name": "Dummy Product"
+    }
+  },
+  {
+    "product_id": 4,
+    "category_attribute_id": 1,
+    "category_attribute": {
+      "uuid": "gYGhgUO4GHBECXninMd9R"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO CFE"
+    }
+  },
+  {
+    "product_id": 4,
+    "category_attribute_id": 2,
+    "category_attribute": {
+      "uuid": "FLGrHXv6Te8VmR56SY6hS"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO CFE"
+    }
+  },
+  {
+    "product_id": 4,
+    "category_attribute_id": 4,
+    "category_attribute": {
+      "uuid": "K1cYZD21hXb4E-YuVJcD4"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO CFE"
+    }
+  },
+  {
+    "product_id": 4,
+    "category_attribute_id": 5,
+    "category_attribute": {
+      "uuid": "9GD-yq-Y27goLwMOJD0Ub"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO CFE"
+    }
+  },
+  {
+    "product_id": 5,
+    "category_attribute_id": 13,
+    "category_attribute": {
+      "uuid": "zKWDr581sN_vJ9SX0jNhF"
+    },
+    "product": {
+      "product_name": "IGA BARBOQUEJO PARA CASCO SIN MENTONERA"
+    }
+  },
+  {
+    "product_id": 6,
+    "category_attribute_id": 12,
+    "category_attribute": {
+      "uuid": "bYuMDmSaqORo5fGbrFcDN"
+    },
+    "product": {
+      "product_name": "IGA BARBOQUEJO PARA CASCOS CON MENTONERA"
+    }
+  },
+  {
+    "product_id": 7,
+    "category_attribute_id": 11,
+    "category_attribute": {
+      "uuid": "7Y-0KX0Z8-ILjQGMgZzTM"
+    },
+    "product": {
+      "product_name": "IGA BARBOQUEJO PARA CASCO DE CUATRO PUNTOS"
+    }
+  },
+  {
+    "product_id": 8,
+    "category_attribute_id": 13,
+    "category_attribute": {
+      "uuid": "zKWDr581sN_vJ9SX0jNhF"
+    },
+    "product": {
+      "product_name": "IGA BARBOQUEJO BANDA ANTISUDOR PARA CASCOS"
+    }
+  },
+  {
+    "product_id": 10,
+    "category_attribute_id": 1,
+    "category_attribute": {
+      "uuid": "gYGhgUO4GHBECXninMd9R"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G MATRACA"
+    }
+  },
+  {
+    "product_id": 10,
+    "category_attribute_id": 6,
+    "category_attribute": {
+      "uuid": "XyGUdWja-eBMNsXdN0Gvj"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G MATRACA"
+    }
+  },
+  {
+    "product_id": 10,
+    "category_attribute_id": 8,
+    "category_attribute": {
+      "uuid": "E3TSbai1l22mTxWYayEps"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G MATRACA"
+    }
+  },
+  {
+    "product_id": 10,
+    "category_attribute_id": 9,
+    "category_attribute": {
+      "uuid": "Rw0bsPW8aVxgyxYVjESwE"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G MATRACA"
+    }
+  },
+  {
+    "product_id": 11,
+    "category_attribute_id": 1,
+    "category_attribute": {
+      "uuid": "gYGhgUO4GHBECXninMd9R"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "product_id": 11,
+    "category_attribute_id": 22,
+    "category_attribute": {
+      "uuid": "MGsO-l2wLlxLE-wN7jnaU"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "product_id": 11,
+    "category_attribute_id": 24,
+    "category_attribute": {
+      "uuid": "9oUlLNNuCcDHk-lC4Iz79"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "product_id": 11,
+    "category_attribute_id": 25,
+    "category_attribute": {
+      "uuid": "LJhoqR2WL4txAK0CKWiDk"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "product_id": 12,
+    "category_attribute_id": 1,
+    "category_attribute": {
+      "uuid": "gYGhgUO4GHBECXninMd9R"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G"
+    }
+  },
+  {
+    "product_id": 12,
+    "category_attribute_id": 22,
+    "category_attribute": {
+      "uuid": "MGsO-l2wLlxLE-wN7jnaU"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G"
+    }
+  },
+  {
+    "product_id": 12,
+    "category_attribute_id": 24,
+    "category_attribute": {
+      "uuid": "9oUlLNNuCcDHk-lC4Iz79"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G"
+    }
+  },
+  {
+    "product_id": 12,
+    "category_attribute_id": 26,
+    "category_attribute": {
+      "uuid": "FPb1xY-6SdBEuv7jdurUd"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G"
+    }
+  },
+  {
+    "product_id": 13,
+    "category_attribute_id": 1,
+    "category_attribute": {
+      "uuid": "gYGhgUO4GHBECXninMd9R"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "product_id": 13,
+    "category_attribute_id": 22,
+    "category_attribute": {
+      "uuid": "MGsO-l2wLlxLE-wN7jnaU"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "product_id": 13,
+    "category_attribute_id": 27,
+    "category_attribute": {
+      "uuid": "xL1lXA0EA1WstGUVWf_zk"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "product_id": 13,
+    "category_attribute_id": 28,
+    "category_attribute": {
+      "uuid": "lXj6H3sIUPgQhVkM5T93P"
+    },
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "product_id": 14,
+    "category_attribute_id": 14,
+    "category_attribute": {
+      "uuid": "ji-7b-gd5lLf3mCNtg8-9"
+    },
+    "product": {
+      "product_name": "IGA LENTE DE SEGURIDAD TIPO ARTICO DE MICA POLARIZADA"
+    }
+  },
+  {
+    "product_id": 14,
+    "category_attribute_id": 29,
+    "category_attribute": {
+      "uuid": "Kp10sXeZ8oXCRpRIeoZZ1"
+    },
+    "product": {
+      "product_name": "IGA LENTE DE SEGURIDAD TIPO ARTICO DE MICA POLARIZADA"
+    }
+  },
+  {
+    "product_id": 15,
+    "category_attribute_id": 15,
+    "category_attribute": {
+      "uuid": "bBPaouMwC3iSyFCUrXSTy"
+    },
+    "product": {
+      "product_name": "IGA LENTES DE SEGURIDAD TIPO MEDICAL MICA TRANSPARENTE"
+    }
+  },
+  {
+    "product_id": 15,
+    "category_attribute_id": 32,
+    "category_attribute": {
+      "uuid": "-9vSVEPe5Ocz2AIl6u_Ci"
+    },
+    "product": {
+      "product_name": "IGA LENTES DE SEGURIDAD TIPO MEDICAL MICA TRANSPARENTE"
+    }
+  },
+  {
+    "product_id": 16,
+    "category_attribute_id": 14,
+    "category_attribute": {
+      "uuid": "ji-7b-gd5lLf3mCNtg8-9"
+    },
+    "product": {
+      "product_name": "IGA LENTE DE SEGURIDAD TIPO ARTICO DE MICA TRANSPARENTE"
+    }
+  },
+  {
+    "product_id": 16,
+    "category_attribute_id": 30,
+    "category_attribute": {
+      "uuid": "gpzQ2b50pXbufCHq52wOv"
+    },
+    "product": {
+      "product_name": "IGA LENTE DE SEGURIDAD TIPO ARTICO DE MICA TRANSPARENTE"
+    }
+  },
+  {
+    "product_id": 17,
+    "category_attribute_id": 15,
+    "category_attribute": {
+      "uuid": "bBPaouMwC3iSyFCUrXSTy"
+    },
+    "product": {
+      "product_name": "IGA LENTE DE SEGURIDAD TIPO MEDICAL DE MICA POLARIZADA"
+    }
+  },
+  {
+    "product_id": 17,
+    "category_attribute_id": 31,
+    "category_attribute": {
+      "uuid": "DBFg1Xm6nW41J5_v9T_5B"
+    },
+    "product": {
+      "product_name": "IGA LENTE DE SEGURIDAD TIPO MEDICAL DE MICA POLARIZADA"
+    }
+  },
+  {
+    "product_id": 18,
+    "category_attribute_id": 16,
+    "category_attribute": {
+      "uuid": "VjeKst02UJBBK9TeN-OKy"
+    },
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE INTERVALO DE SEIS PUNTOS"
+    }
+  },
+  {
+    "product_id": 18,
+    "category_attribute_id": 18,
+    "category_attribute": {
+      "uuid": "YmQixU9iKT58Q4e6AXjxg"
+    },
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE INTERVALO DE SEIS PUNTOS"
+    }
+  },
+  {
+    "product_id": 19,
+    "category_attribute_id": 16,
+    "category_attribute": {
+      "uuid": "VjeKst02UJBBK9TeN-OKy"
+    },
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCOS DE AJUSTE DE INTERVALO DE CUATRO PUNTOS"
+    }
+  },
+  {
+    "product_id": 19,
+    "category_attribute_id": 19,
+    "category_attribute": {
+      "uuid": "oehgbHddo2sp4XeK01L1c"
+    },
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCOS DE AJUSTE DE INTERVALO DE CUATRO PUNTOS"
+    }
+  },
+  {
+    "product_id": 20,
+    "category_attribute_id": 17,
+    "category_attribute": {
+      "uuid": "_LSK4psS-btlc8CwxLXUy"
+    },
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE MATRACA DE CUATRO PUNTOS"
+    }
+  },
+  {
+    "product_id": 20,
+    "category_attribute_id": 21,
+    "category_attribute": {
+      "uuid": "c8J7cy1oQwd5r_w7DaRTw"
+    },
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE MATRACA DE CUATRO PUNTOS"
+    }
+  },
+  {
+    "product_id": 21,
+    "category_attribute_id": 17,
+    "category_attribute": {
+      "uuid": "_LSK4psS-btlc8CwxLXUy"
+    },
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE MATRACA DE SEIS PUNTOS"
+    }
+  },
+  {
+    "product_id": 21,
+    "category_attribute_id": 20,
+    "category_attribute": {
+      "uuid": "AXk-5d9-EGLvIOp2Up2jq"
+    },
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE MATRACA DE SEIS PUNTOS"
+    }
+  }
+]

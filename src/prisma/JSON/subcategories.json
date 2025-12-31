@@ -1,0 +1,281 @@
+[
+  {
+    "uuid": "a4d5fd82f46d4dbb",
+    "description": "Casco de Alturas",
+    "level": 0,
+    "father_uuid": null,
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "gYGhgUO4GHBECXninMd9R",
+    "description": "Cascos de Seguridad Industrial",
+    "level": 0,
+    "father_uuid": null,
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "7Y-0KX0Z8-ILjQGMgZzTM",
+    "description": "Cuatro puntos",
+    "level": 0,
+    "father_uuid": null,
+    "category": {
+      "name": "Barboquejos"
+    }
+  },
+  {
+    "uuid": "bYuMDmSaqORo5fGbrFcDN",
+    "description": "Mentonera",
+    "level": 0,
+    "father_uuid": null,
+    "category": {
+      "name": "Barboquejos"
+    }
+  },
+  {
+    "uuid": "zKWDr581sN_vJ9SX0jNhF",
+    "description": "Sin mentonera",
+    "level": 0,
+    "father_uuid": null,
+    "category": {
+      "name": "Barboquejos"
+    }
+  },
+  {
+    "uuid": "ji-7b-gd5lLf3mCNtg8-9",
+    "description": "Artico",
+    "level": 0,
+    "father_uuid": null,
+    "category": {
+      "name": "Lentes"
+    }
+  },
+  {
+    "uuid": "bBPaouMwC3iSyFCUrXSTy",
+    "description": "Medical",
+    "level": 0,
+    "father_uuid": null,
+    "category": {
+      "name": "Lentes"
+    }
+  },
+  {
+    "uuid": "VjeKst02UJBBK9TeN-OKy",
+    "description": "Ajuste de intervalo",
+    "level": 0,
+    "father_uuid": null,
+    "category": {
+      "name": "Suspensiones"
+    }
+  },
+  {
+    "uuid": "_LSK4psS-btlc8CwxLXUy",
+    "description": "Ajuste matraca",
+    "level": 0,
+    "father_uuid": null,
+    "category": {
+      "name": "Suspensiones"
+    }
+  },
+  {
+    "uuid": "XyGUdWja-eBMNsXdN0Gvj",
+    "description": "Cachucha Hit",
+    "level": 1,
+    "father_uuid": "gYGhgUO4GHBECXninMd9R",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "Kp10sXeZ8oXCRpRIeoZZ1",
+    "description": "Polarizado",
+    "level": 1,
+    "father_uuid": "ji-7b-gd5lLf3mCNtg8-9",
+    "category": {
+      "name": "Lentes"
+    }
+  },
+  {
+    "uuid": "gpzQ2b50pXbufCHq52wOv",
+    "description": "Transparente",
+    "level": 1,
+    "father_uuid": "ji-7b-gd5lLf3mCNtg8-9",
+    "category": {
+      "name": "Lentes"
+    }
+  },
+  {
+    "uuid": "DBFg1Xm6nW41J5_v9T_5B",
+    "description": "Polarizado",
+    "level": 1,
+    "father_uuid": "bBPaouMwC3iSyFCUrXSTy",
+    "category": {
+      "name": "Lentes"
+    }
+  },
+  {
+    "uuid": "-9vSVEPe5Ocz2AIl6u_Ci",
+    "description": "Transparente",
+    "level": 1,
+    "father_uuid": "bBPaouMwC3iSyFCUrXSTy",
+    "category": {
+      "name": "Lentes"
+    }
+  },
+  {
+    "uuid": "YmQixU9iKT58Q4e6AXjxg",
+    "description": "Seis puntos",
+    "level": 1,
+    "father_uuid": "VjeKst02UJBBK9TeN-OKy",
+    "category": {
+      "name": "Suspensiones"
+    }
+  },
+  {
+    "uuid": "oehgbHddo2sp4XeK01L1c",
+    "description": "Cuatro puntos",
+    "level": 1,
+    "father_uuid": "VjeKst02UJBBK9TeN-OKy",
+    "category": {
+      "name": "Suspensiones"
+    }
+  },
+  {
+    "uuid": "AXk-5d9-EGLvIOp2Up2jq",
+    "description": "Seis puntos",
+    "level": 1,
+    "father_uuid": "_LSK4psS-btlc8CwxLXUy",
+    "category": {
+      "name": "Suspensiones"
+    }
+  },
+  {
+    "uuid": "c8J7cy1oQwd5r_w7DaRTw",
+    "description": "Cuatro puntos",
+    "level": 1,
+    "father_uuid": "_LSK4psS-btlc8CwxLXUy",
+    "category": {
+      "name": "Suspensiones"
+    }
+  },
+  {
+    "uuid": "MGsO-l2wLlxLE-wN7jnaU",
+    "description": "Cachucha Plagosur",
+    "level": 1,
+    "father_uuid": "gYGhgUO4GHBECXninMd9R",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "FLGrHXv6Te8VmR56SY6hS",
+    "description": "Coraza Tipo A",
+    "level": 1,
+    "father_uuid": "gYGhgUO4GHBECXninMd9R",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "K1cYZD21hXb4E-YuVJcD4",
+    "description": "Ajuste de Matraca",
+    "level": 2,
+    "father_uuid": "FLGrHXv6Te8VmR56SY6hS",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "DMeVpVLOpf4G1uyUgZ1Nk",
+    "description": "Ajuste de Intervalo",
+    "level": 2,
+    "father_uuid": "XyGUdWja-eBMNsXdN0Gvj",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "E3TSbai1l22mTxWYayEps",
+    "description": "Ajuste de matraca",
+    "level": 2,
+    "father_uuid": "XyGUdWja-eBMNsXdN0Gvj",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "xL1lXA0EA1WstGUVWf_zk",
+    "description": "Ajuste de Matraca",
+    "level": 2,
+    "father_uuid": "MGsO-l2wLlxLE-wN7jnaU",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "9oUlLNNuCcDHk-lC4Iz79",
+    "description": "Ajuste de Intervalo",
+    "level": 2,
+    "father_uuid": "MGsO-l2wLlxLE-wN7jnaU",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "9GD-yq-Y27goLwMOJD0Ub",
+    "description": "Clase E",
+    "level": 3,
+    "father_uuid": "K1cYZD21hXb4E-YuVJcD4",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "FPb1xY-6SdBEuv7jdurUd",
+    "description": "Clase G",
+    "level": 3,
+    "father_uuid": "9oUlLNNuCcDHk-lC4Iz79",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "lXj6H3sIUPgQhVkM5T93P",
+    "description": "Clase E",
+    "level": 3,
+    "father_uuid": "xL1lXA0EA1WstGUVWf_zk",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "LJhoqR2WL4txAK0CKWiDk",
+    "description": "Clase E",
+    "level": 3,
+    "father_uuid": "9oUlLNNuCcDHk-lC4Iz79",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "Rw0bsPW8aVxgyxYVjESwE",
+    "description": "Clase G",
+    "level": 3,
+    "father_uuid": "E3TSbai1l22mTxWYayEps",
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "uuid": "XKCigj1F7rh3901CNpQi4",
+    "description": "Clase G",
+    "level": 3,
+    "father_uuid": "DMeVpVLOpf4G1uyUgZ1Nk",
+    "category": {
+      "name": "Cascos"
+    }
+  }
+]

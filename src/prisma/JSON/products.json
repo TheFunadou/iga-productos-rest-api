@@ -1,0 +1,342 @@
+[
+  {
+    "id": 3,
+    "uuid": "abd708fa-7557-4050-a479-87bc6604dc10",
+    "product_name": "Dummy Product",
+    "category_id": 2,
+    "description": "asd",
+    "specs": "asd",
+    "recommendations": "asd",
+    "applications": "asd",
+    "certifications_desc": "asd",
+    "created_at": "2025-11-04T18:59:14.349Z",
+    "updated_at": "2025-11-04T18:59:14.349Z",
+    "user_id": 3,
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "id": 6,
+    "uuid": "aa7bec7e-3032-4361-b529-0fddca7f915a",
+    "product_name": "IGA BARBOQUEJO PARA CASCOS CON MENTONERA",
+    "category_id": 1,
+    "description": "El barboquejo para cascos con mentonera de dos puntos de IGA Productos es un accesorio de sujeción diseñado para mantener el casco en posición correcta y brindar mayor seguridad al usuario. Se ajusta mediante dos puntos de anclaje, incluye mentonera de hule negro y está fabricado con materiales ligeros y resistentes, compatible con cascos de seguridad que cuenten con orificios de sujeción.",
+    "specs": "Cinta elástica que sujeta el casco por debajo de la barbilla, Cinta elaborada con 65% poliéster y 35% hule, Ajuste de 2 puntos, Hebillas y ganchos fabricados en poliacetal, Incluye mentonera de hule negro, Disponible en color negro, No contiene partes metálicas",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir barboquejo si presenta desgaste o deformación, Usar siempre con el casco correctamente ajustado, Mantener limpio y almacenado en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Construcción, Industria en general, Minería, Petroquímica, Gobierno, Maquiladora y fábrica",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2002",
+    "created_at": "2025-11-07T07:27:20.011Z",
+    "updated_at": "2025-11-07T07:27:20.011Z",
+    "user_id": 3,
+    "category": {
+      "name": "Barboquejos"
+    }
+  },
+  {
+    "id": 7,
+    "uuid": "43e262ce-568b-4cd3-a84e-c85cd0453d0a",
+    "product_name": "IGA BARBOQUEJO PARA CASCO DE CUATRO PUNTOS",
+    "category_id": 1,
+    "description": "El barboquejo para cascos de cuatro puntos de IGA Productos es un accesorio de sujeción diseñado para brindar máxima estabilidad al casco de protección. Se ajusta mediante cuatro puntos de anclaje, fabricado en poliéster resistente, con hebillas, clips plásticos y broche liberador. Está pensado para uso exclusivo en cascos IGA, ofreciendo comodidad, absorción de sudor y seguridad adicional en ambientes industriales.",
+    "specs": "Cinta de poliéster resistente que sujeta al casco por debajo de la barbilla, No elástico, Incluye hebillas clips plásticos y broche, Cintas costuradas, Composición 100% poliéster, Ancho de 20 mm, Material ergonómico, Provee absorción al sudor, Disponible en color negro con blanco, No contiene partes metálicas",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir barboquejo si presenta desgaste o deformación, Usar siempre con el casco correctamente ajustado, Mantener limpio y almacenado en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad, Utilizar exclusivamente en cascos IGA para garantizar compatibilidad",
+    "applications": "Construcción, Industria en general, Minería, Petroquímica, Gobierno, Maquiladora y fábrica",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2022",
+    "created_at": "2025-11-07T07:31:42.886Z",
+    "updated_at": "2025-11-07T07:31:42.886Z",
+    "user_id": 3,
+    "category": {
+      "name": "Barboquejos"
+    }
+  },
+  {
+    "id": 4,
+    "uuid": "7aa06cba-f709-493c-a2ca-e924b7c9598f",
+    "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO CFE",
+    "category_id": 2,
+    "description": "El casco de seguridad CORAZA A modelo CFE de IGA Productos es un equipo de protección personal tipo I clase E, fabricado en polietileno de alta densidad, diseñado para proteger contra impactos verticales y riesgos eléctricos de hasta 30,000 V. Cuenta con ajuste tipo matraca, suspensión de 6 puntos y logotipo CFE en termograbado, siendo apto para uso industrial, petroquímico y de construcción.",
+    "specs": "Concha con visera anti reflejante fabricada en polietileno de alta densidad, Canal en el borde para derivación de lluvia y salpicaduras, Tafilete fabricado en polietileno de alta densidad, Suspensión de 6 puntos de anclaje con cintas de nylon y matraca fabricado en ABS, Almohadilla superior y banda anti sudor elaborada de vinipiel micro perforado adherido a espuma de poliuretano, Ancho de la banda anti sudor de 3/4 de pulgadas, Talla de sombrero de 6 1/2 a 8 1/2 pulgadas (520 mm a 680 mm), Etiqueta trasera con especificación de certificación ISO NOM, Logo en termograbado de CFE color verde 10x4 cm, Peso del producto 340 g",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir casco si presenta daños visibles o desgaste, Usar siempre con suspensión ajustada correctamente, Complementar con barbiquejo en trabajos en altura o ambientes de viento, Mantener limpio y almacenado en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Petroquímica, Constructora, Fabrica y maquiladora, Gobierno, Industria en general, Minería",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2022, CFE 8H 341-02, PEMEX-EST-SS-058-2018, ANSI/ISEA Z89.1-2014, ISO 9001:2015",
+    "created_at": "2025-11-07T06:33:49.341Z",
+    "updated_at": "2025-11-07T06:33:49.341Z",
+    "user_id": 3,
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "id": 1,
+    "uuid": "4a2c46cb-04f5-40dc-bf93-1c2cf2bb6a60",
+    "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO",
+    "category_id": 2,
+    "description": "Casco de seguridad CORAZA A de IGA Productos es un equipo de protección personal tipo I clase E, fabricado en polietileno de alta densidad, diseñado para proteger contra impactos verticales y riesgos eléctricos. Cuenta con un sistema de ajuste tipo matraca, nervaduras para mayor rigidez y canal de drenaje de lluvia, siendo compatible con diversos accesorios industriales.",
+    "specs": "Concha con visera anti reflejante, Fabricado en polietileno de alta densidad, Canal de drenaje para lluvia y salpicaduras, Aletas para protección lateral, Nervadura para rigidez estructural, Arnés de suspensión de 6 puntos de anclaje, Ajuste tipo matraca, Banda de sudor suave y absorbente, Orejeras para barbiquejo de 3 puntos, Compatible con careta orejeras lámpara",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir casco si presenta golpes fisuras o exposición prolongada al sol, Usar siempre con arnés de suspensión ajustado, Complementar con barbiquejo en trabajos en altura o ambientes de viento, Mantener limpio y almacenado en lugar fresco y seco",
+    "applications": "Construcción y obras civiles, Industria eléctrica, Minería y trabajos industriales pesados, Mantenimiento urbano y carretero, Actividades con riesgo de impactos verticales",
+    "certifications_desc": "NOM-115-STPS-2009, ANSI/ISEA Z89.1-2014, ISO 9001:2015, NMX-CC-9001-IMNC-2015, NMX-R-025-SCFI-2022, NMX-EC-17025-IMNC-2018, NMX-EC-115-STPS-08-2018",
+    "created_at": "2025-09-26T16:48:40.670Z",
+    "updated_at": "2025-11-07T07:16:00.503Z",
+    "user_id": 1,
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "id": 5,
+    "uuid": "a58f15ca-b42f-4370-8cf8-5d7c581543fa",
+    "product_name": "IGA BARBOQUEJO PARA CASCO SIN MENTONERA",
+    "category_id": 1,
+    "description": "El barboquejo para cascos sin mentonera de dos puntos de IGA Productos es un accesorio de sujeción diseñado para brindar mayor estabilidad y seguridad al casco de protección. Se ajusta mediante dos puntos de anclaje sin mentonera, utilizando materiales ligeros y resistentes, compatible con cascos que cuenten con orificios de sujeción.",
+    "specs": "Sistema de sujeción cómodo y ligero, Cinta elástica que sujeta al casco por debajo de la barbilla, Cinta elaborada con 62% poliéster y 38% elastodieno, Ajuste con hebillas de polipropileno, Ganchos de policarbonato en los extremos, Medidas de 40 cm de largo por 19 mm de ancho, No contiene partes metálicas, Compatible con cascos de seguridad con orificios de sujeción",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir barboquejo si presenta desgaste o deformación, Usar siempre con el casco correctamente ajustado, Mantener limpio y almacenado en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Construcción, Industria en general, Minería, Petroquímica, Gobierno, Maquiladora y fábrica",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2022",
+    "created_at": "2025-11-07T07:23:17.620Z",
+    "updated_at": "2025-11-07T07:23:17.620Z",
+    "user_id": 3,
+    "category": {
+      "name": "Barboquejos"
+    }
+  },
+  {
+    "id": 8,
+    "uuid": "9a6aac58-92e6-435d-9f6a-6ceab0c42d8f",
+    "product_name": "IGA BARBOQUEJO BANDA ANTISUDOR PARA CASCOS",
+    "category_id": 1,
+    "description": "La banda antisudor para cascos de IGA Productos es un accesorio diseñado para mejorar la comodidad del usuario al absorber la transpiración durante el uso del casco de seguridad. Está fabricada en algodón suave y absorbente, adaptable a todos los modelos de cascos, y cuenta con broches plásticos para su fácil colocación y retiro.",
+    "specs": "Peso 14 oz +/- 2, Material 100% algodón, Color blanco mate, Contiene broches plásticos, Lavar a máquina con agua fría, Secar en máquina a baja temperatura",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir la banda si presenta desgaste o pérdida de absorción, Usar siempre con el casco correctamente ajustado, Mantener limpia y almacenada en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Industria química, Construcción, Minería, Petroquímica, Industria en general",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2022",
+    "created_at": "2025-11-07T07:36:41.083Z",
+    "updated_at": "2025-11-07T07:36:41.083Z",
+    "user_id": 3,
+    "category": {
+      "name": "Barboquejos"
+    }
+  },
+  {
+    "id": 10,
+    "uuid": "bd649b20-05ce-4e60-a495-86dc0ed58fb8",
+    "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G MATRACA",
+    "category_id": 2,
+    "description": "El casco de seguridad industrial tipo cachucha HIT amarillo de IGA Productos es un equipo de protección personal diseñado para reducir la fuerza de impacto de objetos en caída y proteger contra riesgos eléctricos de hasta 2,200 V. Está fabricado en polietileno de alta densidad, cuenta con ajuste tipo matraca y suspensión de 4 puntos de anclaje con cintas de nylon. Su diseño compacto tipo cachucha lo hace ligero y cómodo para uso prolongado en ambientes industriales.",
+    "specs": "Características Fabricado en polietileno de alta densidad, Ajuste tipo matraca, Suspensión de 4 puntos de anclaje con cintas de nylon, Tafilete fabricado en polietileno de alta densidad, Matraca fabricada en ABS, Almohadilla de poliuretano en la zona de la nuca, Peso aproximado de 335 g, Talla de sombrero de 6 1/2 a 8 1/2 pulgadas (520 mm a 680 mm), Canal en el borde para derivación de lluvia y salpicaduras, Tipo I forma II",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir casco si presenta daños visibles o desgaste, Usar siempre con la suspensión correctamente ajustada, Mantener limpio y almacenado en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Constructora, Fabrica y maquiladora, Gobierno, Industria en general",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2002, PEMEX-EST-SS-058-2018, ANSI/ISEA Z89.1-2014",
+    "created_at": "2025-11-07T07:45:15.113Z",
+    "updated_at": "2025-11-07T07:45:15.113Z",
+    "user_id": 3,
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "id": 2,
+    "uuid": "c93943c2-a06d-4d72-830d-09766213b83d",
+    "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G INTERVALO",
+    "category_id": 2,
+    "description": "El casco de seguridad industrial tipo cachucha HIT amarillo de IGA Productos es un equipo de protección personal diseñado para reducir la fuerza de impacto de objetos en caída y proteger contra riesgos eléctricos de hasta 2,200 V. Está fabricado en polietileno de alta densidad, cuenta con ajuste tipo matraca y suspensión de 4 puntos de anclaje con cintas de nylon. Su diseño compacto tipo cachucha lo hace ligero y cómodo para uso prolongado en ambientes industriales.",
+    "specs": "Fabricado en polietileno de alta densidad, Ajuste tipo matraca, Suspensión de 4 puntos de anclaje con cintas de nylon, Tafilete fabricado en polietileno de alta densidad, Matraca fabricada en ABS, Peso aproximado de 335 g, Talla de sombrero de 6 1/2 a 8 1/2 pulgadas (520 mm a 680 mm), Canal en el borde para derivación de lluvia y salpicaduras, Tipo I forma II",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir casco si presenta daños visibles o desgaste, Usar siempre con la suspensión correctamente ajustada, Mantener limpio y almacenado en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Constructora, Fabrica y maquiladora, Gobierno, Industria en general",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2002, PEMEX-EST-SS-058-2018",
+    "created_at": "2025-11-03T19:04:05.068Z",
+    "updated_at": "2025-11-07T07:45:45.039Z",
+    "user_id": 3,
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "id": 11,
+    "uuid": "9834691e-9f27-4a1c-8549-0dfe1a955260",
+    "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E",
+    "category_id": 2,
+    "description": "El casco de seguridad industrial PLAGOSUR C amarillo de IGA Productos es un equipo de protección personal tipo cachucha, clase E dieléctrico, diseñado para proteger contra impactos y riesgos eléctricos de hasta 20,000 V. Está fabricado en polietileno virgen de alta resistencia en una sola pieza, con excelente acabado libre de rebabas. Incluye suspensión de 6 puntos y ajuste de intervalos, ofreciendo comodidad y seguridad en ambientes industriales.",
+    "specs": "Casco de polietileno virgen de alta resistencia fabricado en una sola pieza libre de rebabas, Suspensión fabricada en polietileno de alta densidad, Ajuste de intervalos, Banda de sudor de poliéster, Ranura de accesorios, Canal para escurrimiento de líquidos, Diseño de ala corta, Compatible con orejeras para audífono, Resistencia dieléctrica hasta 20,000 V, Resistencia al impacto, Peso del producto 339 g",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir casco si presenta daños visibles o desgaste, Usar siempre con la suspensión correctamente ajustada, Mantener limpio y almacenado en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Industria en general, Construcción, Actividades al aire libre",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2002, CFE 8H341-02, PEMEX-EST-SS-058-2019",
+    "created_at": "2025-11-07T08:03:39.657Z",
+    "updated_at": "2025-11-07T08:43:15.130Z",
+    "user_id": 3,
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "id": 12,
+    "uuid": "1c61604f-af32-4002-86be-8f53221f39c8",
+    "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G",
+    "category_id": 2,
+    "description": "El casco de seguridad industrial PLAGOSUR C amarillo de IGA Productos es un equipo de protección personal tipo I forma 1, clase E, diseñado para proteger contra impactos verticales y riesgos eléctricos de hasta 2,200 V. Está fabricado en polietileno de alta densidad con alta flexibilidad, incluye suspensión ajustable por intervalos, banda de sudor de poliéster y ranura para accesorios. Su diseño ergonómico lo hace ideal para uso prolongado en ambientes industriales.",
+    "specs": "Concha o visera frontal fabricada en polietileno de alta densidad, Alta protección contra rayos UV, Suspensión ajustable mediante intervalos, Banda de sudor de poliéster, Arnés de suspensión con ajuste de intervalos, Ajuste de talla universal, Peso del producto 314 gramos, Resistencia dieléctrica al surco de 3/4 pulgada, Clase E con protección hasta 2,200 V",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir casco si presenta daños visibles o desgaste, Usar siempre con la suspensión correctamente ajustada, Mantener limpio y almacenado en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Industria en general, Construcción, Actividades al aire libre",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2022, CFE 8H 341-02, PEMEX -EST-SS-058-2018",
+    "created_at": "2025-11-07T16:02:52.324Z",
+    "updated_at": "2025-11-07T16:02:52.324Z",
+    "user_id": 3,
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "id": 13,
+    "uuid": "c8ad13e8-49cb-4d88-b20f-6a635849edc1",
+    "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO",
+    "category_id": 2,
+    "description": "El casco de seguridad industrial PLAGOSUR C amarillo de IGA Productos es un equipo de protección personal tipo I forma I, clase E dieléctrico, diseñado para proteger contra impactos verticales y riesgos eléctricos de hasta 20,000 V. Está fabricado en polietileno virgen de alta densidad, con diseño aerodinámico, visera para protección solar y ajuste tipo matraca. Su suspensión de 6 puntos y compatibilidad con múltiples accesorios lo hacen ideal para trabajos en altura y ambientes industriales exigentes.",
+    "specs": "Concha con visera para protección solar, Ranura universal para aditamentos, Diseño de concha aerodinámico, Material virgen HDPE para excelente resistencia al impacto, Arnés de suspensión de polietileno de 6 puntos, Banda de sudor de poliéster con relleno de espuma, Ajuste de matraca para fácil ajuste, Arnés de suspensión con ajuste de altura, Ideal para trabajo en alturas, Compatible con orejeras de barra deslizable, Compatible con careta de protección facial, Compatible con barboquejo de 3 puntos, Compatible con lentes de seguridad, Compatible con lámpara de casco, Compatible con porta gafete, Compatible con cubre nuca, Compatible con protector de barbilla, Dimensiones alto 15.5 cm ancho 21.5 cm largo 28.5 cm, Peso 360 g ± 5 g",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir casco si presenta daños visibles o desgaste, Usar siempre con la suspensión correctamente ajustada, Mantener limpio y almacenado en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Constructora, Fabrica y maquiladora, Gobierno, Industria en general",
+    "certifications_desc": "NOM-TIS-STPS-2009, NMX-5-055-SCFI-2022, CFE 8H 341-02, PEMEX-EST-55-058-2018, ANSI/ISEA 28912014",
+    "created_at": "2025-11-07T16:33:49.045Z",
+    "updated_at": "2025-11-07T16:33:49.045Z",
+    "user_id": 3,
+    "category": {
+      "name": "Cascos"
+    }
+  },
+  {
+    "id": 14,
+    "uuid": "560917bc-0406-424b-8db1-344a2f2e95a1",
+    "product_name": "IGA LENTE DE SEGURIDAD TIPO ARTICO DE MICA POLARIZADA",
+    "category_id": 3,
+    "description": "Los lentes de seguridad modelo Ártico de IGA Productos son un equipo de protección ocular diseñado para ambientes industriales, de construcción y laboratorio. Están fabricados en policarbonato, con mica polarizada y estructura bicolor, ofreciendo comodidad, resistencia al uso rudo y excelente transmisión visual con vista periférica.",
+    "specs": "Fabricado con policarbonato, Protección laboral e industrial en general, Cómoda práctica y resistente al uso rudo, Excelente transmisión y control visual, Vista periférica, Peso 36 g",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir lentes si presentan rayaduras o deformación, Usar siempre en ambientes con riesgo de partículas o radiación, Mantener limpios y almacenados en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Construcción, Industrial y ramo maquiladora, Minería, Laboratorio químico, Uso general",
+    "certifications_desc": "ANSI/ISEA Z87.1-2015",
+    "created_at": "2025-11-07T16:59:17.905Z",
+    "updated_at": "2025-11-07T16:59:17.905Z",
+    "user_id": 3,
+    "category": {
+      "name": "Lentes"
+    }
+  },
+  {
+    "id": 15,
+    "uuid": "ea683744-3950-4cf1-8a1a-5590f3cd0765",
+    "product_name": "IGA LENTES DE SEGURIDAD TIPO MEDICAL MICA TRANSPARENTE",
+    "category_id": 3,
+    "description": "Los lentes de seguridad modelo Medical de IGA Productos son un equipo de protección ocular diseñado para uso industrial, médico y general. Están fabricados en policarbonato con mica transparente, ofreciendo resistencia al impacto y protección contra rayos UV. Su diseño ergonómico con puente nasal y protección lateral brinda comodidad y seguridad en ambientes de trabajo.",
+    "specs": "Armazón con puente nasal elaborado en policarbonato, Marco resistente y seguro, Mica transparente con jaladera flexible, Diseño ergonómico, Protección lateral, Resistente al impacto y contra rayos UV, Peso 46 g",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir lentes si presentan rayaduras o deformación, Usar siempre en ambientes con riesgo de partículas o radiación, Mantener limpios y almacenados en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Laboratorio, Estética y maquilladora, Minería, Comercio, Industria general, Actividades que requieren protección visual",
+    "certifications_desc": "ANSI Z87.1-2015",
+    "created_at": "2025-11-07T17:07:50.384Z",
+    "updated_at": "2025-11-07T17:07:50.384Z",
+    "user_id": 3,
+    "category": {
+      "name": "Lentes"
+    }
+  },
+  {
+    "id": 16,
+    "uuid": "487feb1c-7cd1-4e7c-8c5f-a6ee9c2abda0",
+    "product_name": "IGA LENTE DE SEGURIDAD TIPO ARTICO DE MICA TRANSPARENTE",
+    "category_id": 3,
+    "description": "Los lentes de seguridad modelo Ártico bicolor de IGA Productos son un equipo de protección ocular diseñado para ambientes industriales y de construcción. Están fabricados 100% en policarbonato de alta densidad, con mica transparente y estructura bicolor ergonómica, ofreciendo resistencia al impacto, protección contra rayos UV y vista periférica.",
+    "specs": "Fabricados 100% en policarbonato de alta densidad, Protección laboral integrada en una sola pieza, Diseño ergonómico ligero y versátil, Protección contra impacto y rayos UV, Vista periférica, Peso 36 g",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir lentes si presentan rayaduras o deformación, Usar siempre en ambientes con riesgo de partículas o radiación, Mantener limpios y almacenados en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Construcción, Carpintería y uso en maquinaria, Laboratorios, Industria en general, Domicilio general",
+    "certifications_desc": "ANSI/ISEA Z87.1-2015",
+    "created_at": "2025-11-07T17:09:44.232Z",
+    "updated_at": "2025-11-07T17:09:44.232Z",
+    "user_id": 3,
+    "category": {
+      "name": "Lentes"
+    }
+  },
+  {
+    "id": 17,
+    "uuid": "651a789f-3827-41ae-84bd-41989cb3e5df",
+    "product_name": "IGA LENTE DE SEGURIDAD TIPO MEDICAL DE MICA POLARIZADA",
+    "category_id": 3,
+    "description": "Los lentes de seguridad modelo Medical polarizados de IGA Productos son un equipo de protección ocular diseñado para ambientes industriales, petroquímicos, farmacéuticos y de laboratorio. Están fabricados en policarbonato con mica polarizada, ofreciendo resistencia al impacto y protección contra rayos UV. Su diseño ergonómico con puente nasal y patillas rectas brinda comodidad y seguridad en uso prolongado.",
+    "specs": "Armazón con puente nasal elaborado en policarbonato, Patillas rectas resistentes y seguras, Mica polarizada fabricada 100% en policarbonato, Protección contra impacto y rayos UV, Peso ligero, Peso 46 g",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir lentes si presentan rayaduras o deformación, Usar siempre en ambientes con riesgo de partículas o radiación, Mantener limpios y almacenados en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Petroquímica, Farmacéutica, Laboratorio o maquiladora, Minería, Gobierno, Industria general",
+    "certifications_desc": "ANSI/ISEA Z87.1-2015",
+    "created_at": "2025-11-07T17:13:04.023Z",
+    "updated_at": "2025-11-07T17:13:04.023Z",
+    "user_id": 3,
+    "category": {
+      "name": "Lentes"
+    }
+  },
+  {
+    "id": 18,
+    "uuid": "5aa963b1-e8c6-4191-99fb-fb2c43fe55bd",
+    "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE INTERVALO DE SEIS PUNTOS",
+    "category_id": 4,
+    "description": "La suspensión para cascos de IGA Productos es un accesorio de ajuste por intervalos con 6 puntos de anclaje, diseñado para brindar comodidad y seguridad al usuario. Está fabricada en polietileno de alta densidad, con banda antisudor en espuma de poliuretano y sistema de ajuste ergonómico. Es compatible con cascos de ala completa de diferentes marcas y no contiene partes metálicas, lo que la hace dieléctrica y segura en ambientes eléctricos.",
+    "specs": "Tafilete fabricado en polietileno de alta densidad, Banda antisudor en espuma de poliuretano, Sistema de ajuste por intervalos, Compatible con cascos de ala completa de diferentes marcas, Tafilete con banda de ajuste de nuca, Banda antisudor removible para facilitar lavado, Componentes libres de partes metálicas, No conductor de electricidad",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir suspensión si presenta desgaste o deformación, Usar siempre con el casco correctamente ajustado, Mantener limpia y almacenada en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Construcción, Industria en general, Minería, Petroquímica, Gobierno, Maquiladora y fábrica",
+    "certifications_desc": "NOM-115-STPS-2009,NMX-S-055-SCFI-2022,PEMEX-EST-SS-058-2018",
+    "created_at": "2025-11-07T17:18:27.541Z",
+    "updated_at": "2025-11-07T17:18:27.541Z",
+    "user_id": 3,
+    "category": {
+      "name": "Suspensiones"
+    }
+  },
+  {
+    "id": 19,
+    "uuid": "03803a6b-04fe-4225-b97f-8b0b4cb0a750",
+    "product_name": "IGA SUSPENSION PARA CASCOS DE AJUSTE DE INTERVALO DE CUATRO PUNTOS",
+    "category_id": 4,
+    "description": "La suspensión para cascos de IGA Productos es un accesorio de ajuste por intervalos con 4 puntos de anclaje, diseñado para brindar comodidad y seguridad al usuario. Está fabricada en polietileno de alta densidad, con banda antisudor en tela no tejida de polipropileno y sistema de ajuste posterior. Es compatible con la mayoría de los cascos del mercado, no contiene partes metálicas ni eléctricas, lo que la hace segura en ambientes industriales y eléctricos.",
+    "specs": "Tarjetete fabricado en polietileno de alta densidad, Arnés con 4 puntos de anclaje, Sistema de ajuste en banda posterior, Banda de sudor en tela no tejida de polipropileno, Compatible con la mayoría de los cascos del mercado, No contiene partes metálicas, No contiene partes eléctricas",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir suspensión si presenta desgaste o deformación, Usar siempre con el casco correctamente ajustado, Mantener limpia y almacenada en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad, Evitar exposición a condiciones extremas",
+    "applications": "Construcción, Industria en general, Minería, Petroquímica, Gobierno, Maquiladora y fábrica",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2022, PEMEX-EST-SS-058-2018",
+    "created_at": "2025-11-07T17:21:34.925Z",
+    "updated_at": "2025-11-07T17:21:34.925Z",
+    "user_id": 3,
+    "category": {
+      "name": "Suspensiones"
+    }
+  },
+  {
+    "id": 20,
+    "uuid": "5b651f4a-574f-408c-8a93-c5713489694f",
+    "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE MATRACA DE CUATRO PUNTOS",
+    "category_id": 4,
+    "description": "La suspensión para cascos de IGA Productos con ajuste tipo matraca de 4 puntos es un accesorio ergonómico diseñado para brindar mayor comodidad, seguridad y estabilidad al casco. Está fabricada en polietileno de alta densidad, con matraca en ABS y tafilete de diseño amplio que mejora el área de contacto, ventilación y sujeción en la nuca.",
+    "specs": "Tafilete fabricado en polietileno de alta densidad, Matraca elaborada en ABS, Suspensión con diseño ergonómico, Ajuste de suspensión por medio de matraca, Tafilete con diseño de ajuste en la nuca, Mayor área de contacto, Mayor área de seguridad, Mayor área de confort, Mayor área de ventilación, Mayor área de sujeción",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir suspensión si presenta desgaste o deformación, Usar siempre con el casco correctamente ajustado, Mantener limpia y almacenada en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Construcción, Industria en general, Minería, Petroquímica, Gobierno, Maquiladora y fábrica",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2022, PEMEX-EST-SS-058-2018",
+    "created_at": "2025-11-07T17:30:48.844Z",
+    "updated_at": "2025-11-07T17:30:48.844Z",
+    "user_id": 3,
+    "category": {
+      "name": "Suspensiones"
+    }
+  },
+  {
+    "id": 21,
+    "uuid": "a3560302-6ad7-470b-bd14-311012163949",
+    "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE MATRACA DE SEIS PUNTOS",
+    "category_id": 4,
+    "description": "La suspensión para cascos de IGA Productos con ajuste tipo matraca de 6 puntos es un accesorio diseñado para brindar comodidad y estabilidad al casco. Está fabricada en polietileno de alta densidad, con matraca y arnés elaborados en ABS, además de banda antisudor en tela no absorbente. Es adaptable a la mayoría de los cascos del mercado, aunque no está destinada para uso minero, eléctrico ni como protección contra impactos.",
+    "specs": "Tafilete fabricado en polietileno de alta densidad, Matraca elaborada en ABS, Suspensión elaborada en ABS, Banda antisudor en tela no absorbente, Arnés elaborado en tela no absorbente, Ajuste de matraca, Adaptable a la mayoría de los cascos del mercado, No es para uso minero, No es para uso eléctrico, No es para protección contra impactos, No contiene partes metálicas",
+    "recommendations": "Revisar fecha de fabricación y respetar vida útil, Sustituir suspensión si presenta desgaste o deformación, Usar siempre con el casco correctamente ajustado, Mantener limpia y almacenada en lugar fresco y seco, Respetar programa de reemplazo establecido por área de seguridad",
+    "applications": "Construcción, Industria en general, Minería, Petroquímica, Gobierno, Maquiladora y fábrica",
+    "certifications_desc": "NOM-115-STPS-2009, NMX-S-055-SCFI-2022, PEMEX-EST-SS-058-2018",
+    "created_at": "2025-11-07T17:33:55.617Z",
+    "updated_at": "2025-11-07T17:33:55.617Z",
+    "user_id": 3,
+    "category": {
+      "name": "Suspensiones"
+    }
+  }
+]

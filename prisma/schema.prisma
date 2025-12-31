@@ -1,0 +1,404 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String            @id @default(dbgenerated("gen_random_uuid()"))
+  uuid           String            @unique @default(cuid())
+  name           String
+  last_name      String
+  username       String            @unique @db.VarChar(30)
+  email          String            @unique
+  email_verified Boolean           @default(false)
+  image          String?
+  created_at     DateTime          @default(now())
+  role           UserRoles         @default(STAFF)
+  updated_at     DateTime          @updatedAt
+  sessions       UserSession[]     @relation("session:user")
+  accounts       UserAccount[]     @relation("account:user")
+  products       Product[]         @relation("product:user")
+  permissions    UserPermissions[] @relation("user_permissions:user")
+  logs           UserLogs[]        @relation("user_logs:user")
+
+  @@map("user")
+}
+
+model UserSession {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  expires_at DateTime
+  token      String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  ip_address String?
+  user_agent String?
+  user_id    String
+  user       User     @relation("session:user", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("userSession")
+}
+
+model UserAccount {
+  id                       String    @id @default(dbgenerated("gen_random_uuid()"))
+  //google user id, email, github user id, etc
+  account_id               String
+  //credentials,google,facebook...
+  provider_id              String
+  user_id                  String
+  access_token             String?
+  refresh_token            String?
+  id_token                 String?
+  access_token_expires_at  DateTime?
+  refresh_token_expires_at DateTime?
+  scope                    String?
+  password                 String?
+  created_at               DateTime  @default(now())
+  updated_at               DateTime  @updatedAt
+  user                     User      @relation("account:user", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([provider_id, account_id])
+  @@map("userAccount")
+}
+
+model UserPermissions {
+  id          String       @id @default(cuid())
+  user_id     String
+  module      UserModules
+  permissions Permission[]
+  added_at    DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+  user        User         @relation("user_permissions:user", fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model UserLogs {
+  id          String   @id @default(cuid())
+  user_id     String
+  description String
+  created_at  DateTime @default(now())
+  user        User     @relation("user_logs:user", fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expires_at DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([identifier, value])
+  @@map("verification")
+}
+
+model Customer {
+  id                 String              @unique @default(dbgenerated("gen_random_uuid()"))
+  uuid               String              @unique @default(cuid())
+  name               String
+  last_name          String
+  email              String              @unique
+  email_verified     Boolean             @default(false)
+  image              String?
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
+  sessions           CustomerSession[]   @relation("customer_session:customer")
+  accounts           CustomerAccount[]   @relation("customer_account:customer")
+  favorites          CustomerFavorites[] @relation("customer_favorites:customer")
+  customer_addresses CustomerAddresses[] @relation("customer_address:customer")
+  orders             Order[]             @relation("order:customer")
+}
+
+model CustomerSession {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  expires_at  DateTime
+  token       String   @unique
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  ip_address  String?
+  user_agent  String?
+  customer_id String
+  customer    Customer @relation("customer_session:customer", fields: [customer_id], references: [id], onDelete: Cascade)
+
+  @@map("customerSession")
+}
+
+model CustomerAccount {
+  id                       String    @id @default(dbgenerated("gen_random_uuid()"))
+  account_id               String
+  provider_id              String
+  customer_id              String
+  access_token             String?
+  refresh_token            String?
+  id_token                 String?
+  access_token_expires_at  DateTime?
+  refresh_token_expires_at DateTime?
+  scope                    String?
+  password                 String?
+  created_at               DateTime  @default(now())
+  updated_at               DateTime  @updatedAt
+  customer                 Customer  @relation("customer_account:customer", fields: [customer_id], references: [id], onDelete: Cascade)
+
+  @@unique([provider_id, account_id])
+  @@map("customerAccount")
+}
+
+model Category {
+  id            String          @id @default(dbgenerated("gen_random_uuid()"))
+  uuid          String          @unique @default(cuid())
+  name          String          @unique
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  subcategories Subcategories[] @relation("subcategories:category")
+  products      Product[]       @relation("product:category")
+}
+
+model Subcategories {
+  id                    String                 @id @default(dbgenerated("gen_random_uuid()"))
+  uuid                  String                 @unique @default(cuid())
+  category_id           String
+  description           String
+  level                 Int
+  father_id             String?
+  father_uuid           String?
+  created_at            DateTime               @default(now())
+  updated_at            DateTime               @updatedAt
+  category              Category               @relation("subcategories:category", fields: [category_id], references: [id])
+  parent                Subcategories?         @relation("parent:child", fields: [father_id], references: [id])
+  children              Subcategories[]        @relation("parent:child")
+  product_subcategories ProductSubcategories[] @relation("product_subcategories:subcategories")
+}
+
+model ProductSources {
+  id                 String   @id @default(cuid())
+  product_id         String
+  source_description String
+  source_url         String
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  product            Product  @relation("product_sources:product", fields: [product_id], references: [id])
+}
+
+model ProductSubcategories {
+  product_id     String
+  subcategory_id String
+  product        Product       @relation("product_subcategories:product", fields: [product_id], references: [id])
+  subcategories  Subcategories @relation("product_subcategories:subcategories", fields: [subcategory_id], references: [id])
+
+  @@id([product_id, subcategory_id])
+}
+
+model Product {
+  id                  String                 @id @default(dbgenerated("gen_random_uuid()"))
+  uuid                String                 @unique @default(cuid())
+  product_name        String                 @unique
+  category_id         String
+  description         String
+  specs               String
+  recommendations     String
+  applications        String
+  certifications_desc String
+  created_at          DateTime               @default(now())
+  updated_at          DateTime               @updatedAt
+  user_id             String
+  category            Category               @relation("product:category", fields: [category_id], references: [id])
+  user                User                   @relation("product:user", fields: [user_id], references: [id])
+  product_sources     ProductSources[]       @relation("product_sources:product")
+  subcategories       ProductSubcategories[] @relation("product_subcategories:product")
+  product_versions    ProductVersion[]       @relation("product_version:product")
+}
+
+model ProductVersion {
+  id                     String                 @id @default(dbgenerated("gen_random_uuid()"))
+  product_id             String
+  sku                    String                 @unique
+  code_bar               String?                @unique
+  color_line             String
+  color_name             String
+  color_code             String
+  status                 String
+  stock                  Int                    @default(0)
+  unit_price             Decimal                @db.Decimal(10, 2)
+  technical_sheet_url    String                 @unique @default("N/A")
+  created_at             DateTime               @default(now())
+  updated_at             DateTime               @updatedAt
+  main_version           Boolean                @default(false)
+  product                Product                @relation("product_version:product", fields: [product_id], references: [id])
+  customer_favorites     CustomerFavorites[]    @relation("customer_favorites:product_version")
+  order_items            OrderItemsDetails[]    @relation("order_items_details:product_version")
+  product_version_images ProductVersionImages[] @relation("product_version_images:product_version")
+}
+
+model ProductVersionImages {
+  id                 String         @id @default(cuid())
+  product_version_id String
+  image_url          String
+  main_image         Boolean        @default(false)
+  product_version    ProductVersion @relation("product_version_images:product_version", fields: [product_version_id], references: [id], onDelete: Cascade)
+}
+
+model CustomerFavorites {
+  id                 String         @id @default(cuid())
+  customer_id        String
+  product_version_id String
+  added_at           DateTime       @default(now())
+  customer           Customer       @relation("customer_favorites:customer", fields: [customer_id], references: [id])
+  product_version    ProductVersion @relation("customer_favorites:product_version", fields: [product_version_id], references: [id])
+}
+
+model CustomerAddresses {
+  id                     String   @id @default(cuid())
+  uuid                   String   @unique @default(cuid())
+  customer_id            String
+  recipient_name         String   @db.VarChar(40)
+  recipient_last_name    String   @db.VarChar(60)
+  country                String   @db.VarChar(40)
+  state                  String   @db.VarChar(40)
+  city                   String   @db.VarChar(50)
+  locality               String   @db.VarChar(50)
+  street_name            String   @db.VarChar(60)
+  neighborhood           String   @db.VarChar(60)
+  zip_code               String   @db.VarChar(10)
+  address_type           String   @db.VarChar(30)
+  floor                  String?  @default("N/A") @db.VarChar(3)
+  number                 String   @db.VarChar(10)
+  aditional_number       String?  @default("N/A") @db.VarChar(10)
+  references_or_comments String?  @default("N/A") @db.VarChar(80)
+  country_phone_code     String   @db.VarChar(4)
+  contact_number         String   @db.VarChar(15)
+  default_address        Boolean
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+  customer               Customer @relation("customer_address:customer", fields: [customer_id], references: [id], onDelete: Cascade)
+  orders                 Order[]  @relation("order:customer_addresses")
+}
+
+model Order {
+  id                   String                @id @default(cuid())
+  uuid                 String                @unique @default(dbgenerated("gen_random_uuid()"))
+  external_order_id    String                @unique
+  customer_id          String?
+  customer_address_id  String?
+  is_guest_order       Boolean               @default(false)
+  payment_provider     String
+  status               String
+  total_amount         Decimal               @db.Decimal(10, 2)
+  exchange             String
+  aditional_source_url String?
+  coupon_code          String?
+  created_at           DateTime              @default(now())
+  updated_at           DateTime              @updatedAt
+  customer_address     CustomerAddresses?    @relation("order:customer_addresses", fields: [customer_address_id], references: [id])
+  customer             Customer?             @relation("order:customer", fields: [customer_id], references: [id])
+  payment_details      OrderPaymentDetails[] @relation("order_payment_details:order")
+  order_items          OrderItemsDetails[]   @relation("order_items_details:order")
+  shipping             Shipping[]            @relation("shipping:order")
+}
+
+model OrderPaymentDetails {
+  id             Int      @id @default(autoincrement())
+  order_id       String
+  payment_class  String
+  payment_method String?
+  installments   Int?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  order          Order    @relation("order_payment_details:order", fields: [order_id], references: [id])
+}
+
+model OrderItemsDetails {
+  id                 Int            @id @default(autoincrement())
+  order_id           String
+  product_version_id String
+  quantity           Int
+  unit_price         Decimal        @db.Decimal(10, 2)
+  subtotal           Decimal        @db.Decimal(10, 2)
+  order              Order          @relation("order_items_details:order", fields: [order_id], references: [id])
+  product_version    ProductVersion @relation("order_items_details:product_version", fields: [product_version_id], references: [id])
+}
+
+model Shipping {
+  id               String   @id @default(cuid())
+  uuid             String   @unique @default(dbgenerated("gen_random_uuid()"))
+  order_id         String
+  shipping_status  String
+  tracking_number  String?
+  carrier          String?
+  shipping_amount  Decimal  @db.Decimal(10, 2)
+  insurance_amount Decimal  @db.Decimal(10, 2)
+  boxes_count      Int
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  order            Order    @relation("shipping:order", fields: [order_id], references: [id])
+}
+
+model Offers {
+  id                  String        @id @default(cuid())
+  uuid                String        @unique @default(cuid())
+  description         String
+  discount_percentage Int
+  type                OfferType
+  start_date          DateTime
+  end_date            DateTime
+  max_uses            Int?
+  current_uses        Int           @default(0)
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
+  offer_targets       OfferTarget[] @relation("offer_target:offers")
+}
+
+model OfferTarget {
+  id               String          @id @default(cuid())
+  offer_id         String
+  target_type      OfferTargetType
+  target_id        String?
+  target_uuid_path String[]        @default([])
+  offer            Offers          @relation("offer_target:offers", fields: [offer_id], references: [id])
+
+  @@unique([offer_id, target_type, target_id])
+  @@index([target_type, target_id])
+}
+
+enum UserModules {
+  USERS
+  CATEGORIES
+  SUBCATEGORIES
+  PRODUCTS
+  CUSTOMERS
+  ORDERS
+  E_COMMERCE_PAGE
+}
+
+// ENUMS
+enum UserRoles {
+  SUPERUSER
+  ADMIN
+  STAFF
+}
+
+enum Permission {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+}
+
+enum OfferType {
+  PERCENTAGE
+  COUPON
+}
+
+enum OfferTargetType {
+  PRODUCT // Aplica a un producto y TODAS sus versiones
+  CATEGORY // Aplica a toda una categoría
+  SUBCATEGORY // Aplica a productos con ruta de subcategorías
+  PRODUCT_VERSION // Aplica a una versión específica de producto
+}

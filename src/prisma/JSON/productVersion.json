@@ -1,0 +1,1237 @@
+[
+  {
+    "id": 1,
+    "product_id": 1,
+    "sku": "CAS2-AM1-005",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Azul",
+    "color_code": "#20269c",
+    "status": "DISPONIBLE",
+    "stock": 30,
+    "unit_price": "207.98",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CORAZA_AZUL_page-0001.jpg",
+    "created_at": "2025-09-26T16:50:56.372Z",
+    "updated_at": "2025-09-26T16:50:56.372Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO"
+    }
+  },
+  {
+    "id": 3,
+    "product_id": 1,
+    "sku": "CAS2-AM1-006",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Verde",
+    "color_code": "#00423b",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "207.98",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CORAZA_VERDE.jpg",
+    "created_at": "2025-11-03T18:52:56.621Z",
+    "updated_at": "2025-11-03T18:52:56.621Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO"
+    }
+  },
+  {
+    "id": 4,
+    "product_id": 1,
+    "sku": "CAS2-AM1-004",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Rojo",
+    "color_code": "#d82928",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "207.98",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CORAZA_ROJO_page-0001.jpg",
+    "created_at": "2025-11-03T18:53:56.388Z",
+    "updated_at": "2025-11-03T18:53:56.388Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO"
+    }
+  },
+  {
+    "id": 5,
+    "product_id": 2,
+    "sku": "CAS3-AI2-002",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Amarillo",
+    "color_code": "#f7bf00",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "141.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_INTERVALO_AMARILLO_G.jpg",
+    "created_at": "2025-11-03T19:05:46.738Z",
+    "updated_at": "2025-11-03T19:05:46.738Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G INTERVALO"
+    }
+  },
+  {
+    "id": 6,
+    "product_id": 2,
+    "sku": "CAS3-AI2-006",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Verde",
+    "color_code": "#196a65",
+    "status": "DISPONIBLE",
+    "stock": 15,
+    "unit_price": "141.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_INTERVALO_VERDE_G.jpg",
+    "created_at": "2025-11-03T19:07:19.218Z",
+    "updated_at": "2025-11-03T19:07:19.218Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G INTERVALO"
+    }
+  },
+  {
+    "id": 7,
+    "product_id": 2,
+    "sku": "CAS3-AI2-005",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Azul",
+    "color_code": "#092387",
+    "status": "DISPONIBLE",
+    "stock": 15,
+    "unit_price": "141.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_INTERVALO_AZUL.jpg",
+    "created_at": "2025-11-03T19:08:29.001Z",
+    "updated_at": "2025-11-03T19:08:29.001Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G INTERVALO"
+    }
+  },
+  {
+    "id": 8,
+    "product_id": 2,
+    "sku": "CAS3-AI2-001",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Blanco",
+    "color_code": "#e7e7f1",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "141.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_INTERVALO_BLANCO_G.jpg",
+    "created_at": "2025-11-03T19:09:36.747Z",
+    "updated_at": "2025-11-03T19:09:36.747Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G INTERVALO"
+    }
+  },
+  {
+    "id": 14,
+    "product_id": 2,
+    "sku": "CAS3-AI2-003",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Naranja",
+    "color_code": "#ff6620",
+    "status": "DISPONIBLE",
+    "stock": 24,
+    "unit_price": "141.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_INTERVALO_NARANJA_G.jpg",
+    "created_at": "2025-11-03T19:14:09.505Z",
+    "updated_at": "2025-11-03T19:14:09.505Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G INTERVALO"
+    }
+  },
+  {
+    "id": 15,
+    "product_id": 2,
+    "sku": "CAS3-AI2-004",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Rojo",
+    "color_code": "#f52a26",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "141.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_INTERVALO_ROJO_G.jpg",
+    "created_at": "2025-11-03T19:15:26.757Z",
+    "updated_at": "2025-11-03T19:15:26.757Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G INTERVALO"
+    }
+  },
+  {
+    "id": 33,
+    "product_id": 4,
+    "sku": "CAS2-AM1-001-CFE",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Blanco",
+    "color_code": "#dedede",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "264",
+    "technical_sheet_url": "https://drive.google.com/file/d/1--FYj9Jbw7uig-LK2Nq3iydaUwEtFSbs/view?usp=sharing",
+    "created_at": "2025-11-07T07:11:06.499Z",
+    "updated_at": "2025-11-07T07:11:06.499Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO CFE"
+    }
+  },
+  {
+    "id": 32,
+    "product_id": 4,
+    "sku": "CAS2-AM1-002-CFE",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Amarillo",
+    "color_code": "#feb801",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "264",
+    "technical_sheet_url": "https://drive.google.com/file/d/1gFSRRzw5Zgj3rnWTAI59qHd4BWAbh1ma/view?usp=sharing",
+    "created_at": "2025-11-07T07:08:15.118Z",
+    "updated_at": "2025-11-07T07:08:15.118Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO CFE"
+    }
+  },
+  {
+    "id": 36,
+    "product_id": 7,
+    "sku": "BAR-001-003",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Negro",
+    "color_code": "#000000",
+    "status": "DISPONIBLE",
+    "stock": 15,
+    "unit_price": "33.53",
+    "technical_sheet_url": "https://drive.google.com/file/d/1FnebISzJvqNY78pXKhlZHMNBtPRuI20R/view?usp=drive_link",
+    "created_at": "2025-11-07T07:33:48.912Z",
+    "updated_at": "2025-11-07T07:33:48.912Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA BARBOQUEJO PARA CASCO DE CUATRO PUNTOS"
+    }
+  },
+  {
+    "id": 37,
+    "product_id": 8,
+    "sku": "BAN-ANT-001",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Blanco",
+    "color_code": "#e6e6e6",
+    "status": "DISPONIBLE",
+    "stock": 15,
+    "unit_price": "55",
+    "technical_sheet_url": "https://drive.google.com/file/d/1SU8mF12U8GnaefjF5mJ8TWZkGaOYsTQb/view?usp=drive_link",
+    "created_at": "2025-11-07T07:38:09.933Z",
+    "updated_at": "2025-11-07T07:38:09.933Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA BARBOQUEJO BANDA ANTISUDOR PARA CASCOS"
+    }
+  },
+  {
+    "id": 38,
+    "product_id": 10,
+    "sku": "CAS-AM2-002",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Amarillo",
+    "color_code": "#f7be0f",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "166.91",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_MATRACA_AMARILLO_G.jpg",
+    "created_at": "2025-11-07T07:47:41.331Z",
+    "updated_at": "2025-11-07T07:47:41.331Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G MATRACA"
+    }
+  },
+  {
+    "id": 39,
+    "product_id": 10,
+    "sku": "CAS3-AM2-005",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Azul",
+    "color_code": "#112e94",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "166.91",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_MATRACA_AZUL_G.jpg",
+    "created_at": "2025-11-07T07:49:08.384Z",
+    "updated_at": "2025-11-07T07:49:08.384Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G MATRACA"
+    }
+  },
+  {
+    "id": 40,
+    "product_id": 10,
+    "sku": "CAS-AM2-001",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Blanco",
+    "color_code": "#d9dae3",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "166.91",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_MATRACA_BLANCO_G.jpg",
+    "created_at": "2025-11-07T07:50:30.706Z",
+    "updated_at": "2025-11-07T07:50:30.706Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G MATRACA"
+    }
+  },
+  {
+    "id": 41,
+    "product_id": 10,
+    "sku": "CAS3-AM2-003",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Naranja",
+    "color_code": "#ff631c",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "166.91",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_MATRACA_NARANJA_G.jpg",
+    "created_at": "2025-11-07T07:52:15.236Z",
+    "updated_at": "2025-11-07T07:52:15.236Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G MATRACA"
+    }
+  },
+  {
+    "id": 42,
+    "product_id": 10,
+    "sku": "CAS3-AM2-004",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Rojo",
+    "color_code": "#e61919",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "166.91",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_MATRACA_ROJO_G.jpg",
+    "created_at": "2025-11-07T07:53:32.995Z",
+    "updated_at": "2025-11-07T07:53:32.995Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G MATRACA"
+    }
+  },
+  {
+    "id": 43,
+    "product_id": 10,
+    "sku": "CAS3-AM2-006",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Verde",
+    "color_code": "#1c615f",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "166.91",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_HIT_MATRACA_VERDE_G.jpg",
+    "created_at": "2025-11-07T07:54:33.784Z",
+    "updated_at": "2025-11-07T07:54:33.784Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CACHUCHA HIT G MATRACA"
+    }
+  },
+  {
+    "id": 45,
+    "product_id": 11,
+    "sku": "CAS1-AI1-012",
+    "code_bar": null,
+    "color_line": "Linea Flourescente",
+    "color_name": "Amarillo fluorescente",
+    "color_code": "#deff00",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "160.15",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_AMARILLO_FLUO-copia.jpg",
+    "created_at": "2025-11-07T08:08:05.329Z",
+    "updated_at": "2025-11-07T08:08:05.329Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 46,
+    "product_id": 11,
+    "sku": "CAS1-AI1-005",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Azul Cielo",
+    "color_code": "#013fe0",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "155.54",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_AZULCIELO_BAS-E.jpg",
+    "created_at": "2025-11-07T08:10:47.815Z",
+    "updated_at": "2025-11-07T08:10:47.815Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 47,
+    "product_id": 11,
+    "sku": "CAS1-AI1-006",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Azul Marino",
+    "color_code": "#16328b",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "155.54",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_AZULMARINO_BAS-E.jpg",
+    "created_at": "2025-11-07T08:12:50.690Z",
+    "updated_at": "2025-11-07T08:12:50.690Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 48,
+    "product_id": 11,
+    "sku": "CAS1-AI1-008",
+    "code_bar": null,
+    "color_line": "Linea Especial",
+    "color_name": "Beige",
+    "color_code": "#e7e1d0",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "160.15",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_BEIGE_ESP-copia.jpg",
+    "created_at": "2025-11-07T08:14:37.888Z",
+    "updated_at": "2025-11-07T08:14:37.888Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 49,
+    "product_id": 11,
+    "sku": "CAS1-AI1-001",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Blanco",
+    "color_code": "#dedfe3",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "155.54",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_BLANCO_BAS-copia.jpg",
+    "created_at": "2025-11-07T08:16:07.554Z",
+    "updated_at": "2025-11-07T08:16:07.554Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 50,
+    "product_id": 11,
+    "sku": "CAS1-AI1-010",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Gris",
+    "color_code": "#bdbdbd",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "160.15",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_GRIS_ESP-copia-1.jpg",
+    "created_at": "2025-11-07T08:18:46.412Z",
+    "updated_at": "2025-11-07T08:18:46.412Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 51,
+    "product_id": 11,
+    "sku": "CAS1-AI1-003",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Naranja",
+    "color_code": "#f64a0a",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "155.54",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_NARANJA_BAS-copia.jpg",
+    "created_at": "2025-11-07T08:20:41.243Z",
+    "updated_at": "2025-11-07T08:20:41.243Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 52,
+    "product_id": 11,
+    "sku": "CAS1-AI1-014",
+    "code_bar": null,
+    "color_line": "Linea Flourescente",
+    "color_name": "Naranja Fluorescente",
+    "color_code": "#fd3a03",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "160.15",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_NARANJA_FLUO-copia.jpg",
+    "created_at": "2025-11-07T08:24:46.214Z",
+    "updated_at": "2025-11-07T08:24:46.214Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 53,
+    "product_id": 11,
+    "sku": "CAS1-AI1-011",
+    "code_bar": null,
+    "color_line": "Linea Especial",
+    "color_name": "Negro",
+    "color_code": "#000000",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "160.15",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_NEGRO_ESP-copia.jpg",
+    "created_at": "2025-11-07T08:26:21.837Z",
+    "updated_at": "2025-11-07T08:26:21.837Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 54,
+    "product_id": 11,
+    "sku": "CAS1-AI1-004",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Rojo",
+    "color_code": "#ba2e36",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "155.54",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_ROJO_BAS-E.jpg",
+    "created_at": "2025-11-07T08:27:51.206Z",
+    "updated_at": "2025-11-07T08:27:51.206Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 55,
+    "product_id": 11,
+    "sku": "CAS1-AI1-009",
+    "code_bar": null,
+    "color_line": "Linea Especial",
+    "color_name": "Rosa",
+    "color_code": "#e13697",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "167.92",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/FICHA_CASCO_PLAGOSUR_ROSA_ESP.jpg",
+    "created_at": "2025-11-07T08:29:54.386Z",
+    "updated_at": "2025-11-07T08:29:54.386Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 56,
+    "product_id": 11,
+    "sku": "CAS1-AI1-007",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Verde",
+    "color_code": "#11524b",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "155.54",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_VERDE_BAS-E.jpg",
+    "created_at": "2025-11-07T08:32:02.514Z",
+    "updated_at": "2025-11-07T08:32:02.514Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 57,
+    "product_id": 11,
+    "sku": "CAS1-AI1-013",
+    "code_bar": null,
+    "color_line": "Linea Flourescente",
+    "color_name": "Verde Fluorescente",
+    "color_code": "#02f91d",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "160.15",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_VERDE_FLUO-copia.jpg",
+    "created_at": "2025-11-07T08:33:44.039Z",
+    "updated_at": "2025-11-07T08:33:44.039Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 2,
+    "product_id": 1,
+    "sku": "CAS2-AM1-002",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Amarillo",
+    "color_code": "#f2a609",
+    "status": "DISPONIBLE",
+    "stock": 22,
+    "unit_price": "207.98",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CORAZA_AMARILLO.jpg",
+    "created_at": "2025-09-29T19:07:53.562Z",
+    "updated_at": "2025-11-12T20:51:48.988Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO"
+    }
+  },
+  {
+    "id": 35,
+    "product_id": 6,
+    "sku": "BAR-001-002",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Negro",
+    "color_code": "#000000",
+    "status": "DISPONIBLE",
+    "stock": 13,
+    "unit_price": "33.53",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/FICHA_BARBOQUEJO_CM.jpg",
+    "created_at": "2025-11-07T07:29:25.467Z",
+    "updated_at": "2025-12-08T20:20:01.860Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA BARBOQUEJO PARA CASCOS CON MENTONERA"
+    }
+  },
+  {
+    "id": 44,
+    "product_id": 11,
+    "sku": "CAS1-AI1-002",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Amarillo",
+    "color_code": "#ff9e02",
+    "status": "DISPONIBLE",
+    "stock": 15,
+    "unit_price": "155.54",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_AMARILLO_BAS-E.jpg",
+    "created_at": "2025-11-07T08:05:49.076Z",
+    "updated_at": "2025-12-08T21:01:45.588Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E"
+    }
+  },
+  {
+    "id": 58,
+    "product_id": 12,
+    "sku": "CAS1-AI2-002",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Amarillo",
+    "color_code": "#ffa200",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "147.26",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_AMARILLO_BAS-G.jpg",
+    "created_at": "2025-11-07T16:04:41.529Z",
+    "updated_at": "2025-11-07T16:04:41.529Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G"
+    }
+  },
+  {
+    "id": 59,
+    "product_id": 12,
+    "sku": "CAS1-AI2-005",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Azul Cielo",
+    "color_code": "#013fe3",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "147.26",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_AZULCIELO_BAS-G.jpg",
+    "created_at": "2025-11-07T16:06:28.727Z",
+    "updated_at": "2025-11-07T16:06:28.727Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G"
+    }
+  },
+  {
+    "id": 60,
+    "product_id": 12,
+    "sku": "CAS1-AI2-006",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Azul Marino",
+    "color_code": "#0f2d88",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "147.26",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_AZULMARINO_BAS-G.jpg",
+    "created_at": "2025-11-07T16:07:44.563Z",
+    "updated_at": "2025-11-07T16:07:44.563Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G"
+    }
+  },
+  {
+    "id": 61,
+    "product_id": 12,
+    "sku": "CAS1-AI2-001",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Blanco",
+    "color_code": "#e1e3e6",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "147.26",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_BLANCO_BAS-copia-1.jpg",
+    "created_at": "2025-11-07T16:09:27.669Z",
+    "updated_at": "2025-11-07T16:09:27.669Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G"
+    }
+  },
+  {
+    "id": 62,
+    "product_id": 12,
+    "sku": "CAS1-AI2-003",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Naranja",
+    "color_code": "#fa4f12",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "147.26",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_NARANJA_BAS-G.jpg",
+    "created_at": "2025-11-07T16:10:55.852Z",
+    "updated_at": "2025-11-07T16:10:55.852Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G"
+    }
+  },
+  {
+    "id": 63,
+    "product_id": 12,
+    "sku": "CAS1-AI2-004",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Rojo",
+    "color_code": "#bc292d",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "147.26",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_ROJO_BAS-G.jpg",
+    "created_at": "2025-11-07T16:12:14.612Z",
+    "updated_at": "2025-11-07T16:12:14.612Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G"
+    }
+  },
+  {
+    "id": 64,
+    "product_id": 12,
+    "sku": "CAS1-AI2-007",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Verde",
+    "color_code": "#17544e",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "147.26",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_G.jpg",
+    "created_at": "2025-11-07T16:13:38.155Z",
+    "updated_at": "2025-11-07T16:13:38.155Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE G"
+    }
+  },
+  {
+    "id": 65,
+    "product_id": 13,
+    "sku": "CAS1-AM1-002",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Amarillo",
+    "color_code": "#ffa000",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "175.85",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_AMARILLO_BAS-copia.jpg",
+    "created_at": "2025-11-07T16:35:35.367Z",
+    "updated_at": "2025-11-07T16:35:35.367Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 67,
+    "product_id": 13,
+    "sku": "CAS1-AM1-005",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Azul Cielo",
+    "color_code": "#0151db",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "175.85",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_AZUL_CIELO_BAS-copia.jpg",
+    "created_at": "2025-11-07T16:38:08.326Z",
+    "updated_at": "2025-11-07T16:38:08.326Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 68,
+    "product_id": 13,
+    "sku": "CAS1-AM1-006",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Azul Marino",
+    "color_code": "#0c2086",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "175.85",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_AZUL_MARINO_BAS-copia.jpg",
+    "created_at": "2025-11-07T16:39:46.809Z",
+    "updated_at": "2025-11-07T16:39:46.809Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 69,
+    "product_id": 13,
+    "sku": "CAS1-AM1-008",
+    "code_bar": null,
+    "color_line": "Linea Especial",
+    "color_name": "Beige",
+    "color_code": "#e3d2ba",
+    "status": "DISPONIBLE",
+    "stock": 15,
+    "unit_price": "190.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_BEIGE_ESP-copia-1.jpg",
+    "created_at": "2025-11-07T16:41:08.036Z",
+    "updated_at": "2025-11-07T16:41:08.036Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 70,
+    "product_id": 13,
+    "sku": "CAS1-AM1-001",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Blanco",
+    "color_code": "#e4e6e9",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "175.85",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_BLANCO_BAS-copia-2.jpg",
+    "created_at": "2025-11-07T16:42:29.545Z",
+    "updated_at": "2025-11-07T16:42:29.545Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 71,
+    "product_id": 13,
+    "sku": "CAS1-AM1-010",
+    "code_bar": null,
+    "color_line": "Linea Especial",
+    "color_name": "Gris",
+    "color_code": "#61676f",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "190.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_GRIS_ESP.jpg",
+    "created_at": "2025-11-07T16:44:10.412Z",
+    "updated_at": "2025-11-07T16:44:10.412Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 72,
+    "product_id": 13,
+    "sku": "CAS1-AM1-003",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Naranja",
+    "color_code": "#f94d0d",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "175.85",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_NARANJA_BAS-MATRA.jpg",
+    "created_at": "2025-11-07T16:45:20.708Z",
+    "updated_at": "2025-11-07T16:45:20.708Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 73,
+    "product_id": 13,
+    "sku": "CAS1-AM1-014",
+    "code_bar": null,
+    "color_line": "Linea Flourescente",
+    "color_name": "Naranja Fluorescente",
+    "color_code": "#ff3603",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "190.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_NARANJA_FLUO-copia-1.jpg",
+    "created_at": "2025-11-07T16:46:57.526Z",
+    "updated_at": "2025-11-07T16:46:57.526Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 74,
+    "product_id": 13,
+    "sku": "CAS1-AM1-011",
+    "code_bar": null,
+    "color_line": "Linea Especial",
+    "color_name": "Negro",
+    "color_code": "#000000",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "190.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_NEGRO_ESP-copia-1.jpg",
+    "created_at": "2025-11-07T16:48:09.006Z",
+    "updated_at": "2025-11-07T16:48:09.006Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 75,
+    "product_id": 13,
+    "sku": "CAS1-AM1-004",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Rojo",
+    "color_code": "#bd3031",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "175.85",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_ROJO_BAS-MATRA.jpg",
+    "created_at": "2025-11-07T16:49:07.320Z",
+    "updated_at": "2025-11-07T16:49:07.320Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 76,
+    "product_id": 13,
+    "sku": "CAS1-AM1-009",
+    "code_bar": null,
+    "color_line": "Linea Especial",
+    "color_name": "Rosa",
+    "color_code": "#e53c9a",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "208.49",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/FICHA_CASCO_PLAGOSUR_ROSA_ESP-copia.jpg",
+    "created_at": "2025-11-07T16:50:17.098Z",
+    "updated_at": "2025-11-07T16:50:17.098Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 77,
+    "product_id": 13,
+    "sku": "CAS1-AM1-007",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Verde",
+    "color_code": "#13544e",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "175.85",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_VERDE_BAS.jpg",
+    "created_at": "2025-11-07T16:51:38.775Z",
+    "updated_at": "2025-11-07T16:51:38.775Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 78,
+    "product_id": 13,
+    "sku": "CAS1-AM1-013",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Verde Fluorescente",
+    "color_code": "#00f81c",
+    "status": "DISPONIBLE",
+    "stock": 15,
+    "unit_price": "190.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_VERDE_FLUO.jpg",
+    "created_at": "2025-11-07T16:52:43.759Z",
+    "updated_at": "2025-11-07T16:52:43.759Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 82,
+    "product_id": 16,
+    "sku": "LEN3-003-002",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Bicolor",
+    "color_code": "#22347d",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "58.55",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/FICHA_LENTES_ARTICO_TRANSPARENTE.jpg",
+    "created_at": "2025-11-07T17:11:01.039Z",
+    "updated_at": "2025-11-07T17:11:01.039Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA LENTE DE SEGURIDAD TIPO ARTICO DE MICA TRANSPARENTE"
+    }
+  },
+  {
+    "id": 83,
+    "product_id": 16,
+    "sku": "LEN3-001-002",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Negro",
+    "color_code": "#000000",
+    "status": "DISPONIBLE",
+    "stock": 15,
+    "unit_price": "58.55",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2023/11/FICHA_LENTES_MEDICAL_TRANSPARENTE.jpg",
+    "created_at": "2025-11-07T17:12:04.893Z",
+    "updated_at": "2025-11-07T17:12:04.893Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA LENTE DE SEGURIDAD TIPO ARTICO DE MICA TRANSPARENTE"
+    }
+  },
+  {
+    "id": 85,
+    "product_id": 18,
+    "sku": "SUS-AI1-001",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Negro",
+    "color_code": "#000000",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "59.52",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/SUSPENSION-AJUSTE-INTERVALOS-6P.jpg",
+    "created_at": "2025-11-07T17:19:20.550Z",
+    "updated_at": "2025-11-07T17:19:20.550Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE INTERVALO DE SEIS PUNTOS"
+    }
+  },
+  {
+    "id": 86,
+    "product_id": 19,
+    "sku": "SUS-AI2-001",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Negro",
+    "color_code": "#000000",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "50.96",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/SUSPENSION-AJUSTE-INTERVALOS-4P.jpg",
+    "created_at": "2025-11-07T17:22:32.198Z",
+    "updated_at": "2025-11-07T17:22:32.198Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCOS DE AJUSTE DE INTERVALO DE CUATRO PUNTOS"
+    }
+  },
+  {
+    "id": 87,
+    "product_id": 20,
+    "sku": "SUS-AM2-001",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Negro",
+    "color_code": "#000000",
+    "status": "DISPONIBLE",
+    "stock": 25,
+    "unit_price": "84.1",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/SUSPENSION-AJUSTE-MATRACA-4P.jpg",
+    "created_at": "2025-11-07T17:31:43.056Z",
+    "updated_at": "2025-11-07T17:31:43.056Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE MATRACA DE CUATRO PUNTOS"
+    }
+  },
+  {
+    "id": 88,
+    "product_id": 21,
+    "sku": "SUS-AM1-001",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Negro",
+    "color_code": "#000000",
+    "status": "DISPONIBLE",
+    "stock": 20,
+    "unit_price": "94.42",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/06/SUSPENSION-AJUSTE-MATRACA-6P.jpg",
+    "created_at": "2025-11-07T17:35:23.398Z",
+    "updated_at": "2025-11-07T17:35:23.398Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA SUSPENSION PARA CASCO DE AJUSTE DE MATRACA DE SEIS PUNTOS"
+    }
+  },
+  {
+    "id": 84,
+    "product_id": 17,
+    "sku": "LEN3-001-003",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Negro",
+    "color_code": "#000000",
+    "status": "DISPONIBLE",
+    "stock": 4,
+    "unit_price": "55.87",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2023/11/FICHA_LENTES_MEDICAL_POLARIZADO.jpg",
+    "created_at": "2025-11-07T17:14:05.478Z",
+    "updated_at": "2025-12-08T21:01:45.601Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA LENTE DE SEGURIDAD TIPO MEDICAL DE MICA POLARIZADA"
+    }
+  },
+  {
+    "id": 66,
+    "product_id": 13,
+    "sku": "CAS1-AM1-012",
+    "code_bar": null,
+    "color_line": "Linea Flourescente",
+    "color_name": "Amarillo Fluorescente",
+    "color_code": "#c9f200",
+    "status": "DISPONIBLE",
+    "stock": 19,
+    "unit_price": "190.11",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/07/FICHA_CASCO_PLAGOSUR_AMARILLO_FLUO-copia-1.jpg",
+    "created_at": "2025-11-07T16:37:05.889Z",
+    "updated_at": "2025-11-14T18:55:14.961Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C MATRACA CLASE E DIELECTRICO"
+    }
+  },
+  {
+    "id": 79,
+    "product_id": 14,
+    "sku": "LEN3-003-005",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Bicolor",
+    "color_code": "#0017b6",
+    "status": "DISPONIBLE",
+    "stock": 18,
+    "unit_price": "58.55",
+    "technical_sheet_url": "https://igaproductos.com.mx/wp-content/uploads/2024/01/FICHA_LENTES_ARTICO_POLARIZADO.jpg",
+    "created_at": "2025-11-07T17:03:04.416Z",
+    "updated_at": "2025-11-13T18:24:14.577Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA LENTE DE SEGURIDAD TIPO ARTICO DE MICA POLARIZADA"
+    }
+  },
+  {
+    "id": 34,
+    "product_id": 5,
+    "sku": "BAR-001-001",
+    "code_bar": null,
+    "color_line": "Linea Basica",
+    "color_name": "Negro",
+    "color_code": "#000000",
+    "status": "DISPONIBLE",
+    "stock": 1,
+    "unit_price": "26.24",
+    "technical_sheet_url": "https://drive.google.com/file/d/1McXN9nOAJkYD3shgRH09mLSIHIP0L0WR/view?usp=sharing",
+    "created_at": "2025-11-07T07:25:44.656Z",
+    "updated_at": "2025-12-08T21:01:45.611Z",
+    "main_version": true,
+    "product": {
+      "product_name": "IGA BARBOQUEJO PARA CASCO SIN MENTONERA"
+    }
+  }
+]
