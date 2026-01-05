@@ -1,4 +1,55 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Post, Query, Req, Headers, Get, Param } from '@nestjs/common';
+import { PaymentService } from './payment.service';
+import { Request as ExpressRequest } from 'express';
+import { CacheService } from 'src/cache/cache.service';
+import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 @Controller('payment')
-export class PaymentController {}
+export class PaymentController {
+    constructor(
+        private readonly paymentService: PaymentService,
+        private readonly cacheService: CacheService
+    ) { };
+
+
+    @Post("mercadopago/webhook")
+    async handleMercadoPagoWebhook(
+        @Req() request: ExpressRequest,
+        @Query("data.id") dataId: string,
+        @Query('type') type: string,
+        @Headers('x-signature') xSignature: string,
+        @Headers('x-request-id') xRequestId: string,
+    ) {
+
+        if (type !== "payment") return { success: true, message: "Ignored non-payment notification" };
+        // Firma del webhook
+        // if(xSignature && xRequestId) this.paymentService.verifyWebhookSignature({xSignature,xRequestId,dataId});
+        await this.cacheService.setData<OrderProcessingStatus>({
+            entity: "payment:status",
+            query: { externalOrderId: dataId },
+            data: {
+                status: "processing",
+                updatedAt: new Date().toISOString(),
+            },
+            aditionalOptions: { ttlMilliseconds: 1000 * 60 * 60 }
+        });
+
+        await this.paymentService.queuePaymentProcessing({ paymentId: dataId });
+
+        return { success: true };
+    };
+
+    @Get('status/:externalOrderId')
+    @ApiOperation({ summary: "Obtiene el estado de procesamiento de un pago por ID externo" })
+    @ApiParam({ name: 'externalOrderId', description: 'ID del pago en MercadoPago' })
+    @ApiResponse({ status: 200, description: "Estado del procesamiento", type: Object })
+    async getPaymentStatus(
+        @Param('externalOrderId') externalOrderId: string
+    ): Promise<OrderProcessingStatus> {
+        const status = await this.paymentService.getOrderProcessingStatus({ externalOrderId });
+        return status || {
+            status: 'pending',
+            updatedAt: new Date().toISOString(),
+        };
+    }
+};

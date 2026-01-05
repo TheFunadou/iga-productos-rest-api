@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
+import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { ArrayNotEmpty, IsArray, IsDate, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 import { SafeCategory } from "src/categories/categories.dto";
@@ -61,6 +61,10 @@ class Product {
 
 export class SafeProduct extends OmitType(Product, ["id", "category_id", "user_id"] as const) { };
 export class ProductAttributes extends OmitType(Product, ["id", "category_id", "created_at", "updated_at", "user_id", "uuid"] as const) { };
+export class ProductTinyDetail extends PickType(Product, ["product_name"] as const) {
+    @ApiProperty({ description: "Subcategorias del producto" })
+    subcategories: string[];
+};
 
 export class CreateProductDTO extends ProductAttributes {
     @ApiProperty({ description: "UUID de la categoria del producto", type: String })

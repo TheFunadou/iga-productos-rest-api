@@ -34,6 +34,12 @@ export class OrderRequestGuestDTO {
     @ValidateNested()
     @Type(() => GuestAddressDTO)
     address: GuestAddressDTO;
-}
+};
+
+export class GuestOrderData {
+    customer: CustomerAttributes;
+    address: GuestAddressDTO;
+    createdAt: Date | string;
+};
 
 

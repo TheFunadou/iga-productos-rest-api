@@ -23,13 +23,8 @@ import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 15,
-    }]),
+    ConfigModule.forRoot({ isGlobal: true, }),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 15, }]),
     BullModule.forRoot({ connection: redisConfig }),
     PrismaModule,
     UserModule,

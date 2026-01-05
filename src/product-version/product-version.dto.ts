@@ -84,6 +84,7 @@ class ProductVersion {
 export class SafeProductVersion extends OmitType(ProductVersion, ["id", "product_id"] as const) { };
 export class ProductVersionAttributes extends OmitType(ProductVersion, ["id", "product_id", "created_at", "updated_at"] as const) { };
 export class SafeProductVersionAttributes extends OmitType(ProductVersion, ["id", "product_id", "created_at", "updated_at", "main_version"] as const) { };
+export class TinyProductVersionAttributes extends PickType(ProductVersion, ["sku", "color_code", "color_name", "color_code"] as const) { };
 
 export class ProductVersionImages {
     @ApiProperty({ example: 1, description: "ID del recurso" })

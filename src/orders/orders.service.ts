@@ -2,11 +2,10 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaymentOrderDTO } from './payment/payment.dto';
-import { OrderRequestDTO } from './order.dto';
+import { GuestOrderData, OrderRequestDTO, OrderRequestGuestDTO } from './order.dto';
 import { ProductVersionFindService } from 'src/product-version/product-version.find.service';
 import { OrderUtilsService } from './order.utils.service';
 import { MercadoPagoConfig, Preference as MercadoPagoPreference, Preference } from "mercadopago";
-import { CreateCustomerAddressDTO as GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
 
 @Injectable()
 export class OrdersService {
@@ -38,16 +37,16 @@ export class OrdersService {
             const items = this.orderUtilsService.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
             const vigency = this.orderUtilsService.buildMercadoPagoPaymentVigency();
             const shoppingCart = this.orderUtilsService.buildShoppingCart({ productVersionCards: itemCards, orderRequest: args.orderRequest });
-            const orderId = crypto.randomUUID().toString();
+            const orderUUID = crypto.randomUUID().toString();
             const body = this.orderUtilsService.buildMercadoPagoPreferenceBodyAuthCustomer({
-                internalOrderId: orderId, items, shoppingCart, vigency, customer, customerAddress,
+                internalOrderId: orderUUID, items, shoppingCart, vigency, customer, customerAddress,
             });
             const preference = await this.mercadoPagoPreference.create(body);
             const totalAmount = items.reduce((acc, item) => acc + item.unit_price * item.quantity, 0);
             if (!preference.id) throw new BadRequestException("Error al crear la orden de pago");
-            await tx.order.create({
+            const order = await tx.order.create({
                 data: {
-                    uuid: orderId,
+                    uuid: orderUUID,
                     external_order_id: preference.id,
                     customer_address_id: customerAddress.id,
                     customer_id: customer.id,
@@ -61,7 +60,7 @@ export class OrdersService {
             for (const item of items) {
                 await tx.orderItemsDetails.create({
                     data: {
-                        order_id: orderId,
+                        order_id: order.id,
                         product_version_id: item.id,
                         quantity: item.quantity,
                         unit_price: item.unit_price,
@@ -70,7 +69,7 @@ export class OrdersService {
                 }).catch((error) => { throw new BadRequestException("Error al crear la orden de pago") });
             };
             return {
-                folio: orderId,
+                folio: orderUUID,
                 items: shoppingCart,
                 order_id: preference.id,
                 receiver_address: customerAddress,
@@ -80,6 +79,61 @@ export class OrdersService {
         });
     };
 
-    async createMercadoPagoOrderGuest(args:)
+    async createMercadoPagoOrderGuest(args: { orderRequest: OrderRequestGuestDTO }): Promise<PaymentOrderDTO> {
+        return await this.prisma.$transaction(async (tx) => {
+            const itemsSKUList = args.orderRequest.shopping_cart.map((item) => item.product);
+            const itemCards = await this.productVersionFindService.searchCardsBySKUList({ tx, skuList: itemsSKUList });
+            const items = this.orderUtilsService.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
+            const vigency = this.orderUtilsService.buildMercadoPagoPaymentVigency();
+            const shoppingCart = this.orderUtilsService.buildShoppingCart({ productVersionCards: itemCards, orderRequest: args.orderRequest });
+            const orderUUID = crypto.randomUUID().toString();
+            const body = this.orderUtilsService.buildMercadoPagoPreferenceBodyAuthCustomer({
+                internalOrderId: orderUUID, items, shoppingCart, vigency, customer: args.orderRequest.guest, customerAddress: args.orderRequest.address,
+            });
+            const preference = await this.mercadoPagoPreference.create(body);
+            const totalAmount = items.reduce((acc, item) => acc + item.unit_price * item.quantity, 0);
+            if (!preference.id) throw new BadRequestException("Error al crear la orden de pago");
+            const order = await tx.order.create({
+                data: {
+                    uuid: orderUUID,
+                    external_order_id: preference.id,
+                    payment_provider: "mercado_pago",
+                    is_guest_order: true,
+                    status: "in_process",
+                    total_amount: totalAmount,
+                    exchange: "MXN",
+                },
+            }).catch((error) => { throw new BadRequestException("Error al crear la orden de pago") });
+
+            await this.cacheService.setData<GuestOrderData>({
+                entity: "order:customer_data",
+                query: { orderUUID },
+                data: {
+                    customer: args.orderRequest.guest,
+                    address: args.orderRequest.address,
+                    createdAt: new Date().toISOString(),
+                }
+            }).catch((error) => { throw new BadRequestException("Error al crear la orden de pago") });
+
+            for (const item of items) {
+                await tx.orderItemsDetails.create({
+                    data: {
+                        order_id: order.id,
+                        product_version_id: item.id,
+                        quantity: item.quantity,
+                        unit_price: item.unit_price,
+                        subtotal: item.unit_price * item.quantity,
+                    },
+                }).catch((error) => { throw new BadRequestException("Error al crear la orden de pago") });
+            };
+            return {
+                folio: orderUUID,
+                items: shoppingCart,
+                order_id: preference.id,
+                receiver_address: args.orderRequest.address,
+                payment_method: "mercado_pago",
+            };
+        });
+    };
 
 };
