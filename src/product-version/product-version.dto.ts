@@ -204,10 +204,13 @@ export class ProductVersionCard extends OmitType(ProductVersionDetail, ["product
 
 export class GetProductVersionCards {
     @ApiProperty({ description: "Arreglo con las tarjetas de versiones de productos" })
-    product_version_cards: ProductVersionCard[];
+    data: ProductVersionCard[];
 
     @ApiProperty({ description: "Total de registros encontrados en la base de datos" })
-    total_records: number;
+    totalRecords: number;
+
+    @ApiProperty({ description: "Total de paginas" })
+    totalPages: number;
 };
 
 export class GetProductVersionFavCards extends OmitType(ProductVersionCard, ["isFavorite"] as const) {

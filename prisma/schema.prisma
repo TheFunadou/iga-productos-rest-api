@@ -345,7 +345,9 @@ model Offers {
   uuid                String        @unique @default(cuid())
   description         String
   discount_percentage Int
+  code                String?
   type                OfferType
+  status              OfferStatus
   start_date          DateTime
   end_date            DateTime
   max_uses            Int?
@@ -361,7 +363,7 @@ model OfferTarget {
   target_type      OfferTargetType
   target_id        String?
   target_uuid_path String[]        @default([])
-  offer            Offers          @relation("offer_target:offers", fields: [offer_id], references: [id])
+  offer            Offers          @relation("offer_target:offers", fields: [offer_id], references: [id], onDelete: Cascade)
 
   @@unique([offer_id, target_type, target_id])
   @@index([target_type, target_id])
@@ -375,6 +377,8 @@ enum UserModules {
   CUSTOMERS
   ORDERS
   E_COMMERCE_PAGE
+  OFFERS
+  E_COMMERCE_METRICS
 }
 
 // ENUMS
@@ -401,4 +405,12 @@ enum OfferTargetType {
   CATEGORY // Aplica a toda una categoría
   SUBCATEGORY // Aplica a productos con ruta de subcategorías
   PRODUCT_VERSION // Aplica a una versión específica de producto
+}
+
+enum OfferStatus {
+  ACTIVE
+  PAUSED
+  ENDED
+  CANCELLED
+  PENDING
 }

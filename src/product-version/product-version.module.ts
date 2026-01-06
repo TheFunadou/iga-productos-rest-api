@@ -5,11 +5,12 @@ import { CacheModule } from 'src/cache/cache.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { ProductVersionUtilsService } from './product-version.utils.service';
 import { ProductVersionFindService } from './product-version.find.service';
+import { OffersModule } from 'src/offers/offers.module';
 
 @Module({
   controllers: [ProductVersionController],
   providers: [ProductVersionService, ProductVersionUtilsService, ProductVersionFindService],
-  imports: [PrismaModule, CacheModule],
+  imports: [PrismaModule, CacheModule, OffersModule],
   exports: [ProductVersionFindService, ProductVersionService]
 })
 export class ProductVersionModule { }

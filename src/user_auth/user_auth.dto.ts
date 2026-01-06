@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
 
 export type Permissions = "CREATE" | "READ" | "UPDATE" | "DELETE";
-export type Modules = "USERS" | "CATEGORIES" | "SUBCATEGORIES" | "PRODUCTS" | "CUSTOMERS" | "ORDERS" | "E_COMMERCE_PAGE";
+export type Modules = "USERS" | "CATEGORIES" | "SUBCATEGORIES" | "PRODUCTS" | "CUSTOMERS" | "ORDERS" | "E_COMMERCE_PAGE" | "OFFERS" | "E_COMMERCE_METRICS";
 
 /**
  * @description Enumeracion de modulos para los permisos de los usuarios
@@ -16,6 +16,8 @@ export interface UserPermissions {
     CUSTOMERS?: Permissions[];
     ORDERS?: Permissions[];
     E_COMMERCE_PAGE?: Permissions[];
+    OFFERS?: Permissions[];
+    E_COMMERCE_METRICS?: Permissions[];
 };
 
 

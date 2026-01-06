@@ -3,13 +3,15 @@ import { CacheService } from "src/cache/cache.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import { ProductVersionUtilsService } from "./product-version.utils.service";
 import { GetProductVersionCards, GetProductVersionCardsRandomOptionsDTO, ProductVersionCard, ProductVersionCardsFiltersDTO, ProductVersionDetail } from "./product-version.dto";
+import { OffersUtilsService } from "src/offers/offers.utils.service";
 
 @Injectable()
 export class ProductVersionFindService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cacheService: CacheService,
-        private readonly utilsService: ProductVersionUtilsService
+        private readonly utilsService: ProductVersionUtilsService,
+        private readonly offersUtilsService: OffersUtilsService
     ) { };
 
     async searchCards(args: { filters: ProductVersionCardsFiltersDTO, customerUUID?: string, entity?: string }): Promise<GetProductVersionCards | null> {
@@ -25,15 +27,26 @@ export class ProductVersionFindService {
                     staleTimeMilliseconds: 1000 * 60 * 13
                 },
                 fallback: async () => {
-                    const results = await tx.productVersion.findMany({
+                    const results: any = await tx.productVersion.findMany({
                         ...builtFilters.paginationFilter,
                         ...builtFilters.productVersionFilters,
                         ...builtFilters.priceFilters,
                         select: builtFilters.select
                     });
+
+                    const productVersionsData = results.map(r => ({
+                        versionId: r.id,
+                        productId: r.product.id,
+                        categoryId: r.product.category_id,
+                        subcategoryIds: r.product.subcategories.map(s => s.subcategories.uuid)
+                    }));
+
+                    const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData);
+
                     return {
-                        product_version_cards: this.utilsService.formatCards(results),
-                        total_records: builtFilters.totalRows
+                        data: this.utilsService.formatCards({ data: results, discountsMap }),
+                        totalRecords: builtFilters.totalRows,
+                        totalPages: Math.ceil(builtFilters.totalRows / builtFilters.paginationFilter.take)
                     }
                 }
             })

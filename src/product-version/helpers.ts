@@ -1,4 +1,5 @@
 export const PRODUCT_VERSION_CARD_BASE_SELECT = {
+    id: true,
     unit_price: true,
     sku: true,
     color_line: true,
@@ -7,14 +8,16 @@ export const PRODUCT_VERSION_CARD_BASE_SELECT = {
     stock: true,
     product_version_images: {
         where: { main_image: true },
-        omit: { product_version_id: true, id: true },
+        select: { main_image: true, image_url: true },
         orderBy: { main_image: "desc" as const }
     },
     product: {
         select: {
+            id: true,
+            category_id: true,
             product_name: true,
             category: { select: { name: true } },
-            subcategories: { select: { subcategories: { select: { description: true } }, }, }
+            subcategories: { select: { subcategories: { select: { uuid: true, description: true } }, }, }
         }
     }
 };

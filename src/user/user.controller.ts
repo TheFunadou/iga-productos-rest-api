@@ -14,7 +14,7 @@ export class UserController {
 
     @Post()
     @ApiOperation({ summary: "Crear usuario" })
-    @ApiResponse({ status: 201, description: "Usuario creado exitosamente" })
+    @ApiResponse({ status: 200, description: "Usuario creado exitosamente" })
     @ApiResponse({ status: 400, description: "Error al crear el usuario" })
     @ApiResponse({ status: 500, description: "Error interno del servidor" })
     @ApiBody({ type: CreateUserDTO })

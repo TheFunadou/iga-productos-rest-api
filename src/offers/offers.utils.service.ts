@@ -1,0 +1,78 @@
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "src/prisma/prisma.service";
+
+
+@Injectable()
+export class OffersUtilsService {
+    constructor(
+        private readonly prisma: PrismaService
+    ) { };
+
+    async checkMultipleProductVersionsDiscounts(
+        productVersions: Array<{
+            versionId: string,
+            productId: string,
+            categoryId: string,
+            subcategoryIds: string[]
+        }>
+    ): Promise<Map<string, { discount: number, isOffer: boolean }>> {
+        const now = new Date();
+        const versionIds = productVersions.map(pv => pv.versionId);
+        const productIds = [...new Set(productVersions.map(pv => pv.productId))];
+        const categoryIds = [...new Set(productVersions.map(pv => pv.categoryId))];
+        const allSubcategoryIds = [...new Set(productVersions.flatMap(pv => pv.subcategoryIds))];
+        // Una sola query para todas las ofertas aplicables
+        const applicableOffers = await this.prisma.offerTarget.findMany({
+            where: {
+                OR: [
+                    { target_type: 'PRODUCT_VERSION', target_id: { in: versionIds } },
+                    { target_type: 'PRODUCT', target_id: { in: productIds } },
+                    { target_type: 'CATEGORY', target_id: { in: categoryIds } },
+                    { target_type: 'SUBCATEGORY', target_uuid_path: { hasSome: allSubcategoryIds } }
+                ],
+                offer: {
+                    status: 'ACTIVE',
+                    type: 'PERCENTAGE', // ⭐ SOLO PERCENTAGE, NO COUPON
+                    start_date: { lte: now },
+                    end_date: { gte: now },
+                    OR: [
+                        { max_uses: null },
+                        {
+                            max_uses: { not: null },
+                            current_uses: { lt: this.prisma.offers.fields.max_uses }
+                        }
+                    ]
+                }
+            },
+            select: {
+                target_type: true,
+                target_id: true,
+                target_uuid_path: true,
+                offer: {
+                    select: {
+                        discount_percentage: true
+                    }
+                }
+            }
+        });
+        // Mapear descuentos a cada versión
+        const discountMap = new Map<string, { discount: number, isOffer: boolean }>();
+        for (const pv of productVersions) {
+            const matchingOffers = applicableOffers.filter(offer => {
+                if (offer.target_type === 'PRODUCT_VERSION') return offer.target_id === pv.versionId;
+                if (offer.target_type === 'PRODUCT') return offer.target_id === pv.productId;
+                if (offer.target_type === 'CATEGORY') return offer.target_id === pv.categoryId;
+                if (offer.target_type === 'SUBCATEGORY') return pv.subcategoryIds.some(subId => offer.target_uuid_path.includes(subId));
+                return false;
+            });
+            if (matchingOffers.length > 0) {
+                const maxDiscount = Math.max(...matchingOffers.map(o => o.offer.discount_percentage));
+                discountMap.set(pv.versionId, { discount: maxDiscount, isOffer: true });
+            } else {
+                discountMap.set(pv.versionId, { discount: 0, isOffer: false });
+            }
+        }
+        return discountMap;
+    }
+
+};

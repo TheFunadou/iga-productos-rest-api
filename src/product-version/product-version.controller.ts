@@ -65,7 +65,7 @@ export class ProductVersionController {
     @ApiResponse({ status: 400, description: "Error al listar versiones de producto" })
     @ApiResponse({ status: 500, description: "Error al listar versiones de producto" })
     @ApiParam({ name: "input", description: "Buscar versiones de producto", required: true })
-    async listByInput(@Param() input: string) {
+    async listByInput(@Param("input") input: string) {
         return await this.productService.list({ input });
     };
 

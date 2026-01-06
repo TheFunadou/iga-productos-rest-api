@@ -3,13 +3,15 @@ import { PRODUCT_VERSION_CARD_BASE_SELECT, PRODUCT_VERSION_DETAIL_BASE_SELECT } 
 import { GetProductVersionCardsRandomOptionsDTO, ProductVersionCard, ProductVersionCardsFiltersDTO, ProductVersionDetail } from "./product-version.dto";
 import { CacheService } from "src/cache/cache.service";
 import { PrismaService } from "src/prisma/prisma.service";
+import { OffersUtilsService } from "src/offers/offers.utils.service";
 
 @Injectable()
 export class ProductVersionUtilsService {
 
     constructor(
         private readonly prisma: PrismaService,
-        private readonly cacheService: CacheService
+        private readonly cacheService: CacheService,
+        private readonly offersUtilsService: OffersUtilsService
     ) { };
 
     private readonly MAX_CARDS_LIMIT = 20;
@@ -88,6 +90,7 @@ export class ProductVersionUtilsService {
 
     private async findRandomCardsPublic(args: { options: GetProductVersionCardsRandomOptionsDTO }): Promise<ProductVersionCard[]> {
         if (args.options.limit > this.MAX_CARDS_LIMIT) throw new BadRequestException("El límite de registros supera al máximo permitido");
+
         return await this.cacheService.remember<ProductVersionCard[]>({
             method: "staleWhileRevalidateWithLock",
             entity: `product-version:cards:${args.options.entity}`,
@@ -97,139 +100,194 @@ export class ProductVersionUtilsService {
                 staleTimeMilliseconds: 1000 * 60 * 13
             },
             fallback: async () => {
-                return await this.prisma.$queryRaw<ProductVersionCard[]>`
-                    SELECT 
-                    COALESCE(
+                // Query SQL actualizada para incluir IDs necesarios y subcategorías con UUID
+                const results: any = await this.prisma.$queryRaw`
+                SELECT 
+                pv.id,
+                p.id as product_id,
+                c.id as category_id,
+                p.product_name,
+                COALESCE(
                     (
                         SELECT json_agg(
-                        jsonb_build_object(
-                            'category_attribute', jsonb_build_object('description', ca.description)
+                            jsonb_build_object(
+                                'uuid', sub.uuid,
+                                'description', sub.description
+                            )
                         )
-                        )
-                        FROM "ProductAttributes" pa
-                        INNER JOIN "CategoryAttributes" ca ON pa.category_attribute_id = ca.id
-                        WHERE pa.product_id = p.id
+                        FROM "ProductSubcategories" ps
+                        INNER JOIN "Subcategories" sub ON ps.subcategory_id = sub.id
+                        WHERE ps.product_id = p.id
                     ),
                     '[]'::json
-                    ) as product_attributes,
-                    c.name as category,
-                    false as "isOffer",
-                    0 as discount,
-                    false as "isFavorite",
-                    p.product_name,
-                    jsonb_build_object(
+                ) as subcategories,
+                c.name as category,
+                COALESCE(
+                    json_agg(
+                        DISTINCT jsonb_build_object(
+                            'image_url', pi.image_url,
+                            'main_image', pi.main_image
+                        )
+                    ) FILTER (WHERE pi.id IS NOT NULL),
+                    '[]'::json
+                ) as product_images,
+                jsonb_build_object(
                     'sku', pv.sku,
                     'color_line', pv.color_line,
                     'color_name', pv.color_name,
                     'color_code', pv.color_code,
                     'stock', pv.stock,
                     'unit_price', pv.unit_price::text
-                    ) as product_version,
-                    COALESCE(
-                    json_agg(
-                        DISTINCT jsonb_build_object(
-                        'image_url', pi.image_url,
-                        'main_image', pi.main_image
-                        )
-                    ) FILTER (WHERE pi.id IS NOT NULL),
-                    '[]'::json
-                    ) as product_images
-                    FROM "ProductVersion" pv
-                    INNER JOIN "Product" p ON pv.product_id = p.id
-                    INNER JOIN "Category" c ON p.category_id = c.id
-                    LEFT JOIN "ProductImage" pi ON pi.product_version_id = pv.id AND pi.main_image = true
-                    GROUP BY 
-                        pv.id,
-                        pv.sku,
-                        pv.color_line,
-                        pv.color_name,
-                        pv.color_code,
-                        pv.stock,
-                        pv.unit_price,
-                        p.id,
-                        p.product_name,
-                        c.name
-                    ORDER BY RANDOM()
-                    LIMIT ${args.options.limit}
-                    `;
+                ) as product_version,
+                false as "isFavorite"
+                FROM "ProductVersion" pv
+                INNER JOIN "Product" p ON pv.product_id = p.id
+                INNER JOIN "Category" c ON p.category_id = c.id
+                LEFT JOIN "ProductVersionImages" pi ON pi.product_version_id = pv.id AND pi.main_image = true
+                GROUP BY 
+                    pv.id,
+                    pv.sku,
+                    pv.color_line,
+                    pv.color_name,
+                    pv.color_code,
+                    pv.stock,
+                    pv.unit_price,
+                    p.id,
+                    p.product_name,
+                    c.id,
+                    c.name
+                ORDER BY RANDOM()
+                LIMIT ${args.options.limit}
+            `;
+
+                // ✅ CORRECTO:
+                const productVersionsData = results.map(r => ({
+                    versionId: r.id,
+                    productId: r.product_id,
+                    categoryId: r.category_id,
+                    subcategoryIds: r.subcategories.map(s => s.uuid) // ✅ Acceso directo a uuid
+                }));
+
+                // Obtener descuentos usando el servicio existente
+                const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData);
+
+                // Formatear y agregar descuentos a cada card
+                // Formatear y agregar descuentos a cada card
+                return results.map(card => ({
+                    product_name: card.product_name,
+                    subcategories: card.subcategories.map(sub => ({ subcategories: sub })),
+                    category: card.category,
+                    product_images: card.product_images,
+                    product_version: card.product_version,
+                    discount: discountsMap.get(card.id)?.discount || 0,
+                    isOffer: discountsMap.get(card.id)?.isOffer || false,
+                    isFavorite: card.isFavorite
+                }));
             }
-        })
-    };
+        });
+    }
 
     private async findRandomCardsBaseAuthCustomer(args: { options: GetProductVersionCardsRandomOptionsDTO, customerUUID: string }): Promise<ProductVersionCard[]> {
         if (args.options.limit > this.MAX_CARDS_LIMIT) throw new BadRequestException("El límite de registros supera al máximo permitido");
+
         return await this.cacheService.remember({
             method: "staleWhileRevalidateWithLock",
-            entity: `"product-version:cards:${args.options.entity}"`, query: { random: true },
+            entity: `"product-version:cards:${args.options.entity}"`,
+            query: { random: true },
             aditionalOptions: {
                 ttlMilliseconds: 1000 * 60 * 15,
                 staleTimeMilliseconds: 1000 * 60 * 13
             },
             fallback: async () => {
-                return await this.prisma.$queryRaw<ProductVersionCard[]>`
-                    SELECT 
-                    COALESCE(
+                const results: any = await this.prisma.$queryRaw<ProductVersionCard[]>`
+                SELECT 
+                pv.id,
+                p.id as product_id,
+                c.id as category_id,
+                p.product_name,
+               COALESCE(
                     (
                         SELECT json_agg(
-                        jsonb_build_object(
-                            'category_attribute', jsonb_build_object('description', ca.description)
+                            jsonb_build_object(
+                                'uuid', sub.uuid,
+                                'description', sub.description
+                            )
                         )
-                        )
-                        FROM "ProductAttributes" pa
-                        INNER JOIN "CategoryAttributes" ca ON pa.category_attribute_id = ca.id
-                        WHERE pa.product_id = p.id
+                        FROM "ProductSubcategories" ps
+                        INNER JOIN "Subcategories" sub ON ps.subcategory_id = sub.id
+                        WHERE ps.product_id = p.id
                     ),
                     '[]'::json
-                    ) as product_attributes,
-                    c.name as category,
-                    false as "isOffer",
-                    0 as discount,
-                    CASE 
+                ) as subcategories,
+                c.name as category,
+                CASE 
                     WHEN COUNT(cf.customer_id) > 0 THEN true 
                     ELSE false 
-                    END as "isFavorite",
-                    p.product_name,
-                    jsonb_build_object(
+                END as "isFavorite",
+                COALESCE(
+                    json_agg(
+                        DISTINCT jsonb_build_object(
+                            'image_url', pi.image_url,
+                            'main_image', pi.main_image
+                        )
+                    ) FILTER (WHERE pi.id IS NOT NULL),
+                    '[]'::json
+                ) as product_images,
+                jsonb_build_object(
                     'sku', pv.sku,
                     'color_line', pv.color_line,
                     'color_name', pv.color_name,
                     'color_code', pv.color_code,
                     'stock', pv.stock,
                     'unit_price', pv.unit_price::text
-                    ) as product_version,
-                    COALESCE(
-                    json_agg(
-                        DISTINCT jsonb_build_object(
-                        'image_url', pi.image_url,
-                        'main_image', pi.main_image
-                        )
-                    ) FILTER (WHERE pi.id IS NOT NULL),
-                    '[]'::json
-                    ) as product_images
-                    FROM "ProductVersion" pv
-                    INNER JOIN "Product" p ON pv.product_id = p.id
-                    INNER JOIN "Category" c ON p.category_id = c.id
-                    LEFT JOIN "ProductImage" pi ON pi.product_version_id = pv.id AND pi.main_image = true
-                    LEFT JOIN "CustomerFavorites" cf ON cf.product_version_id = pv.id
-                    LEFT JOIN "Customers" cust ON cf.customer_id = cust.id AND cust.uuid = ${args.customerUUID}
-                    GROUP BY 
-                        pv.id,
-                        pv.sku,
-                        pv.color_line,
-                        pv.color_name,
-                        pv.color_code,
-                        pv.stock,
-                        pv.unit_price,
-                        p.id,
-                        p.product_name,
-                        c.name
-                    ORDER BY RANDOM()
-                    LIMIT ${args.options.limit}
-                    `;
+                ) as product_version
+                FROM "ProductVersion" pv
+                INNER JOIN "Product" p ON pv.product_id = p.id
+                INNER JOIN "Category" c ON p.category_id = c.id
+                LEFT JOIN "ProductVersionImages" pi ON pi.product_version_id = pv.id AND pi.main_image = true
+                LEFT JOIN "CustomerFavorites" cf ON cf.product_version_id = pv.id
+                LEFT JOIN "Customers" cust ON cf.customer_id = cust.id AND cust.uuid = ${args.customerUUID}
+                GROUP BY 
+                    pv.id,
+                    pv.sku,
+                    pv.color_line,
+                    pv.color_name,
+                    pv.color_code,
+                    pv.stock,
+                    pv.unit_price,
+                    p.id,
+                    p.product_name,
+                    c.id,
+                    c.name
+                ORDER BY RANDOM()
+                LIMIT ${args.options.limit}
+            `;
+
+                // ✅ CORRECTO:
+                const productVersionsData = results.map(r => ({
+                    versionId: r.id,
+                    productId: r.product_id,
+                    categoryId: r.category_id,
+                    subcategoryIds: r.subcategories.map(s => s.uuid) // ✅ Acceso directo a uuid
+                }));
+
+                // Obtener descuentos
+                const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData);
+
+                // Formatear y agregar descuentos
+                return results.map(card => ({
+                    product_name: card.product_name,
+                    subcategories: card.subcategories.map(sub => ({ subcategories: sub })),
+                    category: card.category,
+                    product_images: card.product_images,
+                    product_version: card.product_version,
+                    discount: discountsMap.get(card.id)?.discount || 0,
+                    isOffer: discountsMap.get(card.id)?.isOffer || false,
+                    isFavorite: card.isFavorite
+                }));
             }
         });
-
-    };
+    }
 
     private buildShowDetailsQuery(args: { sku: string, customerUUID?: string }) {
         return args.customerUUID ? { sku: args.sku, customer: args.customerUUID } : { sku: args.sku }
@@ -276,23 +334,30 @@ export class ProductVersionUtilsService {
     };
 
 
-    formatCards(data: any[]): ProductVersionCard[] {
-        return data.map(cards => ({
-            product_name: cards.product.product_name, subcategories: cards.product.subcategories,
-            category: cards.product.category.name,
-            product_images: cards.product_images,
-            product_version: {
-                sku: cards.sku,
-                unit_price: cards.unit_price,
-                color_line: cards.color_line,
-                color_name: cards.color_name,
-                color_code: cards.color_code,
-                stock: cards.stock,
-            },
-            discount: 0,
-            isFavorite: (cards.customer_favorites && cards.customer_favorites.length > 0) ?? false,
-            isOffer: false,
-        }))
+    formatCards(args: { data: any[], discountsMap?: Map<string, { discount: number, isOffer: boolean }> }): ProductVersionCard[] {
+        const { data } = args;
+        const { discountsMap } = args;
+        return data.map(cards => {
+            const discountInfo = discountsMap?.get(cards.id) || { discount: 0, isOffer: false };
+
+            return {
+                product_name: cards.product.product_name,
+                subcategories: cards.product.subcategories,
+                category: cards.product.category.name,
+                product_images: cards.product_version_images,
+                product_version: {
+                    sku: cards.sku,
+                    unit_price: cards.unit_price,
+                    color_line: cards.color_line,
+                    color_name: cards.color_name,
+                    color_code: cards.color_code,
+                    stock: cards.stock,
+                },
+                discount: discountInfo.discount,
+                isFavorite: (cards.customer_favorites && cards.customer_favorites.length > 0) ?? false,
+                isOffer: discountInfo.isOffer,
+            };
+        });
     };
 
     buildShowDetailsFilters(args: { sku: string, customerUUID?: string }) {
