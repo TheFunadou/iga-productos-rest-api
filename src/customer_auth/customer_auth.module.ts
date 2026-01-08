@@ -5,6 +5,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { CustomerJwtStrategy } from './customer.auth.strategy';
 import { PassportModule } from '@nestjs/passport';
+import { CacheModule } from 'src/cache/cache.module';
 
 @Module({
   providers: [CustomerAuthService, CustomerJwtStrategy],
@@ -15,6 +16,7 @@ import { PassportModule } from '@nestjs/passport';
       secret: process.env.JWT_CUSTOMER_SECRET,
       signOptions: { expiresIn: '1h' }
     }),
-    PrismaModule]
+    PrismaModule,
+    CacheModule]
 })
 export class CustomerAuthModule { }

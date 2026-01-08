@@ -8,6 +8,56 @@ export class OffersUtilsService {
         private readonly prisma: PrismaService
     ) { };
 
+    async checkSingleProductVersionDiscount(args: {
+        versionId: string,
+        productId: string,
+        categoryId: string,
+        subcategoryIds: string[]
+    }): Promise<{ discount: number, isOffer: boolean }> {
+        const now = new Date();
+
+        // Query para ofertas aplicables a este producto específico
+        const applicableOffers = await this.prisma.offerTarget.findMany({
+            where: {
+                OR: [
+                    { target_type: 'PRODUCT_VERSION', target_id: args.versionId },
+                    { target_type: 'PRODUCT', target_id: args.productId },
+                    { target_type: 'CATEGORY', target_id: args.categoryId },
+                    { target_type: 'SUBCATEGORY', target_uuid_path: { hasSome: args.subcategoryIds } }
+                ],
+                offer: {
+                    status: 'ACTIVE',
+                    type: 'PERCENTAGE', // Solo PERCENTAGE, no COUPON
+                    start_date: { lte: now },
+                    end_date: { gte: now },
+                    OR: [
+                        { max_uses: null },
+                        {
+                            max_uses: { not: null },
+                            current_uses: { lt: this.prisma.offers.fields.max_uses }
+                        }
+                    ]
+                }
+            },
+            select: {
+                offer: {
+                    select: {
+                        discount_percentage: true
+                    }
+                }
+            }
+        });
+
+        // Si hay ofertas, retornar el descuento máximo
+        if (applicableOffers.length > 0) {
+            const maxDiscount = Math.max(...applicableOffers.map(o => o.offer.discount_percentage));
+            return { discount: maxDiscount, isOffer: true };
+        }
+
+        // Sin descuento
+        return { discount: 0, isOffer: false };
+    }
+
     async checkMultipleProductVersionsDiscounts(
         productVersions: Array<{
             versionId: string,

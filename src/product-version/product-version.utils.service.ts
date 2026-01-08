@@ -160,19 +160,15 @@ export class ProductVersionUtilsService {
                 LIMIT ${args.options.limit}
             `;
 
-                // ✅ CORRECTO:
                 const productVersionsData = results.map(r => ({
                     versionId: r.id,
                     productId: r.product_id,
                     categoryId: r.category_id,
-                    subcategoryIds: r.subcategories.map(s => s.uuid) // ✅ Acceso directo a uuid
+                    subcategoryIds: r.subcategories.map(s => s.uuid)
                 }));
 
-                // Obtener descuentos usando el servicio existente
                 const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData);
 
-                // Formatear y agregar descuentos a cada card
-                // Formatear y agregar descuentos a cada card
                 return results.map(card => ({
                     product_name: card.product_name,
                     subcategories: card.subcategories.map(sub => ({ subcategories: sub })),
@@ -295,12 +291,12 @@ export class ProductVersionUtilsService {
 
     formatDetail(args: { version: any, discount?: number, isOffer?: boolean }): ProductVersionDetail {
 
-        const formatParentVersions = args.version.product.product_version.map(parents => {
+        const formatParentVersions = args.version.product.product_versions.map(parents => {
             return {
                 sku: parents.sku,
                 unit_price: parents.unit_price,
                 discount: 0,
-                product_images: parents.product_images
+                product_images: parents.product_version_images
             }
         });
 
@@ -314,7 +310,7 @@ export class ProductVersionUtilsService {
                 specs: args.version.product.specs
             },
             subcategories: args.version.product.subcategories,
-            product_images: args.version.product_images,
+            product_images: args.version.product_version_images,
             category: args.version.product.category.name,
             product_version: {
                 color_code: args.version.color_code,

@@ -99,7 +99,7 @@ export class ProductVersionController {
     @ApiResponse({ status: 400, description: "Error al buscar versiones de producto" })
     @ApiResponse({ status: 500, description: "Error al buscar versiones de producto" })
     @ApiParam({ name: "sku", description: "Buscar versiones de producto", required: true })
-    async showDetails(@OptionalCustomer() customer: CustomerPayload, @Param() sku: string) {
+    async showDetails(@OptionalCustomer() customer: CustomerPayload, @Param("sku") sku: string) {
         return await this.findProductVersionService.showDetails({ sku, customerUUID: customer?.uuid });
     };
 

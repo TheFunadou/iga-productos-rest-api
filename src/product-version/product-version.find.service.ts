@@ -58,6 +58,7 @@ export class ProductVersionFindService {
     };
 
     async showDetails(args: { sku: string, customerUUID?: string }): Promise<ProductVersionDetail | null> {
+        console.log(args.sku)
         const builtFilters = this.utilsService.buildShowDetailsFilters({ sku: args.sku, customerUUID: args.customerUUID });
         return await this.cacheService.remember<ProductVersionDetail | null>({
             method: "staleWhileRevalidateWithLock",
@@ -68,12 +69,25 @@ export class ProductVersionFindService {
                 staleTimeMilliseconds: 1000 * 60 * 13
             },
             fallback: async () => {
-                const result = await this.prisma.productVersion.findFirst({
+
+                const result: any = await this.prisma.productVersion.findFirst({
                     where: { sku: { contains: args.sku, mode: "insensitive" } },
                     select: builtFilters.select
                 });
                 if (!result) return null;
-                return this.utilsService.formatDetail({ version: result, discount: 0, isOffer: false })
+
+                const discountInfo = await this.offersUtilsService.checkSingleProductVersionDiscount({
+                    versionId: result.id,
+                    productId: result.product.id,
+                    categoryId: result.product.category_id,
+                    subcategoryIds: result.product.subcategories.map(s => s.subcategories.uuid)
+                });
+
+                return this.utilsService.formatDetail({
+                    version: result,
+                    discount: discountInfo.discount,
+                    isOffer: discountInfo.isOffer
+                });
             }
         })
     };

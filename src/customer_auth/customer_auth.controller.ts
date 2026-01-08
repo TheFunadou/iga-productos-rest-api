@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { CustomerAuthService } from './customer_auth.service';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthCustomer, CustomerCredentialsDTO, CustomerPayload } from './customer_auth.dto';
@@ -14,7 +14,7 @@ export class CustomerAuthController {
 
     @Post("login")
     @ApiOperation({ summary: "Inicia sesión de un usuario" })
-    @ApiResponse({ status: 200, description: "Sesión iniciada exitosamente", type: AuthCustomer })
+    @ApiResponse({ status: 20, description: "Sesión iniciada exitosamente", type: AuthCustomer })
     @ApiResponse({ status: 500, description: "Error al iniciar sesión" })
     @ApiBody({ type: CustomerCredentialsDTO })
     async login(
@@ -55,4 +55,16 @@ export class CustomerAuthController {
         return "Sesión cerrada";
 
     };
-}
+
+
+    @Get("profile")
+    @UseGuards(RequiredCustomerAuthGuard)
+    @ApiOperation({ summary: "Obtiene el perfil de un usuario" })
+    @ApiResponse({ status: 200, description: "Perfil obtenido exitosamente", type: AuthCustomer })
+    @ApiResponse({ status: 500, description: "Error al obtener el perfil" })
+    async getProfile(
+        @AuthenticatedCustomer() user: CustomerPayload
+    ): Promise<AuthCustomer> {
+        return await this.customerAuthService.getProfile({ uuid: user.uuid });
+    };
+};

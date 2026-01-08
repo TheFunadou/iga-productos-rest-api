@@ -24,6 +24,7 @@ export const PRODUCT_VERSION_CARD_BASE_SELECT = {
 
 
 export const PRODUCT_VERSION_DETAIL_BASE_SELECT = {
+    id: true,
     sku: true,
     color_line: true,
     color_name: true,
@@ -44,8 +45,8 @@ export const PRODUCT_VERSION_DETAIL_BASE_SELECT = {
             applications: true,
             certifications_desc: true,
             description: true,
-            category: { select: { name: true } },
-            subcategories: { select: { subcategories: { select: { description: true, } } } },
+            category: { select: { id: true, name: true } },
+            subcategories: { select: { subcategories: { select: { uuid: true, description: true, } } } },
             product_sources: { select: { source_description: true, source_url: true } },
             product_versions: {
                 select: {

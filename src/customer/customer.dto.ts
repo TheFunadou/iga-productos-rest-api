@@ -144,6 +144,11 @@ export class CreateCustomerDTO extends CustomerAttributes {
     @IsString()
     @IsNotEmpty({ message: "La contraseña no puede estar vacia" })
     password: string;
+
+    @ApiProperty({ description: "Confirmacion de la contraseña" })
+    @IsString()
+    @IsNotEmpty({ message: "La confirmacion de la contraseña no puede estar vacia" })
+    confirm_password: string;
 };
 
 
