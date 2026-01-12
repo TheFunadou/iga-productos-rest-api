@@ -101,20 +101,21 @@ model Verification {
 }
 
 model Customer {
-  id                 String              @unique @default(dbgenerated("gen_random_uuid()"))
-  uuid               String              @unique @default(cuid())
+  id                 String                  @unique @default(dbgenerated("gen_random_uuid()"))
+  uuid               String                  @unique @default(cuid())
   name               String
   last_name          String
-  email              String              @unique
-  email_verified     Boolean             @default(false)
+  email              String                  @unique
+  email_verified     Boolean                 @default(false)
   image              String?
-  created_at         DateTime            @default(now())
-  updated_at         DateTime            @updatedAt
-  sessions           CustomerSession[]   @relation("customer_session:customer")
-  accounts           CustomerAccount[]   @relation("customer_account:customer")
-  favorites          CustomerFavorites[] @relation("customer_favorites:customer")
-  customer_addresses CustomerAddresses[] @relation("customer_address:customer")
-  orders             Order[]             @relation("order:customer")
+  created_at         DateTime                @default(now())
+  updated_at         DateTime                @updatedAt
+  sessions           CustomerSession[]       @relation("customer_session:customer")
+  accounts           CustomerAccount[]       @relation("customer_account:customer")
+  favorites          CustomerFavorites[]     @relation("customer_favorites:customer")
+  customer_addresses CustomerAddresses[]     @relation("customer_address:customer")
+  orders             Order[]                 @relation("order:customer")
+  reviews            ProductVersionReviews[] @relation("product_version_reviews:customer")
 }
 
 model CustomerSession {
@@ -217,24 +218,25 @@ model Product {
 }
 
 model ProductVersion {
-  id                     String                 @id @default(dbgenerated("gen_random_uuid()"))
+  id                     String                  @id @default(dbgenerated("gen_random_uuid()"))
   product_id             String
-  sku                    String                 @unique
-  code_bar               String?                @unique
+  sku                    String                  @unique
+  code_bar               String?                 @unique
   color_line             String
   color_name             String
   color_code             String
   status                 String
-  stock                  Int                    @default(0)
-  unit_price             Decimal                @db.Decimal(10, 2)
-  technical_sheet_url    String                 @unique @default("N/A")
-  created_at             DateTime               @default(now())
-  updated_at             DateTime               @updatedAt
-  main_version           Boolean                @default(false)
-  product                Product                @relation("product_version:product", fields: [product_id], references: [id])
-  customer_favorites     CustomerFavorites[]    @relation("customer_favorites:product_version")
-  order_items            OrderItemsDetails[]    @relation("order_items_details:product_version")
-  product_version_images ProductVersionImages[] @relation("product_version_images:product_version")
+  stock                  Int                     @default(0)
+  unit_price             Decimal                 @db.Decimal(10, 2)
+  technical_sheet_url    String                  @unique @default("N/A")
+  created_at             DateTime                @default(now())
+  updated_at             DateTime                @updatedAt
+  main_version           Boolean                 @default(false)
+  product                Product                 @relation("product_version:product", fields: [product_id], references: [id])
+  customer_favorites     CustomerFavorites[]     @relation("customer_favorites:product_version")
+  order_items            OrderItemsDetails[]     @relation("order_items_details:product_version")
+  product_version_images ProductVersionImages[]  @relation("product_version_images:product_version")
+  reviews                ProductVersionReviews[] @relation("product_version_reviews:product_version")
 }
 
 model ProductVersionImages {
@@ -367,6 +369,19 @@ model OfferTarget {
 
   @@unique([offer_id, target_type, target_id])
   @@index([target_type, target_id])
+}
+
+model ProductVersionReviews {
+  id                 String         @id @default(cuid())
+  uuid               String         @unique @default(cuid())
+  product_version_id String
+  customer_id        String
+  rating             Int
+  title              String
+  comment            String
+  created_at         DateTime       @default(now())
+  product_version    ProductVersion @relation("product_version_reviews:product_version", fields: [product_version_id], references: [id], onDelete: Cascade)
+  customer           Customer       @relation("product_version_reviews:customer", fields: [customer_id], references: [id], onDelete: Cascade)
 }
 
 enum UserModules {

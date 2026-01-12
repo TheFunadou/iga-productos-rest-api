@@ -6,6 +6,7 @@ import { ShoppingCartDTO } from "./shopping-cart.dto";
 
 @Injectable()
 export class ShoppingCartUtilsService {
+    private readonly nodeEnv = process.env.NODE_ENV;
     constructor(
         private readonly cacheService: CacheService,
         private readonly prisma: PrismaService
@@ -47,13 +48,13 @@ export class ShoppingCartUtilsService {
     async setShoppingCart(args: { customerUUID: string, data: ShoppingCartDTO | ShoppingCartDTO[] }) {
         await this.cacheService.setData<ShoppingCartDTO | ShoppingCartDTO[]>({
             entity: "customer:shopping-cart",
-            query: { customer: args.customerUUID },
+            query: { customerUUID: args.customerUUID },
             aditionalOptions: {
                 ttlMilliseconds: 1000 * 60 * 60 * 24 * 7,
             },
             data: args.data
         }).catch((error) => {
-            throw new BadRequestException("Error al guardar articulos en carrito de compras");
+            throw new BadRequestException("Error al guardar articulos en carrito de compras", this.nodeEnv === "DEVELOPMENT" && error);
         });
     };
 

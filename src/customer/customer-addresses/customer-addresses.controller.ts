@@ -1,11 +1,12 @@
-import { Body, Controller, Delete, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { CustomerAddressesService } from './customer-addresses.service';
 import { AuthenticatedCustomer } from 'src/customer_auth/customer_auth.current.decorator';
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
-import { CreateCustomerAddressDTO } from './customer-addresses.dto';
+import { CreateCustomerAddressDTO, GetCustomerAddresses, UpdateCustomerAddressDTO } from './customer-addresses.dto';
 import { RequiredCustomerAuthGuard } from 'src/customer_auth/customer_auth.required.guard';
 import { CustomerCsrfAuthGuard } from 'src/customer_auth/customer_auth.csrf';
-import { ApiBody, ApiCreatedResponse, ApiHeader, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { PaginationDTO } from 'src/common/DTO/pagination.dto';
 
 @Controller('customer-addresses')
 export class CustomerAddressesController {
@@ -27,6 +28,20 @@ export class CustomerAddressesController {
         return await this.customerAddressesService.create({ customerUUID: customer.uuid, data: dto });
     };
 
+    @Get()
+    @UseGuards(RequiredCustomerAuthGuard)
+    @ApiOperation({ summary: "Listar direcciones de envio" })
+    @ApiResponse({ status: 200, description: "Direcciones de envio listadas exitosamente" })
+    @ApiResponse({ status: 401, description: "No autenticado" })
+    @ApiResponse({ status: 403, description: "No autorizado" })
+    @ApiResponse({ status: 404, description: "Cliente no encontrado" })
+    @ApiResponse({ status: 500, description: "Error inesperado" })
+    @ApiQuery({ name: "page", description: "Pagina", required: true })
+    @ApiQuery({ name: "limit", description: "Limite de registro a buscar", required: true })
+    async findAll(@AuthenticatedCustomer() customer: CustomerPayload, @Query() pagination: PaginationDTO): Promise<GetCustomerAddresses> {
+        return await this.customerAddressesService.findAll({ customerUUID: customer.uuid, pagination: { page: pagination.page, limit: pagination.limit } });
+    };
+
     @Patch()
     @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Actualizar una dirección de envio" })
@@ -38,8 +53,8 @@ export class CustomerAddressesController {
     @ApiResponse({ status: 500, description: "Error inesperado" })
     @ApiCreatedResponse({ description: "Dirección de envio actualizada exitosamente" })
     @ApiHeader({ name: "X-CSRF-TOKEN", description: "Token CSRF" })
-    @ApiBody({ type: CreateCustomerAddressDTO })
-    async patch(@AuthenticatedCustomer() customer: CustomerPayload, @Body() dto: CreateCustomerAddressDTO) {
+    @ApiBody({ type: UpdateCustomerAddressDTO })
+    async patch(@AuthenticatedCustomer() customer: CustomerPayload, @Body() dto: UpdateCustomerAddressDTO) {
         return await this.customerAddressesService.patch({ customerUUID: customer.uuid, data: dto });
     };
 

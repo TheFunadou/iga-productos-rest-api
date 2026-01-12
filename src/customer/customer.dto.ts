@@ -1,7 +1,7 @@
-import { ApiProperty, OmitType } from "@nestjs/swagger";
+import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { PaginationDTO } from "src/common/DTO/pagination.dto";
+import { IsBoolean, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { ProductVersionReviewsAttributes, ProductVersionReviewsVersionAttributes } from "src/product-version/product-version.dto";
 
 
 export class Customer {
@@ -138,7 +138,8 @@ export class CustomerSession {
 };
 
 export class SafeCustomer extends OmitType(Customer, ["id", "created_at", "updated_at"] as const) { };
-export class CustomerAttributes extends OmitType(Customer, ["id", "created_at", "updated_at", "email_verified"] as const) { };
+// 
+export class CustomerAttributes extends PickType(Customer, ["name", "last_name", "email"] as const) { };
 export class CreateCustomerDTO extends CustomerAttributes {
     @ApiProperty({ description: "Contraseña del cliente" })
     @IsString()
@@ -182,3 +183,15 @@ export class UpdateEmailDTO {
     @IsNotEmpty({ message: "El correo electronico no puede estar vacio" })
     email: string;
 };
+
+
+export class CustomerReviewDTO extends ProductVersionReviewsAttributes {
+    @ApiProperty({ description: "SKU del producto" })
+    @IsString()
+    @IsNotEmpty({ message: "El sku no puede estar vacio" })
+    sku: string;
+};
+
+export class GetCustomerReviews extends ProductVersionReviewsAttributes {
+    product_version: ProductVersionReviewsVersionAttributes;
+}

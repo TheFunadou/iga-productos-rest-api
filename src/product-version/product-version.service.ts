@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateProductVersionDTO, PatchProductVersionDTO, SafeProductVersionImages, SearchProductVersionsDTO } from './product-version.dto';
+import { CreateProductVersionDTO, GetProductVersionReviews, GetPVReviewRating, PatchProductVersionDTO, SafeProductVersionImages, SearchProductVersionsDTO } from './product-version.dto';
 import { Decimal } from '@prisma/client/runtime/index-browser';
+import { CustomerReviewDTO } from 'src/customer/customer.dto';
 
 @Injectable()
 export class ProductVersionService {
@@ -127,6 +128,91 @@ export class ProductVersionService {
             }
         });
     };
+
+    async addReview(args: { customerUUID: string, data: CustomerReviewDTO }): Promise<string> {
+        return await this.prisma.$transaction(async (tx) => {
+            const customer = await tx.customer.findUnique({ where: { uuid: args.customerUUID }, select: { id: true } });
+            const productVersion = await tx.productVersion.findFirst({ where: { sku: { equals: args.data.sku, mode: "insensitive" } }, select: { id: true } });
+            if (!customer) throw new NotFoundException("No se encontro el cliente");
+            if (!productVersion) throw new NotFoundException("No se encontro la version de producto");
+
+            await tx.productVersionReviews.create({ data: { ...args.data, customer_id: customer.id, product_version_id: productVersion.id } });
+            return `Comentario agregado exitosamente`;
+        });
+    };
+
+
+    async findManyReviewsBySKU(args: { sku: string, pagination: { page: number, limit: number } }): Promise<GetProductVersionReviews[]> {
+        return await this.cacheService.remember<GetProductVersionReviews[]>({
+            method: "staleWhileRevalidateWithLock",
+            entity: "product-version:reviews",
+            query: { sku: args.sku },
+            fallback: async () => {
+                return await this.prisma.$transaction(async (tx) => {
+                    const reviews = await tx.productVersionReviews.findMany({
+                        take: args.pagination.limit || 10,
+                        skip: (args.pagination.page || 1) - 1,
+                        where: { product_version: { sku: { equals: args.sku, mode: "insensitive" } } },
+                        select: {
+                            uuid: true,
+                            title: true,
+                            comment: true,
+                            rating: true,
+                            created_at: true,
+                            customer: { select: { name: true } }
+                        },
+                    });
+
+                    const totalRecords = await tx.productVersionReviews.count({
+                        where: { product_version: { sku: { equals: args.sku, mode: "insensitive" } } }
+                    });
+
+                    return reviews.map((review) => ({
+                        ...review,
+                        totalRecords,
+                        totalPages: Math.ceil(totalRecords / (args.pagination?.limit || 10)),
+                        customer: review.customer.name
+                    }));
+                })
+            }
+        })
+    };
+
+    async getReviewRatingResumeBySKU(args: { sku: string }): Promise<GetPVReviewRating[]> {
+        return await this.cacheService.remember({
+            method: "staleWhileRevalidateWithLock",
+            entity: "product-version:reviews:rating-review-resume",
+            query: { sku: args.sku },
+            fallback: async () => {
+                return await this.prisma.$transaction(async (tx) => {
+                    const totalRecords = await tx.productVersionReviews.count({
+                        where: { product_version: { sku: { equals: args.sku, mode: "insensitive" } } }
+                    });
+
+                    const ratingPerStar = await tx.productVersionReviews.groupBy({
+                        by: ['rating'],
+                        where: {
+                            product_version: {
+                                sku: { equals: args.sku, mode: 'insensitive' }
+                            }
+                        },
+                        _count: {
+                            rating: true
+                        }
+                    });
+
+                    return Array.from({ length: 5 }, (_, i) => {
+                        const star = i + 1
+                        const found = ratingPerStar.find(r => r.rating === star)
+                        const count = found?._count.rating ?? 0
+
+                        return { rating: star, percentage: totalRecords === 0 ? 0 : Number(((count / totalRecords) * 100).toFixed(2)) }
+                    });
+
+                })
+            }
+        })
+    }
 
 
 

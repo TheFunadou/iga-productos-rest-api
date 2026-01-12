@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsNumberString, IsOptional, IsString, IsUUID, Length } from "class-validator";
 
 export class CustomerAddress {
@@ -128,3 +128,16 @@ export class CustomerAddress {
 export class CreateCustomerAddressDTO extends OmitType(CustomerAddress, ['id', 'customer_id', "uuid", "created_at", "updated_at"] as const) { };
 export class SafeCustomerAddress extends OmitType(CustomerAddress, ["id", "customer_id", "created_at", "updated_at"] as const) { };
 export class UpdateCustomerAddressDTO extends PartialType(OmitType(CustomerAddress, ["customer_id", "id"] as const)) { };
+
+
+export class GetCustomerAddresses {
+    @ApiProperty({ type: [SafeCustomerAddress] })
+    @Type(() => SafeCustomerAddress)
+    data: SafeCustomerAddress[];
+
+    @ApiProperty({ example: 1 })
+    totalRecords: number;
+
+    @ApiProperty({ example: 1 })
+    totalPages: number;
+};

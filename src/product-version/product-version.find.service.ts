@@ -15,42 +15,43 @@ export class ProductVersionFindService {
     ) { };
 
     async searchCards(args: { filters: ProductVersionCardsFiltersDTO, customerUUID?: string, entity?: string }): Promise<GetProductVersionCards | null> {
-        return await this.prisma.$transaction(async (tx) => {
-            const builtFilters = await this.utilsService.buildCardsFilters({ tx, filters: args.filters, customerUUID: args.customerUUID });
-            if (!builtFilters) return null;
-            return await this.cacheService.remember<GetProductVersionCards>({
-                method: "staleWhileRevalidateWithLock",
-                entity: args.entity ?? "product-version:search:cards",
-                query: builtFilters.cacheQuery,
-                aditionalOptions: {
-                    ttlMilliseconds: 1000 * 60 * 15,
-                    staleTimeMilliseconds: 1000 * 60 * 13
-                },
-                fallback: async () => {
-                    const results: any = await tx.productVersion.findMany({
-                        ...builtFilters.paginationFilter,
-                        ...builtFilters.productVersionFilters,
-                        ...builtFilters.priceFilters,
-                        select: builtFilters.select
-                    });
+        const builtFilters = await this.utilsService.buildCardsFilters({ tx: this.prisma, filters: args.filters, customerUUID: args.customerUUID });
+        if (!builtFilters) return null;
+        return await this.cacheService.remember<GetProductVersionCards>({
+            method: "staleWhileRevalidateWithLock",
+            entity: args.entity ?? "product-version:search:cards",
+            query: builtFilters.cacheQuery,
+            aditionalOptions: {
+                ttlMilliseconds: 1000 * 60 * 15,
+                staleTimeMilliseconds: 1000 * 60 * 13
+            },
+            fallback: async () => {
 
-                    const productVersionsData = results.map(r => ({
-                        versionId: r.id,
-                        productId: r.product.id,
-                        categoryId: r.product.category_id,
-                        subcategoryIds: r.product.subcategories.map(s => s.subcategories.uuid)
-                    }));
 
-                    const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData);
+                const results: any = await this.prisma.productVersion.findMany({
+                    ...builtFilters.paginationFilter,
+                    ...builtFilters.productVersionFilters,
+                    ...builtFilters.priceFilters,
+                    select: builtFilters.select
+                });
 
-                    return {
-                        data: this.utilsService.formatCards({ data: results, discountsMap }),
-                        totalRecords: builtFilters.totalRows,
-                        totalPages: Math.ceil(builtFilters.totalRows / builtFilters.paginationFilter.take)
-                    }
+                const productVersionsData = results.map(r => ({
+                    versionId: r.id,
+                    productId: r.product.id,
+                    categoryId: r.product.category_id,
+                    subcategoryIds: r.product.subcategories.map(s => s.subcategories.uuid)
+                }));
+
+                const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData);
+
+                return {
+                    data: this.utilsService.formatCards({ data: results, discountsMap }),
+                    totalRecords: builtFilters.totalRows,
+                    totalPages: Math.ceil(builtFilters.totalRows / builtFilters.paginationFilter.take)
                 }
-            })
+            }
         })
+
     };
 
     async findRandomCards(args: { options: GetProductVersionCardsRandomOptionsDTO, customerUUID?: string }): Promise<ProductVersionCard[]> {
@@ -58,7 +59,6 @@ export class ProductVersionFindService {
     };
 
     async showDetails(args: { sku: string, customerUUID?: string }): Promise<ProductVersionDetail | null> {
-        console.log(args.sku)
         const builtFilters = this.utilsService.buildShowDetailsFilters({ sku: args.sku, customerUUID: args.customerUUID });
         return await this.cacheService.remember<ProductVersionDetail | null>({
             method: "staleWhileRevalidateWithLock",

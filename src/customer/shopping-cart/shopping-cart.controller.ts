@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { ShoppingCartService } from './shopping-cart.service';
 import { ApiHeader, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RequiredCustomerAuthGuard } from 'src/customer_auth/customer_auth.required.guard';
@@ -14,12 +14,11 @@ export class ShoppingCartController {
     ) { };
 
     @Get()
-    @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
+    @UseGuards(RequiredCustomerAuthGuard)
     @ApiOperation({ summary: "Obtener el carrito de compras" })
     @ApiResponse({ status: 200, description: "Información recuperada", type: ShoppingCartDTO, isArray: true })
     @ApiResponse({ status: 400, description: "Ocurrio un error al recuperar la información" })
     @ApiResponse({ status: 500, description: "Ocurrio un error inesperado" })
-    @ApiHeader({ name: "X-CSRF-TOKEN", description: "Token CSRF", required: true })
     async getShoppingCart(@AuthenticatedCustomer() customer: CustomerPayload): Promise<ShoppingCartDTO[] | null> {
         return await this.shoppingCartService.get({ customerUUID: customer.uuid });
     };
@@ -69,7 +68,7 @@ export class ShoppingCartController {
         return await this.shoppingCartService.removeItem({ customerUUID: customer.uuid, sku });
     };
 
-    @Patch("check/toggle")
+    @Put("check/toggle")
     @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Seleccionar/Deseleccionar un producto del carrito de compras" })
     @ApiResponse({ status: 200, description: "Información actualizada", type: ShoppingCartDTO, isArray: true })
@@ -80,7 +79,7 @@ export class ShoppingCartController {
         return await this.shoppingCartService.toogleCheck({ customerUUID: customer.uuid, sku: data.sku });
     };
 
-    @Patch("check/all")
+    @Put("check/all")
     @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Seleccionar todos los productos del carrito de compras" })
     @ApiResponse({ status: 200, description: "Información actualizada", type: ShoppingCartDTO, isArray: true })
@@ -91,7 +90,7 @@ export class ShoppingCartController {
         return await this.shoppingCartService.checkAll({ customerUUID: customer.uuid });
     };
 
-    @Patch("uncheck/all")
+    @Put("uncheck/all")
     @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Deseleccionar todos los productos del carrito de compras" })
     @ApiResponse({ status: 200, description: "Información actualizada", type: ShoppingCartDTO, isArray: true })

@@ -6,6 +6,9 @@ import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
 import { UserModulePermissionsGuard } from 'src/user_auth/user_auth.module.permissions.guard';
 import { RequirePermissions } from 'src/user_auth/user_auth.module.permissions.decorator';
+import { RequiredCustomerAuthGuard } from 'src/customer_auth/customer_auth.required.guard';
+import { AuthenticatedCustomer } from 'src/customer_auth/customer_auth.current.decorator';
+import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 
 @Controller('customer')
 export class CustomerController {
@@ -46,4 +49,13 @@ export class CustomerController {
     async findUnique(@Param("uuid") uuid: string) {
         return await this.customerService.findUnique({ uuid });
     };
-}
+
+    @Get("reviews")
+    @UseGuards(RequiredCustomerAuthGuard)
+    @ApiOperation({ summary: "Obtener todos los comentarios de un cliente" })
+    @ApiResponse({ status: 200, description: "Comentarios obtenidos exitosamente" })
+    @ApiResponse({ status: 500, description: "Error inesperado" })
+    async findManyReviews(@AuthenticatedCustomer() customer: CustomerPayload) {
+        return await this.customerService.findManyReviews({ customerUUID: customer.uuid });
+    };
+};

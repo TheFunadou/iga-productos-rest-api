@@ -6,13 +6,14 @@ import { ShoppingCartUtilsService } from './shopping-cart.utils.service';
 
 @Injectable()
 export class ShoppingCartService {
+    private readonly nodeEnv = process.env.NODE_ENV;
     constructor(
         private readonly cacheService: CacheService,
         private readonly utils: ShoppingCartUtilsService
     ) { };
 
     async get(args: { customerUUID: string }): Promise<ShoppingCartDTO[] | null> {
-        return await this.cacheService.getData<ShoppingCartDTO[] | null>({ entity: "customer:shopping-cart", query: { customer: args.customerUUID } });
+        return await this.cacheService.getData<ShoppingCartDTO[] | null>({ entity: "customer:shopping-cart", query: { customerUUID: args.customerUUID } });
     };
 
     public async addItem(args: { customerUUID: string, item: ShoppingCartDTO }): Promise<ShoppingCartDTO[]> {
@@ -85,8 +86,9 @@ export class ShoppingCartService {
     };
 
     public async clearCart(args: { customerUUID: string }) {
-        await this.cacheService.removeData({ entity: "customer:shopping_cart", query: { customerUUID: args.customerUUID } }).catch((error) => {
-            throw new BadRequestException("Ocurrio un error al remover los productos del carrito");
+        console.log("Eliminado carrito")
+        await this.cacheService.removeData({ entity: "customer:shopping-cart", query: { customerUUID: args.customerUUID } }).catch((error) => {
+            throw new BadRequestException("Ocurrio un error al remover los productos del carrito", this.nodeEnv === "DEVELOPMENT" && error);
         });
     };
 

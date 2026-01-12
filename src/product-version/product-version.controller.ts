@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ProductVersionService } from './product-version.service';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { CreateProductVersionDTO, GetProductVersionCardsRandomOptionsDTO, ProductVersionCardsFiltersDTO } from './product-version.dto';
+import { CreateProductVersionDTO, GetProductVersionCardsRandomOptionsDTO, GetProductVersionReviews, GetPVReviewRating, ProductVersionCardsFiltersDTO } from './product-version.dto';
 import { ProductVersionFindService } from './product-version.find.service';
 import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
@@ -10,12 +10,17 @@ import { RequirePermissions } from 'src/user_auth/user_auth.module.permissions.d
 import { OptionalCustomer } from 'src/customer_auth/customer_auth.optional.decorator';
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 import { OptionalCustomerAuthGuard } from 'src/customer_auth/customer_auth.optional.guard';
+import { CustomerReviewDTO } from 'src/customer/customer.dto';
+import { AuthenticatedCustomer } from 'src/customer_auth/customer_auth.current.decorator';
+import { RequiredCustomerAuthGuard } from 'src/customer_auth/customer_auth.required.guard';
+import { CustomerCsrfAuthGuard } from 'src/customer_auth/customer_auth.csrf';
+import { PaginationDTO } from 'src/common/DTO/pagination.dto';
 
 @Controller('product-version')
 export class ProductVersionController {
     constructor(
         private readonly findProductVersionService: ProductVersionFindService,
-        private readonly productService: ProductVersionService
+        private readonly productVersionService: ProductVersionService
     ) { };
 
     @Post()
@@ -29,7 +34,7 @@ export class ProductVersionController {
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     @ApiBody({ type: CreateProductVersionDTO })
     async create(@Body() dto: CreateProductVersionDTO) {
-        return await this.productService.create({ data: dto });
+        return await this.productVersionService.create({ data: dto });
     };
 
     @Patch()
@@ -43,7 +48,7 @@ export class ProductVersionController {
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     @ApiBody({ type: CreateProductVersionDTO })
     async update(@Body() dto: CreateProductVersionDTO) {
-        return await this.productService.patch({ data: dto });
+        return await this.productVersionService.patch({ data: dto });
     };
 
     @Delete()
@@ -56,7 +61,7 @@ export class ProductVersionController {
     @ApiResponse({ status: 500, description: "Error al eliminar version de producto" })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     async delete(@Query() sku: string) {
-        return await this.productService.delete({ sku });
+        return await this.productVersionService.delete({ sku });
     };
 
     @Get("list/:input")
@@ -66,7 +71,7 @@ export class ProductVersionController {
     @ApiResponse({ status: 500, description: "Error al listar versiones de producto" })
     @ApiParam({ name: "input", description: "Buscar versiones de producto", required: true })
     async listByInput(@Param("input") input: string) {
-        return await this.productService.list({ input });
+        return await this.productVersionService.list({ input });
     };
 
     @Post("search")
@@ -80,7 +85,7 @@ export class ProductVersionController {
         return await this.findProductVersionService.searchCards({ filters: dto, customerUUID: customer?.uuid });
     };
 
-    @Get("random")
+    @Get("random-cards")
     @UseGuards(OptionalCustomerAuthGuard)
     @ApiOperation({ description: "Buscar versiones de producto" })
     @ApiResponse({ status: 200, description: "Versiones de producto buscadas exitosamente" })
@@ -104,6 +109,40 @@ export class ProductVersionController {
     };
 
 
+    @Post("review")
+    @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
+    @ApiOperation({ description: "Agregar comentario a version de producto" })
+    @ApiResponse({ status: 200, description: "Comentario agregado exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al agregar comentario a version de producto" })
+    @ApiResponse({ status: 500, description: "Error al agregar comentario a version de producto" })
+    @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
+    @ApiBody({ type: CustomerReviewDTO })
+    async addReview(@AuthenticatedCustomer() customer: CustomerPayload, @Body() dto: CustomerReviewDTO): Promise<string> {
+        return await this.productVersionService.addReview({ customerUUID: customer.uuid, data: dto });
+    };
+
+
+    @Get("review/:sku")
+    @ApiOperation({ description: "Buscar versiones de producto" })
+    @ApiResponse({ status: 200, description: "Reseñas de version de producto obtenidas exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al buscar reseñas de version de producto" })
+    @ApiResponse({ status: 500, description: "Error al buscar reseñas de version de producto" })
+    @ApiParam({ name: "sku", description: "Buscar versiones de producto", required: true })
+    @ApiQuery({ name: "page", description: "Pagina", required: true })
+    @ApiQuery({ name: "limit", description: "Limite de registro a buscar", required: true })
+    async showReviews(@Param("sku") sku: string, @Query() pagination: PaginationDTO): Promise<GetProductVersionReviews[]> {
+        return await this.productVersionService.findManyReviewsBySKU({ sku, pagination });
+    };
+
+    @Get("review/resume/:sku")
+    @ApiOperation({ description: "Buscar versiones de producto" })
+    @ApiResponse({ status: 200, description: "Reseñas de version de producto obtenidas exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al buscar reseñas de version de producto" })
+    @ApiResponse({ status: 500, description: "Error al buscar reseñas de version de producto" })
+    @ApiParam({ name: "sku", description: "Buscar versiones de producto", required: true })
+    async showReviewResume(@Param("sku") sku: string): Promise<GetPVReviewRating[]> {
+        return await this.productVersionService.getReviewRatingResumeBySKU({ sku });
+    };
 
 
 

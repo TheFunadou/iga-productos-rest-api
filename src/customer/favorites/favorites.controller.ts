@@ -28,7 +28,7 @@ export class FavoritesController {
     };
 
     @Get()
-    @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
+    @UseGuards(RequiredCustomerAuthGuard)
     @ApiOperation({ summary: "Obtener favoritos de un cliente" })
     @ApiResponse({ status: 200, description: "Favoritos obtenidos" })
     @ApiResponse({ status: 400, description: "Error al obtener favoritos" })
@@ -36,7 +36,6 @@ export class FavoritesController {
     @ApiResponse({ status: 500, description: "Error al obtener favoritos" })
     @ApiQuery({ name: "page", description: "Pagina actual", required: false })
     @ApiQuery({ name: "limit", description: "Cantidad de items por pagina", required: false })
-    @ApiHeader({ name: "X-CSRF-TOKEN", description: "Token CSRF" })
     async find(@AuthenticatedCustomer() customer: CustomerPayload, @Query() query: PaginationDTO) {
         return await this.favoritesService.find({ customerUUID: customer.uuid, pagination: { page: query.page, limit: query.limit } });
     };

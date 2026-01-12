@@ -23,6 +23,7 @@ export class OffersService {
                 }
             }
         });
+        await this.cache.invalidateEntity({ entity: "product-version:search:cards" })
         return `Oferta creada exitosamente, ${offerData.description}`;
     };
 

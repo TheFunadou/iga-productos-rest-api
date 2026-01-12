@@ -39,6 +39,7 @@ export class ProductVersionUtilsService {
                 }
             };
         };
+        console.log("cliente no autenticado");
         return PRODUCT_VERSION_CARD_BASE_SELECT;
     };
 
@@ -72,7 +73,7 @@ export class ProductVersionUtilsService {
                 where: { uuid: { in: args.filters.subcategoryPath } }, select: { id: true }
             });
             subcategoryFilter.AND = subcategoriesPathIds.map(sub => ({
-                product_subcategories: { some: { subcategory_id: sub.id } }
+                subcategories: { some: { subcategory_id: sub.id } }
             }));
         };
         if (args.filters.onlyFavorites && args.customerUUID) {
@@ -90,7 +91,6 @@ export class ProductVersionUtilsService {
 
     private async findRandomCardsPublic(args: { options: GetProductVersionCardsRandomOptionsDTO }): Promise<ProductVersionCard[]> {
         if (args.options.limit > this.MAX_CARDS_LIMIT) throw new BadRequestException("El límite de registros supera al máximo permitido");
-
         return await this.cacheService.remember<ProductVersionCard[]>({
             method: "staleWhileRevalidateWithLock",
             entity: `product-version:cards:${args.options.entity}`,
@@ -171,7 +171,7 @@ export class ProductVersionUtilsService {
 
                 return results.map(card => ({
                     product_name: card.product_name,
-                    subcategories: card.subcategories.map(sub => ({ subcategories: sub })),
+                    subcategories: card.subcategories.map(sub => sub.description),
                     category: card.category,
                     product_images: card.product_images,
                     product_version: card.product_version,
@@ -185,11 +185,10 @@ export class ProductVersionUtilsService {
 
     private async findRandomCardsBaseAuthCustomer(args: { options: GetProductVersionCardsRandomOptionsDTO, customerUUID: string }): Promise<ProductVersionCard[]> {
         if (args.options.limit > this.MAX_CARDS_LIMIT) throw new BadRequestException("El límite de registros supera al máximo permitido");
-
         return await this.cacheService.remember({
             method: "staleWhileRevalidateWithLock",
-            entity: `"product-version:cards:${args.options.entity}"`,
-            query: { random: true },
+            entity: `product-version:cards:${args.options.entity}`,
+            query: { random: true, customerUUID: args.customerUUID },
             aditionalOptions: {
                 ttlMilliseconds: 1000 * 60 * 15,
                 staleTimeMilliseconds: 1000 * 60 * 13
@@ -242,7 +241,7 @@ export class ProductVersionUtilsService {
                 INNER JOIN "Category" c ON p.category_id = c.id
                 LEFT JOIN "ProductVersionImages" pi ON pi.product_version_id = pv.id AND pi.main_image = true
                 LEFT JOIN "CustomerFavorites" cf ON cf.product_version_id = pv.id
-                LEFT JOIN "Customers" cust ON cf.customer_id = cust.id AND cust.uuid = ${args.customerUUID}
+                LEFT JOIN "Customer" cust ON cf.customer_id = cust.id AND cust.uuid = ${args.customerUUID}
                 GROUP BY 
                     pv.id,
                     pv.sku,
@@ -258,22 +257,21 @@ export class ProductVersionUtilsService {
                 ORDER BY RANDOM()
                 LIMIT ${args.options.limit}
             `;
-
-                // ✅ CORRECTO:
                 const productVersionsData = results.map(r => ({
                     versionId: r.id,
                     productId: r.product_id,
                     categoryId: r.category_id,
-                    subcategoryIds: r.subcategories.map(s => s.uuid) // ✅ Acceso directo a uuid
+                    subcategoryIds: r.subcategories.map(s => s.uuid)
                 }));
 
                 // Obtener descuentos
                 const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData);
 
+                console.log("USUARIO AUTENTICADO")
                 // Formatear y agregar descuentos
                 return results.map(card => ({
                     product_name: card.product_name,
-                    subcategories: card.subcategories.map(sub => ({ subcategories: sub })),
+                    subcategories: card.subcategories.map(sub => sub.description),
                     category: card.category,
                     product_images: card.product_images,
                     product_version: card.product_version,
@@ -309,7 +307,7 @@ export class ProductVersionUtilsService {
                 recommendations: args.version.product.recommendations,
                 specs: args.version.product.specs
             },
-            subcategories: args.version.product.subcategories,
+            subcategories: args.version.product.subcategories.map(sub => sub.subcategories.description),
             product_images: args.version.product_version_images,
             category: args.version.product.category.name,
             product_version: {
@@ -338,7 +336,7 @@ export class ProductVersionUtilsService {
 
             return {
                 product_name: cards.product.product_name,
-                subcategories: cards.product.subcategories,
+                subcategories: cards.product.subcategories.map(sub => sub.subcategories.description),
                 category: cards.product.category.name,
                 product_images: cards.product_version_images,
                 product_version: {
@@ -373,10 +371,9 @@ export class ProductVersionUtilsService {
         const select = this.buildFindCardsSelect({ customerUUID: args.customerUUID });
         const productVersionFilters = await this.buildCardsFilter({ tx: args.tx, filters: args.filters, customerUUID: args.customerUUID });
         const priceFilters = this.buildCardsPriceFilter({ filters: args.filters });
-        const totalRows = await args.tx.productVersion.count();
+        const totalRows = await args.tx.productVersion.count(productVersionFilters);
         if (totalRows < 1) return null;
         const paginationFilter = this.buildPaginationFilter({ filters: args.filters, count: totalRows });
-
         return {
             cacheQuery,
             select,

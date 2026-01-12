@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCustomerAddressDTO, UpdateCustomerAddressDTO } from './customer-addresses.dto';
+import { CreateCustomerAddressDTO, GetCustomerAddresses, UpdateCustomerAddressDTO } from './customer-addresses.dto';
 
 @Injectable()
 export class CustomerAddressesService {
+    private readonly nodeEnv = process.env.NODE_ENV;
+
     constructor(
         private readonly prisma: PrismaService,
         private readonly cacheService: CacheService
@@ -42,7 +44,7 @@ export class CustomerAddressesService {
                 await tx.customerAddresses.updateMany({
                     where: { customer_id: customer.id, uuid: { not: args.data.uuid } },
                     data: { default_address: false }
-                });
+                }).catch((error) => { throw new BadRequestException(`Ocurrio un error inesperado al actualizar la dirección de envio`, this.nodeEnv === "DEVELOPMENT" && error) });
                 defaultAddress = true;
             };
             if (args.data.default_address && addresses.length === 1 && currentAddress.default_address) defaultAddress = true;
@@ -54,7 +56,7 @@ export class CustomerAddressesService {
                         await tx.customerAddresses.update({
                             where: { uuid: otherAddress.uuid },
                             data: { default_address: true }
-                        });
+                        }).catch((error) => { throw new BadRequestException(`Ocurrio un error inesperado al actualizar la dirección de envio`, this.nodeEnv === "DEVELOPMENT" && error) });
                     };
                     defaultAddress = false;
                 };
@@ -66,7 +68,7 @@ export class CustomerAddressesService {
                 where: { uuid: args.data.uuid },
                 data: { default_address: defaultAddress },
                 omit: { id: true, customer_id: true, created_at: true, updated_at: true }
-            }).catch((error) => { throw new BadRequestException("Ocurrio un error inesperado al actualizar la dirección de envio") });
+            }).catch((error) => { throw new BadRequestException(`Ocurrio un error inesperado al actualizar la dirección de envio`, this.nodeEnv === "DEVELOPMENT" && error) });
 
             await this.cacheService.invalidateQuery({ entity: "customer:addresses", query: { customer: args.customerUUID } });
             return "Dirección de envio actualizada satisfactoriamente";
@@ -88,7 +90,7 @@ export class CustomerAddressesService {
         });
     };
 
-    async findAll(args: { pagination: { take: number, page: number }, customerUUID: string }) {
+    async findAll(args: { pagination: { limit: number, page: number }, customerUUID: string }): Promise<GetCustomerAddresses> {
         return await this.prisma.$transaction(async (tx) => {
             const customer = await tx.customer.findUnique({ where: { uuid: args.customerUUID }, select: { id: true } });
             if (!customer) throw new NotFoundException("Cliente no encontrado");
@@ -101,11 +103,18 @@ export class CustomerAddressesService {
                     staleTimeMilliseconds: 1000 * 60 * 10
                 },
                 fallback: async () => {
-                    return await this.prisma.customerAddresses.findMany({
+                    const addresses = await this.prisma.customerAddresses.findMany({
+                        take: args.pagination.limit,
+                        skip: (args.pagination.page - 1) * args.pagination.limit,
                         where: { customer_id: customer.id },
                         omit: { customer_id: true, id: true, created_at: true, updated_at: true },
                         orderBy: [{ default_address: "desc" }, { created_at: "desc" }]
                     });
+
+                    const totalRecords = await this.prisma.customerAddresses.count({ where: { customer_id: customer.id } });
+                    const totalPages = Math.ceil(totalRecords / args.pagination.limit);
+
+                    return { data: addresses, totalRecords, totalPages };
                 }
             })
         });

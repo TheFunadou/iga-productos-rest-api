@@ -4,7 +4,7 @@ import {
     CacheSimpleFind,
     CacheStrategy,
     StaleWhileRevalidateFind,
-    CacheLockingFind, // NUEVA ESTRATEGIA
+    CacheLockingFind,
     StaleWhileRevalidateWithLockFind
 } from "./cache.strategy";
 
@@ -27,7 +27,7 @@ export class CacheFactoryService {
         type: "simpleFind" | "staleWhileRevalidate" | "cacheLocking" | "staleWhileRevalidateWithLock"
     ): CacheStrategy {
         switch (type) {
-            case 'cacheLocking': return this.cacheLocking; // NUEVO CASE
+            case 'cacheLocking': return this.cacheLocking;
             case 'simpleFind': return this.simpleFind;
             case 'staleWhileRevalidate': return this.staleWhileRevalidate;
             case 'staleWhileRevalidateWithLock': return this.staleWhileRevalidateWithLock;

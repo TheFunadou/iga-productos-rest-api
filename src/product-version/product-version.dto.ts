@@ -102,8 +102,8 @@ export class ProductVersionImages {
     @IsBoolean()
     main_image: boolean;
 };
-
 export class SafeProductVersionImages extends OmitType(ProductVersionImages, ["id", "product_version_id"] as const) { };
+export class SafeTinyProductVersionImages extends PickType(ProductVersionImages, ["image_url"] as const) { };
 export class CreateProductVersionDTO extends ProductVersionAttributes {
     @ApiProperty({ example: "123e4567-e89b-12d3-a456-426614174000", description: "UUID del producto padre" })
     @IsString()
@@ -134,19 +134,17 @@ class ParentVersions extends PickType(ProductVersion, ["sku", "unit_price"] as c
 
 export class ProductVersionDetail {
     @ApiProperty({ description: "Información del producto padre", type: ProductAttributes })
-    // @Type(() => SafeProduct)
     product: ProductAttributes;
 
     @ApiProperty({
         description: "Obtener subcategorias de un producto",
-        type: [GetSubcategories],
+        type: [String],
         isArray: true,
-        example: [{ "subcategories": { "description": "Nombre subcategoria" } }]
+        example: ["subcategoria 1", "subcategoria 2", "subcategoria 3"]
     })
     @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => GetSubcategories)
-    subcategories: GetSubcategories[];
+    @Type(() => String)
+    subcategories: string[];
 
     @ApiProperty({ description: "Información de version de producto", type: SafeProductVersionAttributes })
 
@@ -183,10 +181,12 @@ class ProductVersionCardAttributes extends OmitType(ProductVersion, ["id", "prod
 export class ProductVersionCard extends OmitType(ProductVersionDetail, ["product", "product_version", "product_images", "parent_versions"] as const) {
     @ApiProperty({ type: String, example: "Nombre producto" })
     @IsString()
+    @IsNotEmpty({ message: "El nombre del producto no puede estar vacio" })
     product_name: string;
 
     @ApiProperty({ type: String, example: "Nombre categoria" })
     @IsString()
+    @IsNotEmpty({ message: "El nombre de la categoria no puede estar vacio" })
     category: string;
 
     @ApiProperty({ type: ProductVersionCardAttributes })
@@ -297,3 +297,70 @@ export class GetProductVersionCardsRandomOptionsDTO {
     entity?: string;
 };
 
+export class ProductVersionReviews {
+    @ApiProperty({ description: "ID de la review" })
+    id: string;
+
+    @ApiProperty({ description: "UUID del cliente" })
+    uuid: string;
+
+    @ApiProperty({ description: "ID de la version del producto" })
+    product_version_id: string;
+
+    @ApiProperty({ description: "ID del cliente" })
+    customer_id: string;
+
+    @ApiProperty({ description: "Calificacion" })
+    @IsInt()
+    @IsNotEmpty({ message: "La calificacion no puede estar vacia" })
+    rating: number;
+
+    @ApiProperty({ description: "Titulo" })
+    @IsString()
+    @IsNotEmpty({ message: "El titulo no puede estar vacio" })
+    title: string;
+
+    @ApiProperty({ description: "Comentario" })
+    @IsString()
+    @IsNotEmpty({ message: "El comentario no puede estar vacio" })
+    comment: string;
+
+    @ApiProperty({ description: "Fecha de creacion" })
+    created_at: Date;
+};
+
+export class ProductVersionReviewsAttributes extends PickType(ProductVersionReviews, ["rating", "title", "comment"] as const) { };
+
+export class GetProductVersionReviews extends OmitType(ProductVersionReviews, ["id", "product_version_id", "customer_id"] as const) {
+    @ApiProperty({ description: "Informacion del cliente", type: String })
+    customer: string;
+
+    @ApiProperty({ description: "Cantidad total de reseñas" })
+    totalRecords: number;
+
+    @ApiProperty({ description: "Cantidad total de paginas" })
+    totalPages: number;
+
+};
+
+export class GetPVReviewRating {
+    @ApiProperty({ description: "Calificacion" })
+    rating: number;
+
+    @ApiProperty({ description: "Porcentaje" })
+    percentage: number;
+}
+
+export class ProductVersionReviewsVersionAttributes extends PickType(ProductVersion, ["sku", "color_name", "color_code", "color_line"] as const) {
+
+    @ApiProperty({ description: "Imagenes de la version del producto", type: SafeTinyProductVersionImages, isArray: true })
+    @Type(() => SafeTinyProductVersionImages)
+    @ValidateNested({ each: true })
+    product_version_images: SafeTinyProductVersionImages[];
+
+    @ApiProperty({ description: "Nombre de la categoria" })
+    category_name: string;
+
+    @ApiProperty({ description: "Arreglo de nombres de subcategorias", type: String, isArray: true })
+    subcategories: string[];
+};
