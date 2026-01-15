@@ -6,11 +6,12 @@ import { CacheModule } from 'src/cache/cache.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { OrderUtilsService } from './order.utils.service';
 import { ProductVersionModule } from 'src/product-version/product-version.module';
+import { OffersModule } from 'src/offers/offers.module';
 
 @Module({
   providers: [OrdersService, OrderUtilsService],
   controllers: [OrdersController],
-  imports: [PaymentModule, CacheModule, PrismaModule, ProductVersionModule],
+  imports: [PaymentModule, CacheModule, PrismaModule, ProductVersionModule, OffersModule],
   exports: [OrdersService]
 })
 export class OrdersModule { }

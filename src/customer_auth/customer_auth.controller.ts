@@ -8,6 +8,7 @@ import { AuthenticatedCustomer } from './customer_auth.current.decorator';
 
 @Controller('customer-auth')
 export class CustomerAuthController {
+    private readonly nodeEnv = process.env.NODE_ENV;
     constructor(
         private readonly customerAuthService: CustomerAuthService
     ) { };
@@ -23,19 +24,34 @@ export class CustomerAuthController {
         @Req() request: ExpressRequest
     ): Promise<AuthCustomer> {
         const login = await this.customerAuthService.login(dto);
+        // response.cookie("iga_customer_access_token", login.access_token, {
+        //     httpOnly: true,
+        //     secure: this.nodeEnv === "PRODUCTION",
+        //     sameSite: this.nodeEnv === "PRODUCTION" ? "strict" : "lax",
+        //     maxAge: 1000 * 60 * 60 * 24,
+        // });
+
+        // response.cookie("iga_customer_csrf_token", login.csrfToken, {
+        //     httpOnly: false,
+        //     secure: this.nodeEnv === "PRODUCTION",
+        //     sameSite: this.nodeEnv === "PRODUCTION" ? "strict" : "lax",
+        //     maxAge: 1000 * 60 * 60 * 24,
+        // });
+
         response.cookie("iga_customer_access_token", login.access_token, {
             httpOnly: true,
-            secure: false,
-            sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+            secure: true,
+            sameSite: "none",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
         response.cookie("iga_customer_csrf_token", login.csrfToken, {
             httpOnly: false,
-            secure: false,
-            sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+            secure: true,
+            sameSite: "none",
             maxAge: 1000 * 60 * 60 * 24,
         });
+
 
         return { payload: login.payload, csrfToken: login.csrfToken };
     };

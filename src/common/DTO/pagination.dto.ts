@@ -8,6 +8,7 @@ export class PaginationDTO {
     @IsInt()
     @Type(() => Number)
     page: number;
+
     @ApiProperty({ example: 10, description: "Cantidad de items por pagina", required: true })
     @IsInt()
     @Type(() => Number)

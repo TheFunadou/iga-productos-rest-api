@@ -5,7 +5,7 @@ import { ProductVersionFindService } from 'src/product-version/product-version.f
 
 @Injectable()
 export class FavoritesService {
-
+    private readonly nodeEnv = process.env.NODE_ENV;
     constructor(
         private readonly prisma: PrismaService,
         private readonly cacheService: CacheService,
@@ -15,16 +15,22 @@ export class FavoritesService {
     private async add(args: { tx: any, customer: { id: string, uuid: string }, productVersionId: string }) {
         await args.tx.customerFavorites.create({
             data: { customer_id: args.customer.id, product_version_id: args.productVersionId }
-        }).catch((error) => { throw new BadRequestException("Error al agregar el producto a favoritos") });
-        await this.cacheService.invalidateQuery({ entity: "customer:favorites", query: { customer: args.customer.uuid } });
+        }).catch((error) => { throw new BadRequestException(`Error al agregar el producto a favoritos ${this.nodeEnv === "DEVELOPMENT" && `: ${error}`}`) });
+        await this.cacheService.invalidateMultipleEntities([
+            { entity: `customer:favorites:${args.customer.uuid}` },
+            { entity: `product-version:search:cards:${args.customer.uuid}` }
+        ]);
         return { added: true, message: "Producto agregado a favoritos" };
     };
 
     private async remove(args: { tx: any, customer: { id: string, uuid: string }, favoriteID: string }) {
         await args.tx.customerFavorites.delete({
             where: { id: args.favoriteID }
-        }).catch((error) => { throw new BadRequestException("Error al eliminar el producto de favoritos") });
-        await this.cacheService.invalidateQuery({ entity: "customer:favorites", query: { customer: args.customer.uuid } });
+        }).catch((error) => { throw new BadRequestException(`Error al eliminar el producto de favoritos ${this.nodeEnv === "DEVELOPMENT" && `: ${error}`}`) });
+        await this.cacheService.invalidateMultipleEntities([
+            { entity: `customer:favorites:${args.customer.uuid}` },
+            { entity: `product-version:search:cards:${args.customer.uuid}` }
+        ]);
         return { removed: true, message: "Producto eliminado de favoritos" };
     };
 
@@ -51,7 +57,7 @@ export class FavoritesService {
                 onlyFavorites: true
             },
             customerUUID: args.customerUUID,
-            entity: "customer:favorites"
+            entity: `customer:favorites:${args.customerUUID}`
         })
     };
 };

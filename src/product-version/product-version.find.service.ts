@@ -19,7 +19,7 @@ export class ProductVersionFindService {
         if (!builtFilters) return null;
         return await this.cacheService.remember<GetProductVersionCards>({
             method: "staleWhileRevalidateWithLock",
-            entity: args.entity ?? "product-version:search:cards",
+            entity: args.entity ?? `product-version:search:cards:${args.customerUUID ?? "public"}`,
             query: builtFilters.cacheQuery,
             aditionalOptions: {
                 ttlMilliseconds: 1000 * 60 * 15,
@@ -62,7 +62,7 @@ export class ProductVersionFindService {
         const builtFilters = this.utilsService.buildShowDetailsFilters({ sku: args.sku, customerUUID: args.customerUUID });
         return await this.cacheService.remember<ProductVersionDetail | null>({
             method: "staleWhileRevalidateWithLock",
-            entity: "product-version:show:details",
+            entity: `product-version:show:details${args.customerUUID ? `:${args.customerUUID}` : ""}`,
             query: builtFilters.query,
             aditionalOptions: {
                 ttlMilliseconds: 1000 * 60 * 15,
@@ -92,7 +92,7 @@ export class ProductVersionFindService {
         })
     };
 
-    async searchCardsBySKUList(args: { tx?: any, skuList: string[], customerUUID?: string }) {
+    async searchCardsBySKUList(args: { tx?: any, skuList: string[], customerUUID?: string, couponCode?: string }): Promise<ProductVersionCard[]> {
         const builtSelect = this.utilsService.buildFindCardsSelect({ customerUUID: args.customerUUID });
         const results = args.tx ? await args.tx.productVersion.findMany({
             where: { sku: { in: args.skuList } },
@@ -101,6 +101,24 @@ export class ProductVersionFindService {
             where: { sku: { in: args.skuList } },
             select: builtSelect
         });
-        return this.utilsService.formatCards(results);
+
+        const productVersionsData = results.map(r => ({
+            versionId: r.id,
+            productId: r.product.id,
+            categoryId: r.product.category_id,
+            subcategoryIds: r.product.subcategories.map(s => s.subcategories.uuid)
+        }));
+
+        if (args.couponCode) {
+            const discountsInfo = await this.offersUtilsService.checkMultipleProductVersionsDiscountsByCoupon({
+                couponCode: args.couponCode,
+                productVersions: productVersionsData
+            });
+
+            return this.utilsService.formatCards({ data: results, discountsMap: discountsInfo });
+        };
+        const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData);
+        return this.utilsService.formatCards({ data: results, discountsMap })
+
     }
 };

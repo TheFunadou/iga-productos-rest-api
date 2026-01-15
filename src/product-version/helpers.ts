@@ -1,3 +1,32 @@
+export interface ProductVersionCardSelect {
+    id: number;
+    unit_price: string;
+    sku: string;
+    color_line: string;
+    color_name: string;
+    color_code: string;
+    stock: number;
+    product_version_images: {
+        main_image: boolean;
+        image_url: string;
+    }[];
+    product: {
+        id: number;
+        product_name: string;
+        category_id: number;
+        category: {
+            name: string;
+        };
+        subcategories: {
+            subcategories: {
+                uuid: string;
+                description: string;
+            };
+        }[];
+    };
+    customer_favorites?: { added_at: Date; }[];
+}
+
 export const PRODUCT_VERSION_CARD_BASE_SELECT = {
     id: true,
     unit_price: true,
@@ -20,6 +49,53 @@ export const PRODUCT_VERSION_CARD_BASE_SELECT = {
             subcategories: { select: { subcategories: { select: { uuid: true, description: true } }, }, }
         }
     }
+};
+
+export interface ProductVersionDetailSelect {
+    id: number;
+    sku: string;
+    color_line: string;
+    color_name: string;
+    color_code: string;
+    status: string;
+    stock: number;
+    unit_price: string;
+    technical_sheet_url: string;
+    product_version_images: {
+        main_image: boolean;
+        image_url: string;
+    }[];
+    product: {
+        product_name: string;
+        specs: string;
+        recommendations: string;
+        applications: string;
+        certifications_desc: string;
+        description: string;
+        category: {
+            id: number;
+            name: string;
+        };
+        subcategories: {
+            subcategories: {
+                uuid: string;
+                description: string;
+            };
+        }[];
+        product_sources: {
+            source_description: string;
+            source_url: string;
+        }[];
+        product_versions: {
+            sku: string;
+            unit_price: string;
+            product_version_images: {
+                image_url: string;
+            }[];
+        }[];
+    };
+    customer_favorites?: { added_at: Date; }[];
+    reviews?: { created_at: Date; }[];
 };
 
 

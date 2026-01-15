@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ProductVersionService } from './product-version.service';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { CreateProductVersionDTO, GetProductVersionCardsRandomOptionsDTO, GetProductVersionReviews, GetPVReviewRating, ProductVersionCardsFiltersDTO } from './product-version.dto';
+import { CreateProductVersionDTO, GetProductVersionCardsRandomOptionsDTO, GetProductVersionReviews, GetPVReviewRating, GetPVReviewResume, ProductVersionCardsFiltersDTO } from './product-version.dto';
 import { ProductVersionFindService } from './product-version.find.service';
 import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
@@ -123,24 +123,24 @@ export class ProductVersionController {
 
 
     @Get("review/:sku")
-    @ApiOperation({ description: "Buscar versiones de producto" })
+    @ApiOperation({ description: "Mostrar reseñas de version de producto" })
     @ApiResponse({ status: 200, description: "Reseñas de version de producto obtenidas exitosamente" })
-    @ApiResponse({ status: 400, description: "Error al buscar reseñas de version de producto" })
-    @ApiResponse({ status: 500, description: "Error al buscar reseñas de version de producto" })
+    @ApiResponse({ status: 400, description: "Error al mostrar reseñas de version de producto" })
+    @ApiResponse({ status: 500, description: "Error al mostrar reseñas de version de producto" })
     @ApiParam({ name: "sku", description: "Buscar versiones de producto", required: true })
     @ApiQuery({ name: "page", description: "Pagina", required: true })
     @ApiQuery({ name: "limit", description: "Limite de registro a buscar", required: true })
-    async showReviews(@Param("sku") sku: string, @Query() pagination: PaginationDTO): Promise<GetProductVersionReviews[]> {
+    async showReviews(@Param("sku") sku: string, @Query() pagination: PaginationDTO): Promise<GetProductVersionReviews> {
         return await this.productVersionService.findManyReviewsBySKU({ sku, pagination });
     };
 
     @Get("review/resume/:sku")
-    @ApiOperation({ description: "Buscar versiones de producto" })
-    @ApiResponse({ status: 200, description: "Reseñas de version de producto obtenidas exitosamente" })
-    @ApiResponse({ status: 400, description: "Error al buscar reseñas de version de producto" })
-    @ApiResponse({ status: 500, description: "Error al buscar reseñas de version de producto" })
+    @ApiOperation({ description: "Mostrar resumen de reseñas de version de producto" })
+    @ApiResponse({ status: 200, description: "Resumen de reseñas de version de producto obtenido exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al buscar resumen de reseñas de version de producto" })
+    @ApiResponse({ status: 500, description: "Error al buscar resumen de reseñas de version de producto" })
     @ApiParam({ name: "sku", description: "Buscar versiones de producto", required: true })
-    async showReviewResume(@Param("sku") sku: string): Promise<GetPVReviewRating[]> {
+    async showReviewResume(@Param("sku") sku: string): Promise<GetPVReviewResume> {
         return await this.productVersionService.getReviewRatingResumeBySKU({ sku });
     };
 

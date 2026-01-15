@@ -1,12 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateProductVersionDTO, GetProductVersionReviews, GetPVReviewRating, PatchProductVersionDTO, SafeProductVersionImages, SearchProductVersionsDTO } from './product-version.dto';
+import { CreateProductVersionDTO, GetProductVersionReviews, GetPVReviewRating, GetPVReviewResume, PatchProductVersionDTO, SafeProductVersionImages, SearchProductVersionsDTO } from './product-version.dto';
 import { Decimal } from '@prisma/client/runtime/index-browser';
 import { CustomerReviewDTO } from 'src/customer/customer.dto';
 
 @Injectable()
 export class ProductVersionService {
+    private readonly logger = new Logger(ProductVersionService.name);
+    private readonly nodeEnv = process.env.NODE_ENV;
     constructor(
         private readonly prisma: PrismaService,
         private readonly cacheService: CacheService
@@ -131,25 +133,44 @@ export class ProductVersionService {
 
     async addReview(args: { customerUUID: string, data: CustomerReviewDTO }): Promise<string> {
         return await this.prisma.$transaction(async (tx) => {
+            if (args.data.rating > 5) throw new BadRequestException("El rating no puede ser mayor a 5");
             const customer = await tx.customer.findUnique({ where: { uuid: args.customerUUID }, select: { id: true } });
             const productVersion = await tx.productVersion.findFirst({ where: { sku: { equals: args.data.sku, mode: "insensitive" } }, select: { id: true } });
             if (!customer) throw new NotFoundException("No se encontro el cliente");
             if (!productVersion) throw new NotFoundException("No se encontro la version de producto");
 
-            await tx.productVersionReviews.create({ data: { ...args.data, customer_id: customer.id, product_version_id: productVersion.id } });
-            return `Comentario agregado exitosamente`;
+            const review = await tx.productVersionReviews.findFirst({ where: { customer_id: customer.id, product_version_id: productVersion.id }, select: { uuid: true } });
+            if (review) throw new BadRequestException("Ya has agregado un comentario para esta version de producto");
+
+            await tx.productVersionReviews.create({
+                data: {
+                    title: args.data.title,
+                    comment: args.data.comment,
+                    rating: args.data.rating,
+                    customer_id: customer.id,
+                    product_version_id: productVersion.id
+                }
+            }).catch((error) => {
+                throw new BadRequestException("Ocurrio un error inesperado", this.nodeEnv === "DEVELOPMENT" && error);
+            });
+            await this.cacheService.invalidateEntity({ entity: `product-version:show:details:${args.customerUUID}` })
+            return `Tu reseña ha sido enviada`;
         });
     };
 
 
-    async findManyReviewsBySKU(args: { sku: string, pagination: { page: number, limit: number } }): Promise<GetProductVersionReviews[]> {
-        return await this.cacheService.remember<GetProductVersionReviews[]>({
+    async findManyReviewsBySKU(args: { sku: string, pagination: { page: number, limit: number } }): Promise<GetProductVersionReviews> {
+        return await this.cacheService.remember<GetProductVersionReviews>({
             method: "staleWhileRevalidateWithLock",
             entity: "product-version:reviews",
             query: { sku: args.sku },
+            aditionalOptions: {
+                ttlMilliseconds: 1000 * 60 * 60,
+                staleTimeMilliseconds: 1000 * 60 * 50
+            },
             fallback: async () => {
                 return await this.prisma.$transaction(async (tx) => {
-                    const reviews = await tx.productVersionReviews.findMany({
+                    const result = await tx.productVersionReviews.findMany({
                         take: args.pagination.limit || 10,
                         skip: (args.pagination.page || 1) - 1,
                         where: { product_version: { sku: { equals: args.sku, mode: "insensitive" } } },
@@ -167,47 +188,51 @@ export class ProductVersionService {
                         where: { product_version: { sku: { equals: args.sku, mode: "insensitive" } } }
                     });
 
-                    return reviews.map((review) => ({
-                        ...review,
-                        totalRecords,
-                        totalPages: Math.ceil(totalRecords / (args.pagination?.limit || 10)),
-                        customer: review.customer.name
-                    }));
+                    const reviews = result.map((review) => ({ ...review, customer: review.customer.name }));
+
+                    return { reviews, totalRecords, totalPages: Math.ceil(totalRecords / (args.pagination?.limit || 10)) }
                 })
             }
         })
     };
 
-    async getReviewRatingResumeBySKU(args: { sku: string }): Promise<GetPVReviewRating[]> {
+    async getReviewRatingResumeBySKU(args: { sku: string }): Promise<GetPVReviewResume> {
         return await this.cacheService.remember({
             method: "staleWhileRevalidateWithLock",
             entity: "product-version:reviews:rating-review-resume",
             query: { sku: args.sku },
+            aditionalOptions: {
+                ttlMilliseconds: 1000 * 60 * 60,
+                staleTimeMilliseconds: 1000 * 60 * 50
+            },
             fallback: async () => {
                 return await this.prisma.$transaction(async (tx) => {
-                    const totalRecords = await tx.productVersionReviews.count({
-                        where: { product_version: { sku: { equals: args.sku, mode: "insensitive" } } }
-                    });
-
                     const ratingPerStar = await tx.productVersionReviews.groupBy({
                         by: ['rating'],
-                        where: {
-                            product_version: {
-                                sku: { equals: args.sku, mode: 'insensitive' }
-                            }
-                        },
-                        _count: {
-                            rating: true
-                        }
+                        where: { product_version: { sku: { equals: args.sku, mode: 'insensitive' } } },
+                        _count: { rating: true }
                     });
 
-                    return Array.from({ length: 5 }, (_, i) => {
+                    const totalRecords = ratingPerStar.reduce((acc, r) => acc + r._count.rating, 0);
+                    const totalStarts = ratingPerStar.reduce((acc, r) => acc + (r.rating * r._count.rating), 0);
+
+                    const ratingResume = Array.from({ length: 5 }, (_, i) => {
                         const star = i + 1
                         const found = ratingPerStar.find(r => r.rating === star)
                         const count = found?._count.rating ?? 0
 
-                        return { rating: star, percentage: totalRecords === 0 ? 0 : Number(((count / totalRecords) * 100).toFixed(2)) }
+                        return {
+                            rating: star,
+                            percentage: totalRecords === 0 ? 0 : Math.round((count / totalRecords) * 100)
+                        }
                     });
+
+                    const ratingAverage = totalRecords === 0 ? 0 : Math.round(((totalStarts / totalRecords) * 100) / 5);
+                    return {
+                        ratingResume: ratingResume.reverse(),
+                        ratingAverage,
+                        totalReviews: totalRecords
+                    }
 
                 })
             }

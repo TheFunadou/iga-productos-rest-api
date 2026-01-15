@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { PRODUCT_VERSION_CARD_BASE_SELECT, PRODUCT_VERSION_DETAIL_BASE_SELECT } from "./helpers";
+import { PRODUCT_VERSION_CARD_BASE_SELECT, PRODUCT_VERSION_DETAIL_BASE_SELECT, ProductVersionCardSelect, ProductVersionDetailSelect } from "./helpers";
 import { GetProductVersionCardsRandomOptionsDTO, ProductVersionCard, ProductVersionCardsFiltersDTO, ProductVersionDetail } from "./product-version.dto";
 import { CacheService } from "src/cache/cache.service";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -23,7 +23,8 @@ export class ProductVersionUtilsService {
                 customer_favorites: {
                     where: { customer: { uuid: args.customerUUID } },
                     select: { added_at: true }
-                }
+                },
+                reviews: { where: { customer: { uuid: args.customerUUID } }, select: { created_at: true } }
             };
         };
         return PRODUCT_VERSION_DETAIL_BASE_SELECT;
@@ -39,7 +40,6 @@ export class ProductVersionUtilsService {
                 }
             };
         };
-        console.log("cliente no autenticado");
         return PRODUCT_VERSION_CARD_BASE_SELECT;
     };
 
@@ -267,7 +267,6 @@ export class ProductVersionUtilsService {
                 // Obtener descuentos
                 const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData);
 
-                console.log("USUARIO AUTENTICADO")
                 // Formatear y agregar descuentos
                 return results.map(card => ({
                     product_name: card.product_name,
@@ -287,7 +286,7 @@ export class ProductVersionUtilsService {
         return args.customerUUID ? { sku: args.sku, customer: args.customerUUID } : { sku: args.sku }
     };
 
-    formatDetail(args: { version: any, discount?: number, isOffer?: boolean }): ProductVersionDetail {
+    formatDetail(args: { version: ProductVersionDetailSelect, discount?: number, isOffer?: boolean }): ProductVersionDetail {
 
         const formatParentVersions = args.version.product.product_versions.map(parents => {
             return {
@@ -297,6 +296,8 @@ export class ProductVersionUtilsService {
                 product_images: parents.product_version_images
             }
         });
+
+        const unitPriceWithDiscount = args.discount ? parseFloat(args.version.unit_price) - (parseFloat(args.version.unit_price) * (args.discount / 100)) : 0;
 
         return {
             product: {
@@ -319,21 +320,23 @@ export class ProductVersionUtilsService {
                 stock: args.version.stock,
                 technical_sheet_url: args.version.technical_sheet_url,
                 unit_price: args.version.unit_price,
+                unit_price_with_discount: args.isOffer ? unitPriceWithDiscount.toFixed(2).toString() : undefined
             },
             parent_versions: formatParentVersions ?? [],
             discount: args.discount ?? 0,
             isFavorite: (args.version.customer_favorites?.length ?? 0) > 0,
-            isOffer: args.isOffer ?? false
+            isOffer: args.isOffer ?? false,
+            isReviewed: (args.version.reviews?.length ?? 0) > 0
         };
     };
 
 
-    formatCards(args: { data: any[], discountsMap?: Map<string, { discount: number, isOffer: boolean }> }): ProductVersionCard[] {
+    formatCards(args: { data: ProductVersionCardSelect[], discountsMap?: Map<string, { discount: number, isOffer: boolean }> }): ProductVersionCard[] {
         const { data } = args;
         const { discountsMap } = args;
         return data.map(cards => {
-            const discountInfo = discountsMap?.get(cards.id) || { discount: 0, isOffer: false };
-
+            const discountInfo = discountsMap?.get(cards.id.toString()) || { discount: 0, isOffer: false };
+            const unitPriceWithDiscount = parseFloat(cards.unit_price) - (parseFloat(cards.unit_price) * (discountInfo.discount / 100));
             return {
                 product_name: cards.product.product_name,
                 subcategories: cards.product.subcategories.map(sub => sub.subcategories.description),
@@ -342,6 +345,7 @@ export class ProductVersionUtilsService {
                 product_version: {
                     sku: cards.sku,
                     unit_price: cards.unit_price,
+                    unit_price_with_discount: discountInfo.isOffer ? unitPriceWithDiscount.toFixed(2).toString() : undefined,
                     color_line: cards.color_line,
                     color_name: cards.color_name,
                     color_code: cards.color_code,

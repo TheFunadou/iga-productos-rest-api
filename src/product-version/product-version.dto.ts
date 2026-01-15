@@ -83,7 +83,12 @@ class ProductVersion {
 };
 export class SafeProductVersion extends OmitType(ProductVersion, ["id", "product_id"] as const) { };
 export class ProductVersionAttributes extends OmitType(ProductVersion, ["id", "product_id", "created_at", "updated_at"] as const) { };
-export class SafeProductVersionAttributes extends OmitType(ProductVersion, ["id", "product_id", "created_at", "updated_at", "main_version"] as const) { };
+export class SafeProductVersionAttributes extends OmitType(ProductVersion, ["id", "product_id", "created_at", "updated_at", "main_version"] as const) {
+    @ApiProperty({ example: "99.99", description: "Precio del producto con descuento" })
+    @IsString()
+    @IsOptional()
+    unit_price_with_discount?: string;
+};
 export class TinyProductVersionAttributes extends PickType(ProductVersion, ["sku", "color_code", "color_name", "color_code"] as const) { };
 
 export class ProductVersionImages {
@@ -174,11 +179,19 @@ export class ProductVersionDetail {
     @IsBoolean()
     @IsOptional()
     isFavorite?: boolean;
+
+    @ApiProperty({ default: "Ya esta evaludado por el cliente", required: false })
+    isReviewed?: boolean;
 };
 
-class ProductVersionCardAttributes extends OmitType(ProductVersion, ["id", "product_id", "created_at", "updated_at", "status", "main_version", "technical_sheet_url"] as const) { };
+class ProductVersionCardAttributes extends OmitType(ProductVersion, ["id", "product_id", "created_at", "updated_at", "status", "main_version", "technical_sheet_url"] as const) {
+    @ApiProperty({ example: "99.99", description: "Precio del producto con descuento" })
+    @IsString()
+    @IsOptional()
+    unit_price_with_discount?: string;
+};
 
-export class ProductVersionCard extends OmitType(ProductVersionDetail, ["product", "product_version", "product_images", "parent_versions"] as const) {
+export class ProductVersionCard extends OmitType(ProductVersionDetail, ["product", "product_version", "product_images", "parent_versions", "isReviewed"] as const) {
     @ApiProperty({ type: String, example: "Nombre producto" })
     @IsString()
     @IsNotEmpty({ message: "El nombre del producto no puede estar vacio" })
@@ -331,17 +344,19 @@ export class ProductVersionReviews {
 
 export class ProductVersionReviewsAttributes extends PickType(ProductVersionReviews, ["rating", "title", "comment"] as const) { };
 
-export class GetProductVersionReviews extends OmitType(ProductVersionReviews, ["id", "product_version_id", "customer_id"] as const) {
+export class PVCustomerReview extends OmitType(ProductVersionReviews, ["id", "product_version_id", "customer_id"] as const) {
     @ApiProperty({ description: "Informacion del cliente", type: String })
     customer: string;
-
-    @ApiProperty({ description: "Cantidad total de reseñas" })
-    totalRecords: number;
-
-    @ApiProperty({ description: "Cantidad total de paginas" })
-    totalPages: number;
-
 };
+
+export class GetProductVersionReviews {
+    @ApiProperty({ description: "Arreglo con las reseñas", type: PVCustomerReview, isArray: true })
+    reviews: PVCustomerReview[];
+    @ApiProperty({ description: "Total de registros encontrados en la base de datos" })
+    totalRecords: number;
+    @ApiProperty({ description: "Total de paginas" })
+    totalPages: number;
+}
 
 export class GetPVReviewRating {
     @ApiProperty({ description: "Calificacion" })
@@ -349,6 +364,16 @@ export class GetPVReviewRating {
 
     @ApiProperty({ description: "Porcentaje" })
     percentage: number;
+};
+
+
+export class GetPVReviewResume {
+    @ApiProperty({ description: "Arreglo con las calificaciones" })
+    ratingResume: GetPVReviewRating[];
+    @ApiProperty({ description: "Calificacion promedio" })
+    ratingAverage: number;
+    @ApiProperty({ description: "Cantidad total de reseñas" })
+    totalReviews: number;
 }
 
 export class ProductVersionReviewsVersionAttributes extends PickType(ProductVersion, ["sku", "color_name", "color_code", "color_line"] as const) {
