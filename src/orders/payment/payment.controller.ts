@@ -1,9 +1,9 @@
-import { Controller, Post, Query, Req, Headers, Get, Param } from '@nestjs/common';
+import { Controller, Post, Query, Req, Headers, Get, Param, Body } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { Request as ExpressRequest } from 'express';
 import { CacheService } from 'src/cache/cache.service';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
-import fs from "fs";
+import { promises as fs } from "fs";
 
 @Controller('payment')
 export class PaymentController {
@@ -21,25 +21,21 @@ export class PaymentController {
         @Headers('x-signature') xSignature: string,
         @Headers('x-request-id') xRequestId: string,
     ) {
-        const path = "C:/GitHubRepo/iga-productos/iga-productos-rest-api/src/orders/payment/JSON/example.json"
-        fs.writeFile(path, JSON.stringify(request.body, null, 2), "utf-8", (err) => {
-            if (err) console.log(err)
-        })
 
-        // if (type !== "payment") return { success: true, message: "Ignored non-payment notification" };
-        // // Firma del webhook
-        // // if(xSignature && xRequestId) this.paymentService.verifyWebhookSignature({xSignature,xRequestId,dataId});
-        // await this.cacheService.setData<OrderProcessingStatus>({
-        //     entity: "payment:status",
-        //     query: { externalOrderId: dataId },
-        //     data: {
-        //         status: "processing",
-        //         updatedAt: new Date().toISOString(),
-        //     },
-        //     aditionalOptions: { ttlMilliseconds: 1000 * 60 * 60 }
-        // });
+        if (type !== "payment") return { success: true, message: "Ignored non-payment notification" };
+        // Firma del webhook
+        // if(xSignature && xRequestId) this.paymentService.verifyWebhookSignature({xSignature,xRequestId,dataId});
+        await this.cacheService.setData<OrderProcessingStatus>({
+            entity: "payment:status",
+            query: { externalOrderId: dataId },
+            data: {
+                status: "processing",
+                updatedAt: new Date().toISOString(),
+            },
+            aditionalOptions: { ttlMilliseconds: 1000 * 60 * 60 }
+        });
 
-        // await this.paymentService.queuePaymentProcessing({ paymentId: dataId });
+        await this.paymentService.queuePaymentProcessing({ paymentId: dataId });
 
         return { success: true };
     };
@@ -56,5 +52,13 @@ export class PaymentController {
             status: 'pending',
             updatedAt: new Date().toISOString(),
         };
+    };
+
+
+
+    @Post("mercadopago/testing")
+    @ApiOperation({ summary: "prueba mercado pago" })
+    async testingMercadoPagoProcessOrder() {
+
     }
 };

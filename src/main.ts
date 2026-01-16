@@ -35,7 +35,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:3000', "http://localhost:5174", process.env.FRONTEND_URL, "http://localhost:3001", "https://128h5jnt-5173.usw3.devtunnels.ms"],
+    origin: ['http://localhost:5173', 'http://localhost:3000', "http://localhost:5174", process.env.FRONTEND_URL, "http://localhost:3001", "https://rules-ide-jun-barry.trycloudflare.com"],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Content-Type,Accept,Authorization,X-CSRF-Token',

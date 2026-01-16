@@ -109,7 +109,7 @@ export class OrderUtilsService {
                 expires: true,
                 expiration_date_from: args.vigency.expirationFrom,
                 expiration_date_to: args.vigency.expirationTo,
-                notification_url: this.MERCADO_PAGO_NOTIFICATION_URL ?? "https://captious-brazenly-gladys.ngrok-free.dev/payment/mercado-pago/webhook",
+                notification_url: this.MERCADO_PAGO_NOTIFICATION_URL ?? "https://captious-brazenly-gladys.ngrok-free.dev/payment/mercadopago/webhook",
                 external_reference: args.internalOrderId,
             }
         };

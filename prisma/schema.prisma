@@ -178,14 +178,14 @@ model Subcategories {
   product_subcategories ProductSubcategories[] @relation("product_subcategories:subcategories")
 }
 
-model ProductSources {
-  id                 String   @id @default(cuid())
-  product_id         String
-  source_description String
-  source_url         String
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
-  product            Product  @relation("product_sources:product", fields: [product_id], references: [id])
+model ProductResources {
+  id                   String   @id @default(cuid())
+  product_id           String
+  resource_description String
+  resource_url         String
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+  product              Product  @relation("product_sources:product", fields: [product_id], references: [id])
 }
 
 model ProductSubcategories {
@@ -212,7 +212,7 @@ model Product {
   user_id             String
   category            Category               @relation("product:category", fields: [category_id], references: [id])
   user                User                   @relation("product:user", fields: [user_id], references: [id])
-  product_sources     ProductSources[]       @relation("product_sources:product")
+  product_resources   ProductResources[]     @relation("product_sources:product")
   subcategories       ProductSubcategories[] @relation("product_subcategories:product")
   product_versions    ProductVersion[]       @relation("product_version:product")
 }
@@ -284,36 +284,43 @@ model CustomerAddresses {
 }
 
 model Order {
-  id                   String                @id @default(cuid())
-  uuid                 String                @unique @default(dbgenerated("gen_random_uuid()"))
-  external_order_id    String                @unique
-  customer_id          String?
-  customer_address_id  String?
-  is_guest_order       Boolean               @default(false)
-  payment_provider     String
-  status               String
-  total_amount         Decimal               @db.Decimal(10, 2)
-  exchange             String
-  aditional_source_url String?
-  coupon_code          String?
-  created_at           DateTime              @default(now())
-  updated_at           DateTime              @updatedAt
-  customer_address     CustomerAddresses?    @relation("order:customer_addresses", fields: [customer_address_id], references: [id])
-  customer             Customer?             @relation("order:customer", fields: [customer_id], references: [id])
-  payment_details      OrderPaymentDetails[] @relation("order_payment_details:order")
-  order_items          OrderItemsDetails[]   @relation("order_items_details:order")
-  shipping             Shipping[]            @relation("shipping:order")
+  id                     String                @id @default(cuid())
+  uuid                   String                @unique @default(dbgenerated("gen_random_uuid()"))
+  external_order_id      String                @unique
+  customer_id            String?
+  customer_address_id    String?
+  is_guest_order         Boolean               @default(false)
+  payment_provider       String
+  status                 OrderAndPaymentStatus
+  total_amount           Decimal               @db.Decimal(10, 2)
+  exchange               String
+  aditional_resource_url String?
+  coupon_code            String?
+  created_at             DateTime              @default(now())
+  updated_at             DateTime              @updatedAt
+  customer_address       CustomerAddresses?    @relation("order:customer_addresses", fields: [customer_address_id], references: [id])
+  customer               Customer?             @relation("order:customer", fields: [customer_id], references: [id])
+  payment_details        OrderPaymentDetails[] @relation("order_payment_details:order")
+  order_items            OrderItemsDetails[]   @relation("order_items_details:order")
+  shipping               Shipping[]            @relation("shipping:order")
 }
 
 model OrderPaymentDetails {
-  id             Int      @id @default(autoincrement())
-  order_id       String
-  payment_class  String
-  payment_method String?
-  installments   Int?
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
-  order          Order    @relation("order_payment_details:order", fields: [order_id], references: [id])
+  id                          Int                   @id @default(autoincrement())
+  order_id                    String
+  payment_id                  Int                   @unique
+  last_four_digits            String
+  payment_class               String
+  payment_method              String
+  customer_paid_amount        Decimal               @db.Decimal(10, 2)
+  received_amount             Decimal               @db.Decimal(10, 2)
+  fee_amount                  Decimal?              @db.Decimal(10, 2)
+  customer_installment_amount Decimal               @db.Decimal(10, 2)
+  installments                Int
+  payment_status              OrderAndPaymentStatus
+  created_at                  DateTime              @default(now())
+  updated_at                  DateTime              @updatedAt
+  order                       Order                 @relation("order_payment_details:order", fields: [order_id], references: [id])
 }
 
 model OrderItemsDetails {
@@ -428,4 +435,16 @@ enum OfferStatus {
   ENDED
   CANCELLED
   PENDING
+}
+
+enum OrderAndPaymentStatus {
+  APPROVED
+  REJECTED
+  IN_PROCESS
+  CANCELLED
+  AUTHORIZED
+  PENDING
+  REFUNDED
+  IN_MEDIATION
+  CHARGED_BACK
 }

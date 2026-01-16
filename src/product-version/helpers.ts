@@ -82,9 +82,9 @@ export interface ProductVersionDetailSelect {
                 description: string;
             };
         }[];
-        product_sources: {
-            source_description: string;
-            source_url: string;
+        product_resources: {
+            resource_description: string;
+            resource_url: string;
         }[];
         product_versions: {
             sku: string;
@@ -123,7 +123,7 @@ export const PRODUCT_VERSION_DETAIL_BASE_SELECT = {
             description: true,
             category: { select: { id: true, name: true } },
             subcategories: { select: { subcategories: { select: { uuid: true, description: true, } } } },
-            product_sources: { select: { source_description: true, source_url: true } },
+            product_resources: { select: { resource_description: true, resource_url: true } },
             product_versions: {
                 select: {
                     sku: true, unit_price: true,

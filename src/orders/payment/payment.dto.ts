@@ -5,6 +5,7 @@ import { CreateCustomerAddressDTO } from "src/customer/customer-addresses/custom
 import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
 
 export type PaymentProviders = "mercado_pago" | "paypal";
+export type MercadoPagoPaymentStatus = "approved" | "rejected" | "in_process" | "cancelled" | "authorized" | "pending" | "in_mediation" | "refunded" | "charged_back"
 
 export class OrderShoppingCartDTO {
     @ApiProperty({ description: "SKU del producto que se va comprar", type: String })

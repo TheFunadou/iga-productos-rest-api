@@ -1,0 +1,873 @@
+[
+  {
+    "accounts_info": null,
+    "acquirer_reconciliation": [],
+    "additional_info": {
+      "ip_address": "187.132.31.41",
+      "items": [
+        {
+          "category_id": "Cascos",
+          "description": "Cascos de Seguridad Industrial,Cachucha Plagosur,Ajuste de Intervalo,Clase E",
+          "id": "CAS1-AI1-003",
+          "picture_url": "https://http2.mlstatic.com/D_NQ_NP_705985-MLM104333539578_012026-F.jpg",
+          "quantity": "2",
+          "title": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E",
+          "unit_price": "155.54"
+        }
+      ],
+      "payer": {
+        "first_name": "Joel",
+        "last_name": "Baez"
+      },
+      "shipments": {
+        "receiver_address": {
+          "city_name": "Coatzacoalcos",
+          "state_name": "Veracruz",
+          "street_name": "7 de Noviembre",
+          "street_number": "102",
+          "zip_code": "96430"
+        }
+      },
+      "tracking_id": "platform:v1-blacklabel,so:ALL,type:N/A,security:none"
+    },
+    "authorization_code": "301299",
+    "binary_mode": true,
+    "brand_id": null,
+    "build_version": "3.138.0-rc-9",
+    "call_for_authorize_id": null,
+    "captured": false,
+    "card": {
+      "bin": null,
+      "cardholder": {
+        "identification": {
+          "number": null,
+          "type": null
+        },
+        "name": null
+      },
+      "country": null,
+      "date_created": null,
+      "date_last_updated": null,
+      "expiration_month": null,
+      "expiration_year": null,
+      "first_six_digits": null,
+      "id": "9692129651",
+      "last_four_digits": "0553",
+      "tags": []
+    },
+    "charges_details": [
+      {
+        "accounts": {
+          "from": "payer",
+          "to": "mp"
+        },
+        "amounts": {
+          "original": 264,
+          "refunded": 0
+        },
+        "client_id": 0,
+        "date_created": "2026-01-16T12:18:49.000-04:00",
+        "id": "141629293015-001",
+        "last_updated": "2026-01-16T12:18:49.000-04:00",
+        "metadata": {
+          "source": "client",
+          "source_detail": "px-checkout-flows"
+        },
+        "name": "shipping_not_specified",
+        "refund_charges": [],
+        "reserve_id": null,
+        "type": "shipping",
+        "update_charges": []
+      },
+      {
+        "accounts": {
+          "from": "collector",
+          "to": "mp"
+        },
+        "amounts": {
+          "original": 25.46,
+          "refunded": 0
+        },
+        "client_id": 0,
+        "date_created": "2026-01-16T12:18:49.000-04:00",
+        "external_charge_id": "01KF3SMC98PDWY7KDHA8C3N8RN",
+        "id": "141629293015-002",
+        "last_updated": "2026-01-16T12:18:49.000-04:00",
+        "metadata": {
+          "reason": "",
+          "source": "proc-svc-charges",
+          "source_detail": "processing_fee_charge"
+        },
+        "name": "mercadopago_fee",
+        "refund_charges": [],
+        "reserve_id": null,
+        "type": "fee",
+        "update_charges": []
+      },
+      {
+        "accounts": {
+          "from": "payer",
+          "to": "mp"
+        },
+        "amounts": {
+          "original": 40.66,
+          "refunded": 0
+        },
+        "client_id": 0,
+        "date_created": "2026-01-16T12:18:49.000-04:00",
+        "external_charge_id": "01KF3SMC9881D110AWCGTH8SZJ",
+        "id": "141629293015-003",
+        "last_updated": "2026-01-16T12:18:49.000-04:00",
+        "metadata": {
+          "source": "proc-svc-charges",
+          "source_detail": "financing_fee_payer_charge"
+        },
+        "name": "financing_fee",
+        "refund_charges": [],
+        "reserve_id": null,
+        "type": "fee",
+        "update_charges": []
+      }
+    ],
+    "charges_execution_info": {
+      "internal_execution": {
+        "date": "2026-01-16T12:18:49.779-04:00",
+        "execution_id": "01KF3SMC8GVZVHBSA16ZBZDV0C"
+      }
+    },
+    "collector_id": 2543243254,
+    "corporation_id": null,
+    "counter_currency": null,
+    "coupon_amount": 0,
+    "currency_id": "MXN",
+    "date_approved": null,
+    "date_created": "2026-01-16T12:18:49.000-04:00",
+    "date_last_updated": "2026-01-16T12:18:50.000-04:00",
+    "date_of_expiration": null,
+    "deduction_schema": null,
+    "description": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E",
+    "differential_pricing_id": null,
+    "external_reference": "79854ea5-75c7-4e2b-ae3f-9fb7f8749847",
+    "fee_details": [],
+    "financing_group": null,
+    "id": 141629293015,
+    "installments": 3,
+    "integrator_id": null,
+    "issuer_id": "158",
+    "live_mode": true,
+    "marketplace_owner": null,
+    "merchant_account_id": null,
+    "merchant_number": null,
+    "metadata": {},
+    "money_release_date": null,
+    "money_release_schema": null,
+    "money_release_status": "released",
+    "notification_url": "https://captious-brazenly-gladys.ngrok-free.dev/payment/mercadopago/webhook",
+    "operation_type": "regular_payment",
+    "order": {
+      "id": "37332521269",
+      "type": "mercadopago"
+    },
+    "payer": {
+      "email": null,
+      "entity_type": null,
+      "first_name": null,
+      "id": "2952634770",
+      "identification": {
+        "number": null,
+        "type": null
+      },
+      "last_name": null,
+      "operator_id": null,
+      "phone": {
+        "number": null,
+        "extension": null,
+        "area_code": null
+      },
+      "type": null
+    },
+    "payment_method": {
+      "data": {
+        "routing_data": {
+          "merchant_account_id": "4666637"
+        }
+      },
+      "id": "master",
+      "issuer_id": "158",
+      "type": "credit_card"
+    },
+    "payment_method_id": "master",
+    "payment_type_id": "credit_card",
+    "platform_id": null,
+    "point_of_interaction": {
+      "application_data": {
+        "name": "checkout-off",
+        "operating_system": null,
+        "version": "v2"
+      },
+      "business_info": {
+        "branch": "Merchant Services",
+        "sub_unit": "checkout_pro",
+        "unit": "online_payments"
+      },
+      "location": {
+        "source": "Collector",
+        "state_id": "NN"
+      },
+      "transaction_data": {
+        "e2e_id": null
+      },
+      "type": "CHECKOUT"
+    },
+    "pos_id": null,
+    "processing_mode": "aggregator",
+    "refunds": [],
+    "release_info": null,
+    "shipping_amount": 264,
+    "sponsor_id": null,
+    "statement_descriptor": "Mercadopago*fake",
+    "status": "authorized",
+    "status_detail": "pending_capture",
+    "store_id": null,
+    "tags": null,
+    "taxes_amount": 0,
+    "transaction_amount": 250,
+    "transaction_amount_refunded": 0,
+    "transaction_details": {
+      "acquirer_reference": null,
+      "external_resource_url": null,
+      "financial_institution": null,
+      "installment_amount": 184.89,
+      "net_received_amount": 0,
+      "overpaid_amount": 0,
+      "payable_deferral_period": null,
+      "payment_method_reference_id": null,
+      "total_paid_amount": 554.66
+    },
+    "api_response": {
+      "status": 200,
+      "headers": {
+        "date": [
+          "Fri, 16 Jan 2026 16:18:50 GMT"
+        ],
+        "content-type": [
+          "application/json;charset=UTF-8"
+        ],
+        "transfer-encoding": [
+          "chunked"
+        ],
+        "connection": [
+          "keep-alive"
+        ],
+        "vary": [
+          "Accept-Encoding, Accept,Accept-Encoding"
+        ],
+        "cache-control": [
+          "max-age=0"
+        ],
+        "x-content-type-options": [
+          "nosniff"
+        ],
+        "x-request-id": [
+          "a654a38f-dbc6-412c-9880-6b318247b96c"
+        ],
+        "x-xss-protection": [
+          "1; mode=block"
+        ],
+        "strict-transport-security": [
+          "max-age=16070400; includeSubDomains; preload, max-age=31536000; includeSubDomains"
+        ],
+        "access-control-allow-origin": [
+          "*"
+        ],
+        "access-control-allow-headers": [
+          "Content-Type"
+        ],
+        "access-control-allow-methods": [
+          "PUT, GET, POST, DELETE, OPTIONS"
+        ],
+        "access-control-max-age": [
+          "86400"
+        ],
+        "timing-allow-origin": [
+          "*"
+        ],
+        "content-encoding": [
+          "gzip"
+        ]
+      }
+    }
+  },
+  {
+    "accounts_info": null,
+    "acquirer_reconciliation": [],
+    "additional_info": {
+      "ip_address": "187.132.31.41",
+      "items": [
+        {
+          "category_id": "Cascos",
+          "description": "Cascos de Seguridad Industrial,Cachucha Plagosur,Ajuste de Intervalo,Clase E",
+          "id": "CAS1-AI1-003",
+          "picture_url": "https://http2.mlstatic.com/D_NQ_NP_705985-MLM104333539578_012026-F.jpg",
+          "quantity": "2",
+          "title": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E",
+          "unit_price": "155.54"
+        }
+      ],
+      "payer": {
+        "first_name": "Joel",
+        "last_name": "Baez"
+      },
+      "shipments": {
+        "receiver_address": {
+          "city_name": "Coatzacoalcos",
+          "state_name": "Veracruz",
+          "street_name": "7 de Noviembre",
+          "street_number": "102",
+          "zip_code": "96430"
+        }
+      },
+      "tracking_id": "platform:v1-blacklabel,so:ALL,type:N/A,security:none"
+    },
+    "authorization_code": "301299",
+    "binary_mode": true,
+    "brand_id": null,
+    "build_version": "3.138.0-rc-9",
+    "call_for_authorize_id": null,
+    "captured": true,
+    "card": {
+      "bin": "40755957",
+      "cardholder": {
+        "identification": {
+          "number": null,
+          "type": null
+        },
+        "name": "APRO"
+      },
+      "country": "MEX",
+      "date_created": "2026-01-16T12:18:50.000-04:00",
+      "date_last_updated": "2026-01-16T12:18:50.000-04:00",
+      "expiration_month": 11,
+      "expiration_year": 2030,
+      "first_six_digits": "407559",
+      "id": "9692129655",
+      "last_four_digits": "3764",
+      "tags": [
+        "credit"
+      ]
+    },
+    "charges_details": [
+      {
+        "accounts": {
+          "from": "collector",
+          "to": "mp"
+        },
+        "amounts": {
+          "original": 7.11,
+          "refunded": 0
+        },
+        "client_id": 0,
+        "date_created": "2026-01-16T12:18:50.000-04:00",
+        "external_charge_id": "01KF3SMD2461A213GP6ADMB9R6",
+        "id": "141629239643-001",
+        "last_updated": "2026-01-16T12:18:50.000-04:00",
+        "metadata": {
+          "reason": "",
+          "source": "proc-svc-charges",
+          "source_detail": "processing_fee_charge"
+        },
+        "name": "mercadopago_fee",
+        "refund_charges": [],
+        "reserve_id": null,
+        "type": "fee",
+        "update_charges": []
+      }
+    ],
+    "charges_execution_info": {
+      "internal_execution": {
+        "date": "2026-01-16T12:18:50.575-04:00",
+        "execution_id": "01KF3SMD1BFABXAN7DEMYX5PMD"
+      }
+    },
+    "collector_id": 2543243254,
+    "corporation_id": null,
+    "counter_currency": null,
+    "coupon_amount": 0,
+    "currency_id": "MXN",
+    "date_approved": "2026-01-16T12:18:51.000-04:00",
+    "date_created": "2026-01-16T12:18:50.000-04:00",
+    "date_last_updated": "2026-01-16T12:18:51.000-04:00",
+    "date_of_expiration": null,
+    "deduction_schema": null,
+    "description": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E",
+    "differential_pricing_id": null,
+    "external_reference": "79854ea5-75c7-4e2b-ae3f-9fb7f8749847",
+    "fee_details": [
+      {
+        "amount": 7.11,
+        "fee_payer": "collector",
+        "type": "mercadopago_fee"
+      }
+    ],
+    "financing_group": null,
+    "id": 141629239643,
+    "installments": 3,
+    "integrator_id": null,
+    "issuer_id": "159",
+    "live_mode": true,
+    "marketplace_owner": null,
+    "merchant_account_id": null,
+    "merchant_number": null,
+    "metadata": {},
+    "money_release_date": "2026-01-16T12:18:51.000-04:00",
+    "money_release_schema": null,
+    "money_release_status": "released",
+    "notification_url": "https://captious-brazenly-gladys.ngrok-free.dev/payment/mercadopago/webhook",
+    "operation_type": "regular_payment",
+    "order": {
+      "id": "37332521269",
+      "type": "mercadopago"
+    },
+    "payer": {
+      "email": "test_user_8501455842419691068@testuser.com",
+      "entity_type": null,
+      "first_name": null,
+      "id": "2952634770",
+      "identification": {
+        "number": "aaaaaa11111111a111",
+        "type": "IFE"
+      },
+      "last_name": null,
+      "operator_id": null,
+      "phone": {
+        "number": null,
+        "extension": null,
+        "area_code": null
+      },
+      "type": null
+    },
+    "payment_method": {
+      "data": {
+        "routing_data": {
+          "merchant_account_id": "4585497"
+        }
+      },
+      "id": "visa",
+      "issuer_id": "159",
+      "type": "credit_card"
+    },
+    "payment_method_id": "visa",
+    "payment_type_id": "credit_card",
+    "platform_id": null,
+    "point_of_interaction": {
+      "application_data": {
+        "name": "checkout-off",
+        "operating_system": null,
+        "version": "v2"
+      },
+      "business_info": {
+        "branch": "Merchant Services",
+        "sub_unit": "checkout_pro",
+        "unit": "online_payments"
+      },
+      "location": {
+        "source": "Collector",
+        "state_id": "NN"
+      },
+      "transaction_data": {
+        "e2e_id": null
+      },
+      "type": "CHECKOUT"
+    },
+    "pos_id": null,
+    "processing_mode": "aggregator",
+    "refunds": [],
+    "release_info": null,
+    "shipping_amount": 0,
+    "sponsor_id": null,
+    "statement_descriptor": "Mercadopago*fake",
+    "status": "approved",
+    "status_detail": "accredited",
+    "store_id": null,
+    "tags": null,
+    "taxes_amount": 0,
+    "transaction_amount": 61.08,
+    "transaction_amount_refunded": 0,
+    "transaction_details": {
+      "acquirer_reference": null,
+      "external_resource_url": null,
+      "financial_institution": null,
+      "installment_amount": 20.36,
+      "net_received_amount": 53.97,
+      "overpaid_amount": 0,
+      "payable_deferral_period": null,
+      "payment_method_reference_id": null,
+      "total_paid_amount": 61.08
+    },
+    "api_response": {
+      "status": 200,
+      "headers": {
+        "date": [
+          "Fri, 16 Jan 2026 16:18:51 GMT"
+        ],
+        "content-type": [
+          "application/json;charset=UTF-8"
+        ],
+        "transfer-encoding": [
+          "chunked"
+        ],
+        "connection": [
+          "keep-alive"
+        ],
+        "vary": [
+          "Accept-Encoding, Accept,Accept-Encoding"
+        ],
+        "cache-control": [
+          "max-age=0"
+        ],
+        "x-content-type-options": [
+          "nosniff"
+        ],
+        "x-request-id": [
+          "4c5bdb1b-38af-4fb5-9666-2ac5c93ca2dc"
+        ],
+        "x-xss-protection": [
+          "1; mode=block"
+        ],
+        "strict-transport-security": [
+          "max-age=16070400; includeSubDomains; preload, max-age=31536000; includeSubDomains"
+        ],
+        "access-control-allow-origin": [
+          "*"
+        ],
+        "access-control-allow-headers": [
+          "Content-Type"
+        ],
+        "access-control-allow-methods": [
+          "PUT, GET, POST, DELETE, OPTIONS"
+        ],
+        "access-control-max-age": [
+          "86400"
+        ],
+        "timing-allow-origin": [
+          "*"
+        ],
+        "content-encoding": [
+          "gzip"
+        ]
+      }
+    }
+  },
+  {
+    "accounts_info": null,
+    "acquirer_reconciliation": [],
+    "additional_info": {
+      "ip_address": "187.132.31.41",
+      "items": [
+        {
+          "category_id": "Cascos",
+          "description": "Cascos de Seguridad Industrial,Cachucha Plagosur,Ajuste de Intervalo,Clase E",
+          "id": "CAS1-AI1-003",
+          "picture_url": "https://http2.mlstatic.com/D_NQ_NP_705985-MLM104333539578_012026-F.jpg",
+          "quantity": "2",
+          "title": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E",
+          "unit_price": "155.54"
+        }
+      ],
+      "payer": {
+        "first_name": "Joel",
+        "last_name": "Baez"
+      },
+      "shipments": {
+        "receiver_address": {
+          "city_name": "Coatzacoalcos",
+          "state_name": "Veracruz",
+          "street_name": "7 de Noviembre",
+          "street_number": "102",
+          "zip_code": "96430"
+        }
+      },
+      "tracking_id": "platform:v1-blacklabel,so:ALL,type:N/A,security:none"
+    },
+    "authorization_code": "301299",
+    "binary_mode": true,
+    "brand_id": null,
+    "build_version": "3.138.0-rc-9",
+    "call_for_authorize_id": null,
+    "captured": true,
+    "card": {
+      "bin": "54749254",
+      "cardholder": {
+        "identification": {
+          "number": null,
+          "type": null
+        },
+        "name": "APRO"
+      },
+      "country": "MEX",
+      "date_created": "2026-01-16T12:18:49.000-04:00",
+      "date_last_updated": "2026-01-16T12:18:49.000-04:00",
+      "expiration_month": 11,
+      "expiration_year": 2030,
+      "first_six_digits": "417400",
+      "id": "9692129651",
+      "last_four_digits": "0553",
+      "tags": [
+        "credit"
+      ]
+    },
+    "charges_details": [
+      {
+        "accounts": {
+          "from": "payer",
+          "to": "mp"
+        },
+        "amounts": {
+          "original": 264,
+          "refunded": 0
+        },
+        "client_id": 0,
+        "date_created": "2026-01-16T12:18:49.000-04:00",
+        "id": "141629293015-001",
+        "last_updated": "2026-01-16T12:18:49.000-04:00",
+        "metadata": {
+          "source": "client",
+          "source_detail": "px-checkout-flows"
+        },
+        "name": "shipping_not_specified",
+        "refund_charges": [],
+        "reserve_id": null,
+        "type": "shipping",
+        "update_charges": []
+      },
+      {
+        "accounts": {
+          "from": "collector",
+          "to": "mp"
+        },
+        "amounts": {
+          "original": 25.46,
+          "refunded": 0
+        },
+        "client_id": 0,
+        "date_created": "2026-01-16T12:18:49.000-04:00",
+        "external_charge_id": "01KF3SMC98PDWY7KDHA8C3N8RN",
+        "id": "141629293015-002",
+        "last_updated": "2026-01-16T12:18:49.000-04:00",
+        "metadata": {
+          "reason": "",
+          "source": "proc-svc-charges",
+          "source_detail": "processing_fee_charge"
+        },
+        "name": "mercadopago_fee",
+        "refund_charges": [],
+        "reserve_id": null,
+        "type": "fee",
+        "update_charges": []
+      },
+      {
+        "accounts": {
+          "from": "payer",
+          "to": "mp"
+        },
+        "amounts": {
+          "original": 40.66,
+          "refunded": 0
+        },
+        "client_id": 0,
+        "date_created": "2026-01-16T12:18:49.000-04:00",
+        "external_charge_id": "01KF3SMC9881D110AWCGTH8SZJ",
+        "id": "141629293015-003",
+        "last_updated": "2026-01-16T12:18:49.000-04:00",
+        "metadata": {
+          "source": "proc-svc-charges",
+          "source_detail": "financing_fee_payer_charge"
+        },
+        "name": "financing_fee",
+        "refund_charges": [],
+        "reserve_id": null,
+        "type": "fee",
+        "update_charges": []
+      }
+    ],
+    "charges_execution_info": {
+      "internal_execution": {
+        "date": "2026-01-16T12:18:49.779-04:00",
+        "execution_id": "01KF3SMC8GVZVHBSA16ZBZDV0C"
+      }
+    },
+    "collector_id": 2543243254,
+    "corporation_id": null,
+    "counter_currency": null,
+    "coupon_amount": 0,
+    "currency_id": "MXN",
+    "date_approved": "2026-01-16T12:18:51.000-04:00",
+    "date_created": "2026-01-16T12:18:49.000-04:00",
+    "date_last_updated": "2026-01-16T12:18:51.000-04:00",
+    "date_of_expiration": null,
+    "deduction_schema": null,
+    "description": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO PLAGOSUR C INTERVALO CLASE E",
+    "differential_pricing_id": null,
+    "external_reference": "79854ea5-75c7-4e2b-ae3f-9fb7f8749847",
+    "fee_details": [
+      {
+        "amount": 40.66,
+        "fee_payer": "payer",
+        "type": "financing_fee"
+      },
+      {
+        "amount": 25.46,
+        "fee_payer": "collector",
+        "type": "mercadopago_fee"
+      }
+    ],
+    "financing_group": null,
+    "id": 141629293015,
+    "installments": 3,
+    "integrator_id": null,
+    "issuer_id": "158",
+    "live_mode": true,
+    "marketplace_owner": null,
+    "merchant_account_id": null,
+    "merchant_number": null,
+    "metadata": {},
+    "money_release_date": "2026-01-16T12:18:51.000-04:00",
+    "money_release_schema": null,
+    "money_release_status": "released",
+    "notification_url": "https://captious-brazenly-gladys.ngrok-free.dev/payment/mercadopago/webhook",
+    "operation_type": "regular_payment",
+    "order": {
+      "id": "37332521269",
+      "type": "mercadopago"
+    },
+    "payer": {
+      "email": "test_user_8501455842419691068@testuser.com",
+      "entity_type": null,
+      "first_name": null,
+      "id": "2952634770",
+      "identification": {
+        "number": "aaaaaa11111111a111",
+        "type": "IFE"
+      },
+      "last_name": null,
+      "operator_id": null,
+      "phone": {
+        "number": null,
+        "extension": null,
+        "area_code": null
+      },
+      "type": null
+    },
+    "payment_method": {
+      "data": {
+        "routing_data": {
+          "merchant_account_id": "4666637"
+        }
+      },
+      "id": "master",
+      "issuer_id": "158",
+      "type": "credit_card"
+    },
+    "payment_method_id": "master",
+    "payment_type_id": "credit_card",
+    "platform_id": null,
+    "point_of_interaction": {
+      "application_data": {
+        "name": "checkout-off",
+        "operating_system": null,
+        "version": "v2"
+      },
+      "business_info": {
+        "branch": "Merchant Services",
+        "sub_unit": "checkout_pro",
+        "unit": "online_payments"
+      },
+      "location": {
+        "source": "Collector",
+        "state_id": "NN"
+      },
+      "transaction_data": {
+        "e2e_id": null
+      },
+      "type": "CHECKOUT"
+    },
+    "pos_id": null,
+    "processing_mode": "aggregator",
+    "refunds": [],
+    "release_info": null,
+    "shipping_amount": 264,
+    "sponsor_id": null,
+    "statement_descriptor": "Mercadopago*fake",
+    "status": "approved",
+    "status_detail": "accredited",
+    "store_id": null,
+    "tags": null,
+    "taxes_amount": 0,
+    "transaction_amount": 250,
+    "transaction_amount_refunded": 0,
+    "transaction_details": {
+      "acquirer_reference": null,
+      "external_resource_url": null,
+      "financial_institution": null,
+      "installment_amount": 184.89,
+      "net_received_amount": 488.54,
+      "overpaid_amount": 0,
+      "payable_deferral_period": null,
+      "payment_method_reference_id": null,
+      "total_paid_amount": 554.66
+    },
+    "api_response": {
+      "status": 200,
+      "headers": {
+        "date": [
+          "Fri, 16 Jan 2026 16:18:51 GMT"
+        ],
+        "content-type": [
+          "application/json;charset=UTF-8"
+        ],
+        "transfer-encoding": [
+          "chunked"
+        ],
+        "connection": [
+          "keep-alive"
+        ],
+        "vary": [
+          "Accept-Encoding, Accept,Accept-Encoding"
+        ],
+        "cache-control": [
+          "max-age=0"
+        ],
+        "x-content-type-options": [
+          "nosniff"
+        ],
+        "x-request-id": [
+          "df3befea-5e81-4b6e-8f27-0bfac95356f7"
+        ],
+        "x-xss-protection": [
+          "1; mode=block"
+        ],
+        "strict-transport-security": [
+          "max-age=16070400; includeSubDomains; preload, max-age=31536000; includeSubDomains"
+        ],
+        "access-control-allow-origin": [
+          "*"
+        ],
+        "access-control-allow-headers": [
+          "Content-Type"
+        ],
+        "access-control-allow-methods": [
+          "PUT, GET, POST, DELETE, OPTIONS"
+        ],
+        "access-control-max-age": [
+          "86400"
+        ],
+        "timing-allow-origin": [
+          "*"
+        ],
+        "content-encoding": [
+          "gzip"
+        ]
+      }
+    }
+  }
+]
