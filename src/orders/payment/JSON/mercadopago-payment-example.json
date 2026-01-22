@@ -1,101 +1,77 @@
 {
-    "id": 20359978,
-    "date_created": "2019-07-10T14:47:58.000Z",
-    "date_approved": null,
-    "date_last_updated": "2019-07-10T14:47:58.000Z",
-    "money_release_date": null,
-    "issuer_id": 25,
-    "payment_method_id": "visa",
-    "payment_type_id": "credit_card",
-    "status": "approved",
-    "status_detail": "accredited",
-    "currency_id": "MXN",
-    "description": "Point Mini a maquininha que dá o dinheiro de suas vendas na hora.",
-    "taxes_amount": 0,
-    "shipping_amount": 0,
-    "collector_id": 448876418,
-    "payer": {
-        "id": 123,
-        "email": null,
-        "identification": {
-            "number": null,
-            "type": null
-        },
-        "type": "customer"
-    },
-    "metadata": {},
-    "additional_info": {
-        "items": [
-            {
-                "id": "PR0001",
-                "title": "Point Mini",
-                "description": "Producto Point para cobros con tarjetas mediante bluetooth",
-                "picture_url": "https://http2.mlstatic.com/resources/frontend/statics/growth-sellers-landings/device-mlb-point-i_medium2x.png",
-                "category_id": "electronics",
-                "quantity": 1,
-                "unit_price": 58
-            }
-        ],
-        "payer": {
-            "registration_date": "2019-01-01T15:01:01.000Z"
-        },
-        "shipments": {
+    "state": {
+        "order": {
+            "folio": "c0f5e7fe-2f27-4602-9755-cef7d2610e25",
+            "items": [
+                {
+                    "product_name": "IGA CASCO DE SEGURIDAD INDUSTRIAL TIPO CORAZA A DIELECTRICO",
+                    "category": "Cascos",
+                    "subcategories": [
+                        "Cascos de Seguridad Industrial",
+                        "Coraza Tipo A",
+                        "Ajuste de Matraca",
+                        "Clase E"
+                    ],
+                    "product_version": {
+                        "sku": "CAS2-AM1-005",
+                        "color_code": "#20269c",
+                        "color_line": "Linea Basica",
+                        "color_name": "Azul",
+                        "stock": 23,
+                        "unit_price": "207.98",
+                        "unit_price_with_discount": "103.99"
+                    },
+                    "product_images": [
+                        {
+                            "main_image": true,
+                            "image_url": "https://igaproductos.com.mx/wp-content/uploads/2023/11/Azul_001-1.jpg"
+                        }
+                    ],
+                    "isChecked": true,
+                    "quantity": 2,
+                    "isOffer": true,
+                    "discount": 50,
+                    "isFavorite": false
+                }
+            ],
+            "order_id": "2543243254-15926952-119d-48d2-8857-cf861b0fc7a6",
             "receiver_address": {
-                "street_name": "Av das Nacoes Unidas",
-                "street_number": "1602",
-                "zip_code": "03940",
-                "city_name": "Buzios",
-                "state_name": "Rio de Janeiro"
+                "id": "cmk7b34uk0000mkxtie59jmqt",
+                "uuid": "cmk7b34uk0001mkxt795r1yom",
+                "customer_id": "9a1fb061-f069-4927-b14f-75500c10e9ec",
+                "recipient_name": "Joel",
+                "recipient_last_name": "Baez",
+                "country": "Mexico",
+                "state": "Veracruz",
+                "city": "Coatzacoalcos",
+                "locality": "Coatzacoalcos",
+                "street_name": "7 de Noviembre",
+                "neighborhood": "Esfuerzos de los hermanos del trabajo",
+                "zip_code": "96430",
+                "address_type": "Casa",
+                "floor": "N/A",
+                "number": "102",
+                "aditional_number": "N/A",
+                "references_or_comments": "Casa blanca 3 pisos portón cafe",
+                "country_phone_code": "+52",
+                "contact_number": "9211443695",
+                "default_address": true,
+                "created_at": "2026-01-09T20:05:42.091Z",
+                "updated_at": "2026-01-09T20:34:10.777Z"
+            },
+            "payment_method": "mercado_pago",
+            "resume": {
+                "boxesQty": 1,
+                "shippingCost": 264,
+                "subtotalBeforeIVA": 349.40639999999996,
+                "subtotalWithDiscount": 207.98,
+                "discount": 207.98,
+                "iva": 66.5536,
+                "total": 471.98
             }
-        }
-    },
-    "external_reference": "MP0001",
-    "transaction_amount": 58,
-    "transaction_amount_refunded": 50,
-    "coupon_amount": 15,
-    "transaction_details": {
-        "net_received_amount": 56,
-        "total_paid_amount": 58,
-        "overpaid_amount": 0,
-        "installment_amount": 58
-    },
-    "fee_details": [
-        {
-            "type": "coupon_fee",
-            "amount": 2,
-            "fee_payer": "payer"
-        }
-    ],
-    "statement_descriptor": "MercadoPago",
-    "installments": 1,
-    "card": {
-        "id": null,
-        "first_six_digits": null,
-        "last_four_digits": 5682,
-        "expiration_month": null,
-        "expiration_year": null,
-        "date_created": null,
-        "date_last_updated": null,
-        "cardholder": {
-            "name": null,
-            "identification": {
-                "number": null,
-                "type": null
-            }
-        }
-    },
-    "notification_url": "https://www.suaurl.com/notificacoes/",
-    "processing_mode": "aggregator",
-    "point_of_interaction": {
-        "type": "PIX",
-        "application_data": {
-            "name": "NAME_SDK",
-            "version": "VERSION_NUMBER"
         },
-        "transaction_data": {
-            "qr_code_base64": "iVBORw0KGgoAAAANSUhEUgAABRQAAAUUCAYAAACu5p7oAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAIABJREFUeJzs2luO3LiWQNFmI+Y/Zd6vRt36KGNXi7ZOBtcagHD4kNLeiLX33v8DAAAAABD879sDAAAAAAA/h6AIAAAAAGSCIgAAAACQCYoAAAAAQCYoAgAAAACZoAgAAAAAZIIiAAAAAJAJigAAAABAJigCAAAAAJmgCAAAAABkgiIAAAAAkAmKAAAAAEAmKAIAAAAAmaAIAAAAAGSCIgAAAACQCYoAAAAAQCYoAgAAAACZoAgAAAAAZIIiAAAAAJAJigAAAABAJigCA...",
-            "qr_code": "00020126600014br.gov.bcb.pix0117test@testuser.com0217dados adicionais520400005303986540510.005802BR5913Maria Silva6008Brasilia62070503***6304E2CA",
-            "ticket_url": "https://www.mercadopago.com.br/payments/123456789/ticket?caller_id=123456&hash=123e4567-e89b-12d3-a456-426655440000"
-        }
-    }
+        "isLoading": false,
+        "error": null
+    },
+    "version": 0
 }

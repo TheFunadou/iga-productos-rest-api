@@ -6,6 +6,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { PaymentProcessorService } from './payment-processor.service';
 import { PaymentQueueConsumer } from './payment-queue.consumer';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { ShippingModule } from 'src/shipping/shipping.module';
 
 @Module({
   providers: [PaymentService, PaymentProcessorService, PaymentQueueConsumer],
@@ -13,6 +14,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
   imports: [
     CacheModule,
     PrismaModule,
+    ShippingModule,
     BullModule.registerQueue({
       name: "payment-processing",
       defaultJobOptions: {

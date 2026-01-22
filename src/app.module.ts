@@ -20,6 +20,7 @@ import { ECommerceModule } from './e-commerce/e-commerce.module';
 import { OrdersModule } from './orders/orders.module';
 import { OffersModule } from './offers/offers.module';
 import { MetricsModule } from './metrics/metrics.module';
+import { ShippingModule } from './shipping/shipping.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { MetricsModule } from './metrics/metrics.module';
     OrdersModule,
     OffersModule,
     MetricsModule,
+    ShippingModule,
   ],
   controllers: [AppController],
   providers: [AppService, UserService],

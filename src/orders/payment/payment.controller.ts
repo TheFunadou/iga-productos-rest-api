@@ -4,6 +4,8 @@ import { Request as ExpressRequest } from 'express';
 import { CacheService } from 'src/cache/cache.service';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { promises as fs } from "fs";
+import { GetPaidOrderDetails } from './payment.dto';
+import { OrderAndPaymentStatus } from 'generated/prisma/enums';
 
 @Controller('payment')
 export class PaymentController {
@@ -54,11 +56,17 @@ export class PaymentController {
         };
     };
 
+    @Get("order/status/:uuid")
+    @ApiOperation({ summary: "Obtiene el estado de una orden por UUID" })
+    @ApiParam({ name: 'uuid', description: 'UUID de la orden' })
+    @ApiResponse({ status: 200, description: "Estado de la orden", type: Object })
+    async getOrderStatusWithDetails(
+        @Param('uuid') uuid: string,
+        @Query("status") requiredStatus: OrderAndPaymentStatus
+    ): Promise<GetPaidOrderDetails> {
+        console.log("requiredStatus", requiredStatus);
+        const status = await this.paymentService.getOrderStatusWithDetails({ orderUUID: uuid, requiredStatus });
+        return status;
+    };
 
-
-    @Post("mercadopago/testing")
-    @ApiOperation({ summary: "prueba mercado pago" })
-    async testingMercadoPagoProcessOrder() {
-
-    }
 };

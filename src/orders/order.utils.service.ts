@@ -17,11 +17,7 @@ export class OrderUtilsService {
     private readonly IVA = 0.16;
     private readonly FRONTEND_URL = process.env.FRONTEND_URL;
     private readonly MERCADO_PAGO_NOTIFICATION_URL = process.env.MERCADO_PAGO_NOTIFICATION_URL;
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly cacheService: CacheService,
-        private readonly productVersionFindService: ProductVersionFindService
-    ) { };
+    constructor() { };
 
 
     buildMercadoPagoOrderItems(args: { items: ProductVersionCard[], shoppingCart: OrderShoppingCartDTO[] }): MercadoPagoItems[] {
@@ -154,6 +150,19 @@ export class OrderUtilsService {
         const subtotalBeforeIVA = subtotal - iva;
         const subtotalWithDiscount = subtotal - discount;
         const total = subtotalWithDiscount + shippingCost;
+
+        const response: OrderResume = {
+            boxesQty,
+            shippingCost,
+            subtotalBeforeIVA,
+            subtotalWithDiscount,
+            discount,
+            iva,
+            total
+        };
+
+        console.log(JSON.stringify(response, null, 2));
+
         return { boxesQty, shippingCost, subtotalBeforeIVA, subtotalWithDiscount, discount, iva, total };
     };
 

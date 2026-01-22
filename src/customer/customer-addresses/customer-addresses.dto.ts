@@ -128,7 +128,10 @@ export class CustomerAddress {
 export class CreateCustomerAddressDTO extends OmitType(CustomerAddress, ['id', 'customer_id', "uuid", "created_at", "updated_at"] as const) { };
 export class SafeCustomerAddress extends OmitType(CustomerAddress, ["id", "customer_id", "created_at", "updated_at"] as const) { };
 export class UpdateCustomerAddressDTO extends PartialType(OmitType(CustomerAddress, ["customer_id", "id"] as const)) { };
-
+export class GetCustomerAddressPayment extends CreateCustomerAddressDTO {
+    @ApiProperty({ example: "a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6", description: "UUID de la dirección" })
+    uuid?: string;
+};
 
 export class GetCustomerAddresses {
     @ApiProperty({ type: [SafeCustomerAddress] })

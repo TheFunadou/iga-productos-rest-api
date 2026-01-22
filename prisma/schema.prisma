@@ -308,7 +308,7 @@ model Order {
 model OrderPaymentDetails {
   id                          Int                   @id @default(autoincrement())
   order_id                    String
-  payment_id                  Int                   @unique
+  payment_id                  BigInt                @unique
   last_four_digits            String
   payment_class               String
   payment_method              String
@@ -329,24 +329,26 @@ model OrderItemsDetails {
   product_version_id String
   quantity           Int
   unit_price         Decimal        @db.Decimal(10, 2)
+  discount           Int            @default(0)
   subtotal           Decimal        @db.Decimal(10, 2)
   order              Order          @relation("order_items_details:order", fields: [order_id], references: [id])
   product_version    ProductVersion @relation("order_items_details:product_version", fields: [product_version_id], references: [id])
 }
 
 model Shipping {
-  id               String   @id @default(cuid())
-  uuid             String   @unique @default(dbgenerated("gen_random_uuid()"))
+  id               String         @id @default(cuid())
+  uuid             String         @unique @default(dbgenerated("gen_random_uuid()"))
   order_id         String
-  shipping_status  String
+  shipping_status  ShippingStatus
+  concept          String
   tracking_number  String?
   carrier          String?
-  shipping_amount  Decimal  @db.Decimal(10, 2)
-  insurance_amount Decimal  @db.Decimal(10, 2)
+  shipping_amount  Decimal        @db.Decimal(10, 2)
+  insurance_amount Decimal?       @db.Decimal(10, 2)
   boxes_count      Int
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
-  order            Order    @relation("shipping:order", fields: [order_id], references: [id])
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+  order            Order          @relation("shipping:order", fields: [order_id], references: [id])
 }
 
 model Offers {
@@ -447,4 +449,18 @@ enum OrderAndPaymentStatus {
   REFUNDED
   IN_MEDIATION
   CHARGED_BACK
+}
+
+enum ShippingStatus {
+  PENDING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  IN_PROCESS
+  IN_TRANSIT
+  RETURNED
+  RETURNED_IN_PROCESS
+  RETURNED_DELIVERED
+  IN_PREPARATION
+  STAND_BY
 }

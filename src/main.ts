@@ -35,10 +35,30 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:3000', "http://localhost:5174", process.env.FRONTEND_URL, "http://localhost:3001", "https://rules-ide-jun-barry.trycloudflare.com"],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    origin: (origin, callback) => {
+      if (!origin) {
+        // Devuelve explícitamente false o un origin conocido
+        return callback(null, false);
+      }
+
+      if (
+        origin.startsWith('http://localhost') ||
+        origin.endsWith('.trycloudflare.com')
+      ) {
+        return callback(null, origin);
+      }
+
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
-    allowedHeaders: 'Content-Type,Accept,Authorization,X-CSRF-Token',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'X-CSRF-Token',
+      'X-Requested-With', // 🔥 CLAVE
+    ],
   });
 
   const document = SwaggerModule.createDocument(app, config);

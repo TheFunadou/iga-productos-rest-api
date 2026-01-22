@@ -37,11 +37,29 @@ export class OrdersService {
             const items = this.orderUtilsService.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
             const vigency = this.orderUtilsService.buildMercadoPagoPaymentVigency();
             const shoppingCart = this.orderUtilsService.buildShoppingCart({ productVersionCards: itemCards, orderRequest: args.orderRequest });
+
+            for (const item of shoppingCart) {
+                const product = await tx.productVersion.findUnique({
+                    where: { sku: item.product_version.sku },
+                    select: { stock: true }
+                });
+
+                if (!product || product.stock < item.quantity) throw new BadRequestException("Stock insuficente para realizar la operación");
+            };
+
+            for (const item of shoppingCart) {
+                await tx.productVersion.update({
+                    where: { sku: item.product_version.sku },
+                    data: { stock: { decrement: item.quantity } }
+                })
+            };
+
             const orderResume = this.orderUtilsService.calcOrderResume({ shoppingCart });
             const orderUUID = crypto.randomUUID().toString();
             const body = this.orderUtilsService.buildMercadoPagoPreferenceBodyAuthCustomer({
                 internalOrderId: orderUUID, items, shoppingCart, vigency, customer, customerAddress, shippingCost: orderResume.shippingCost,
             });
+            console.log(JSON.stringify(body, null, 2));
             const preference = await this.mercadoPagoPreference.create(body).catch((error) => {
                 throw new BadRequestException(`Error al crear la orden de pago 1 ${this.nodeEnv === "DEVELOPMENT" && `: ${error.message}`}`)
             });
@@ -61,21 +79,24 @@ export class OrdersService {
 
             for (const item of items) {
                 const productVersion = await tx.productVersion.findUnique({ where: { sku: item.id }, select: { id: true } });
+                const shoppingCartItem = shoppingCart.find((cartItem) => cartItem.product_version.sku === item.id);
+                if (!shoppingCartItem) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEVELOPMENT" && `: No se encontro el item del carrito ${item.id}`}`);
                 if (!productVersion) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEVELOPMENT" && `: No se encontro la version del producto ${item.id}`}`);
                 await tx.orderItemsDetails.create({
                     data: {
                         order_id: order.id,
                         product_version_id: productVersion.id,
                         quantity: item.quantity,
-                        unit_price: item.unit_price,
+                        unit_price: shoppingCartItem.product_version.unit_price,
                         subtotal: item.unit_price * item.quantity,
+                        discount: shoppingCartItem.discount,
                     },
                 });
             };
             return {
                 folio: orderUUID,
                 items: shoppingCart,
-                order_id: preference.id,
+                external_id: preference.id,
                 receiver_address: customerAddress,
                 payment_method: "mercado_pago",
                 resume: orderResume
@@ -91,6 +112,23 @@ export class OrdersService {
             const items = this.orderUtilsService.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
             const vigency = this.orderUtilsService.buildMercadoPagoPaymentVigency();
             const shoppingCart = this.orderUtilsService.buildShoppingCart({ productVersionCards: itemCards, orderRequest: args.orderRequest });
+
+            for (const item of shoppingCart) {
+                const product = await tx.productVersion.findUnique({
+                    where: { sku: item.product_version.sku },
+                    select: { stock: true }
+                });
+
+                if (!product || product.stock < item.quantity) throw new BadRequestException("Stock insuficente para realizar la operación");
+            };
+
+            for (const item of shoppingCart) {
+                await tx.productVersion.update({
+                    where: { sku: item.product_version.sku },
+                    data: { stock: { decrement: item.quantity } }
+                })
+            };
+
             const orderUUID = crypto.randomUUID().toString();
             const orderResume = this.orderUtilsService.calcOrderResume({ shoppingCart });
             const body = this.orderUtilsService.buildMercadoPagoPreferenceBodyAuthCustomer({
@@ -111,7 +149,7 @@ export class OrdersService {
             }).catch((error) => { throw new BadRequestException("Error al crear la orden de pago") });
 
             await this.cacheService.setData<GuestOrderData>({
-                entity: "order:customer_data",
+                entity: "order:guest:customer:data",
                 query: { orderUUID },
                 data: {
                     customer: args.orderRequest.guest,
@@ -121,10 +159,12 @@ export class OrdersService {
             }).catch((error) => { throw new BadRequestException("Error al crear la orden de pago") });
 
             for (const item of items) {
+                const productVersion = await tx.productVersion.findUnique({ where: { sku: item.id }, select: { id: true } });
+                if (!productVersion) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEVELOPMENT" && `: No se encontro la version del producto ${item.id}`}`);
                 await tx.orderItemsDetails.create({
                     data: {
                         order_id: order.id,
-                        product_version_id: item.id,
+                        product_version_id: productVersion.id,
                         quantity: item.quantity,
                         unit_price: item.unit_price,
                         subtotal: item.unit_price * item.quantity,
@@ -134,7 +174,7 @@ export class OrdersService {
             return {
                 folio: orderUUID,
                 items: shoppingCart,
-                order_id: preference.id,
+                external_id: preference.id,
                 receiver_address: args.orderRequest.address,
                 payment_method: "mercado_pago",
                 resume: orderResume,

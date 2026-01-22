@@ -53,7 +53,7 @@ export class MetricsService {
                     by: ['product_version_id'],
                     where: {
                         order: {
-                            status: 'paid' // Solo órdenes pagadas
+                            status: 'APPROVED' // Solo órdenes pagadas
                         }
                     },
                     _sum: {
