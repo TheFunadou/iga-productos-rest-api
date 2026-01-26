@@ -116,6 +116,7 @@ model Customer {
   customer_addresses CustomerAddresses[]     @relation("customer_address:customer")
   orders             Order[]                 @relation("order:customer")
   reviews            ProductVersionReviews[] @relation("product_version_reviews:customer")
+  shopping_carts     ShoppingCart[]          @relation("shopping_cart:customer")
 }
 
 model CustomerSession {
@@ -237,6 +238,7 @@ model ProductVersion {
   order_items            OrderItemsDetails[]     @relation("order_items_details:product_version")
   product_version_images ProductVersionImages[]  @relation("product_version_images:product_version")
   reviews                ProductVersionReviews[] @relation("product_version_reviews:product_version")
+  shopping_cart_items    ShoppingCartItems[]     @relation("shopping_cart_items:product_version")
 }
 
 model ProductVersionImages {
@@ -391,6 +393,35 @@ model ProductVersionReviews {
   created_at         DateTime       @default(now())
   product_version    ProductVersion @relation("product_version_reviews:product_version", fields: [product_version_id], references: [id], onDelete: Cascade)
   customer           Customer       @relation("product_version_reviews:customer", fields: [customer_id], references: [id], onDelete: Cascade)
+}
+
+model ShoppingCart {
+  id          String              @id @default(dbgenerated("gen_random_uuid()"))
+  customer_id String              @unique
+  status      ShoppingCartStatus  @default(ACTIVE)
+  updated_at  DateTime            @updatedAt
+  customer    Customer            @relation("shopping_cart:customer", fields: [customer_id], references: [id], onDelete: Cascade)
+  items       ShoppingCartItems[] @relation("shopping_cart_items:shopping_cart")
+}
+
+model ShoppingCartItems {
+  id                 String         @id @default(dbgenerated("gen_random_uuid()"))
+  uuid               String         @unique @default(cuid())
+  shopping_cart_id   String
+  product_version_id String
+  quantity           Int            @default(1)
+  is_checked         Boolean        @default(true)
+  updated_at         DateTime       @updatedAt
+  shopping_cart      ShoppingCart   @relation("shopping_cart_items:shopping_cart", fields: [shopping_cart_id], references: [id], onDelete: Cascade)
+  product_version    ProductVersion @relation("shopping_cart_items:product_version", fields: [product_version_id], references: [id], onDelete: Cascade)
+
+  @@unique([shopping_cart_id, product_version_id])
+}
+
+enum ShoppingCartStatus {
+  ACTIVE
+  ABANDONED
+  CONVERTED
 }
 
 enum UserModules {

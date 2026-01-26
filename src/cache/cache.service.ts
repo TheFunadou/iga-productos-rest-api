@@ -3,6 +3,7 @@ import Keyv from 'keyv';
 import { CacheFactoryService } from './cache.factory';
 import { createHash } from 'crypto';
 import { CacheInterface } from './cache.interfaces';
+import Redis from 'ioredis';
 
 
 /**
@@ -21,7 +22,8 @@ export class CacheService {
 
     constructor(
         @Inject("KEYV_CACHE") private readonly keyv: Keyv,
-        private readonly cacheFactory: CacheFactoryService
+        private readonly cacheFactory: CacheFactoryService,
+        @Inject("REDIS_CLIENT") private readonly cacheClient: Redis
     ) { };
 
     // ==================== PRIVATE: KEY GENERATION ====================
@@ -478,5 +480,198 @@ export class CacheService {
         const removed: boolean = await this.keyv.delete(key);
         if (removed) return true;
         return false;
+    };
+
+
+    /**
+ * Updates specific fields in cached data without overwriting the entire object
+ * Performs a partial update (merge) of the cached data
+ * 
+ * @param args - Configuration object containing:
+ *   - entity: Entity name to update
+ *   - query: Optional query parameters to identify the cached entry
+ *   - data: Partial data to merge with existing cached data
+ *   - aditionalOptions: Optional TTL configuration
+ * @returns Updated data or null if cache entry doesn't exist
+ * 
+ * @example
+ * // Update product price without affecting other fields
+ * const updated = await cacheService.updateData({
+ *   entity: 'product',
+ *   query: { id: '123' },
+ *   data: { price: 29.99 }
+ * });
+ */
+    async updateData<T>(
+        args: {
+            entity: string,
+            query?: any,
+            data: Partial<T>,
+            aditionalOptions?: {
+                ttlMilliseconds?: number,
+                staleTimeMilliseconds?: number,
+                enabledJitter?: boolean,
+                resetTTL?: boolean // Si true, reinicia el TTL; si false, mantiene el original
+            }
+        }
+    ): Promise<T | null> {
+        if (!args.entity) throw new Error("Entity is required to update cache data");
+
+        const queryVersion: number = await this.getVersion(args.entity, args.query);
+        const entityVersion: number = await this.getEntityVersion(args.entity);
+        const key: string = this.buildCacheKey({
+            entity: args.entity,
+            queryVersion,
+            entityVersion,
+            query: args.query
+        });
+
+        const cached = await this.keyv.get<CacheInterface<T>>(key);
+
+        if (!cached) {
+            console.warn(`[CacheService] Cannot update: no cached data found for key ${key}`);
+            return null;
+        }
+
+        // Merge existing data with new data
+        const updatedData: T = {
+            ...cached.data,
+            ...args.data
+        } as T;
+
+        // Determine TTL behavior
+        let finalTtl: number | undefined;
+
+        if (args.aditionalOptions?.resetTTL) {
+            const defaultOptions = {
+                enabledJitter: args.aditionalOptions?.enabledJitter ?? true,
+                ttlMilliseconds: args.aditionalOptions?.ttlMilliseconds ?? 300000
+            };
+
+            finalTtl = defaultOptions.enabledJitter
+                ? this.applyJitter(0.2, defaultOptions.ttlMilliseconds)
+                : defaultOptions.ttlMilliseconds;
+        } else {
+            finalTtl = cached.metadata.ttl;
+        }
+
+        const staleTime = args.aditionalOptions?.staleTimeMilliseconds
+            ?? (finalTtl ? finalTtl * 0.9 : 0);
+
+        const now = Date.now();
+
+        const updatedCacheData: CacheInterface<T> = {
+            data: updatedData,
+            metadata: {
+                ...cached.metadata,
+                ttl: finalTtl,
+                staleTime: staleTime?.toString(),
+                staleAt: staleTime ? new Date(now + staleTime).toISOString() : undefined,
+                expiresAt: finalTtl ? new Date(now + finalTtl).toISOString() : undefined,
+            }
+        };
+
+        const result = await this.keyv.set(key, updatedCacheData, finalTtl);
+
+        if (!result) {
+            throw new Error("Error updating cache data");
+        }
+
+        return updatedData;
+    };
+
+    /**
+     * Updates cached data using a transformer function
+     * Allows complex transformations and conditional updates
+     * 
+     * @param args - Configuration object containing:
+     *   - entity: Entity name to update
+     *   - query: Optional query parameters to identify the cached entry
+     *   - transformer: Function that receives current data and returns updated data
+     *   - aditionalOptions: Optional TTL configuration
+     * @returns Updated data or null if cache entry doesn't exist
+     * 
+     * @example
+     * // Increment a counter
+     * const updated = await cacheService.updateDataWithTransformer({
+     *   entity: 'stats',
+     *   query: { type: 'views' },
+     *   transformer: (current) => ({
+     *     ...current,
+     *     count: current.count + 1
+     *   })
+     * });
+     */
+    async updateDataWithTransformer<T>(
+        args: {
+            entity: string,
+            query?: any,
+            transformer: (currentData: T) => T | Promise<T>,
+            aditionalOptions?: {
+                ttlMilliseconds?: number,
+                staleTimeMilliseconds?: number,
+                enabledJitter?: boolean,
+                resetTTL?: boolean
+            }
+        }
+    ): Promise<T | null> {
+        if (!args.entity) throw new Error("Entity is required to update cache data");
+
+        const queryVersion: number = await this.getVersion(args.entity, args.query);
+        const entityVersion: number = await this.getEntityVersion(args.entity);
+        const key: string = this.buildCacheKey({
+            entity: args.entity,
+            queryVersion,
+            entityVersion,
+            query: args.query
+        });
+
+        const cached = await this.keyv.get<CacheInterface<T>>(key);
+
+        if (!cached) {
+            console.warn(`[CacheService] Cannot update: no cached data found for key ${key}`);
+            return null;
+        }
+
+        const updatedData: T = await Promise.resolve(args.transformer(cached.data));
+
+        let finalTtl: number | undefined;
+
+        if (args.aditionalOptions?.resetTTL) {
+            const defaultOptions = {
+                enabledJitter: args.aditionalOptions?.enabledJitter ?? true,
+                ttlMilliseconds: args.aditionalOptions?.ttlMilliseconds ?? 300000
+            };
+
+            finalTtl = defaultOptions.enabledJitter
+                ? this.applyJitter(0.2, defaultOptions.ttlMilliseconds)
+                : defaultOptions.ttlMilliseconds;
+        } else {
+            finalTtl = cached.metadata.ttl;
+        }
+
+        const staleTime = args.aditionalOptions?.staleTimeMilliseconds
+            ?? (finalTtl ? finalTtl * 0.9 : 0);
+
+        const now = Date.now();
+
+        const updatedCacheData: CacheInterface<T> = {
+            data: updatedData,
+            metadata: {
+                ...cached.metadata,
+                ttl: finalTtl,
+                staleTime: staleTime?.toString(),
+                staleAt: staleTime ? new Date(now + staleTime).toISOString() : undefined,
+                expiresAt: finalTtl ? new Date(now + finalTtl).toISOString() : undefined,
+            }
+        };
+
+        const result = await this.keyv.set(key, updatedCacheData, finalTtl);
+
+        if (!result) {
+            throw new Error("Error updating cache data");
+        }
+
+        return updatedData;
     };
 };

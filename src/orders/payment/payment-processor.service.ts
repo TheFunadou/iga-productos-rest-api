@@ -216,10 +216,19 @@ export class PaymentProcessorService {
                 }
             });
 
-            await this.cacheService.invalidateQuery({
-                entity: "customer:orders",
-                query: { orderUUID: orderUUID, customerUUID: result.customerUUID }
-            });
+            if (result.customerUUID) {
+                console.log("result.customerUUID", result.customerUUID);
+                await this.cacheService.invalidateMultipleQueries([
+                    {
+                        entity: "customer:orders",
+                        query: { orderUUID: orderUUID, customerUUID: result.customerUUID }
+                    },
+                    {
+                        entity: "customer:shopping-cart",
+                        query: { customerUUID: result.customerUUID }
+                    }
+                ]);
+            };
 
             this.logger.log(`Proceso de pago completado satisfactoriamente para la orden ${orderUUID}`);
 

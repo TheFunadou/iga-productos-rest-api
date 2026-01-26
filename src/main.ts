@@ -35,21 +35,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin) {
-        // Devuelve explícitamente false o un origin conocido
-        return callback(null, false);
-      }
-
-      if (
-        origin.startsWith('http://localhost') ||
-        origin.endsWith('.trycloudflare.com')
-      ) {
-        return callback(null, origin);
-      }
-
-      return callback(new Error('Not allowed by CORS'));
-    },
+    origin: ["http://localhost:3000", "https://photos-technologies-yellow-most.trycloudflare.com", "http://localhost:5173"],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [

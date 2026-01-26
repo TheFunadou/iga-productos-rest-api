@@ -3,6 +3,21 @@ import { Type } from "class-transformer";
 import { IsBoolean, IsInt, IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { ProductVersionCard } from "src/product-version/product-version.dto";
 
+export class AddItemDTO {
+    @ApiProperty({ description: "SKU del producto", example: "12345678-1234-1234-1234-123456789012", required: true })
+    @IsString()
+    @IsNotEmpty({ message: "El campo SKU no puede estar vacio" })
+    @Type(() => String)
+    sku: string;
+
+    @ApiProperty({ description: "Cantidad", example: 1, required: true })
+    @IsNumber()
+    @IsInt()
+    @Type(() => Number)
+    quantity: number;
+};
+
+
 export class ShoppingCartDTO extends ProductVersionCard {
     @ApiProperty({ description: "Esta seleccionado?", example: true, required: true })
     @IsBoolean()
@@ -13,6 +28,7 @@ export class ShoppingCartDTO extends ProductVersionCard {
     @IsInt()
     quantity: number;
 };
+
 
 
 export class UpdateItemQtyDTO {

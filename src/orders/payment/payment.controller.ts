@@ -64,7 +64,6 @@ export class PaymentController {
         @Param('uuid') uuid: string,
         @Query("status") requiredStatus: OrderAndPaymentStatus
     ): Promise<GetPaidOrderDetails> {
-        console.log("requiredStatus", requiredStatus);
         const status = await this.paymentService.getOrderStatusWithDetails({ orderUUID: uuid, requiredStatus });
         return status;
     };

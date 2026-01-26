@@ -24,7 +24,8 @@
     "seed:productversion": "ts-node src/prisma/seed/productversion.seed.ts",
     "seed:productversionimages": "ts-node src/prisma/seed/productimages.seed.ts",
     "seed:productsubcategories": "ts-node src/prisma/seed/productSubcategories.seed.ts",
-    "seed": "ts-node src/prisma/seed/seed.ts"
+    "seed": "ts-node src/prisma/seed/seed.ts",
+    "update:prices": "ts-node src/prisma/seed/updatePrices.ts"
   },
   "dependencies": {
     "@keyv/redis": "^5.1.5",

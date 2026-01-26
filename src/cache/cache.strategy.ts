@@ -102,23 +102,25 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
         fallback: () => Promise<T>,
         keyvInstance: Keyv
     ): Promise<T> {
+        // Validación de parámetros
+        if (ttl !== undefined && ttl <= 0) {
+            throw new Error('TTL must be a positive number');
+        }
+        if (staleTime !== undefined && staleTime <= 0) {
+            throw new Error('StaleTime must be a positive number');
+        }
+        if (staleTime !== undefined && ttl !== undefined && staleTime >= ttl) {
+            throw new Error('StaleTime must be less than TTL');
+        }
 
         const cached = await keyvInstance.get<CacheInterface<T>>(key);
-
-        // ============================
-        // 1️⃣ CACHE HIT → respuesta inmediata
-        // ============================
         if (cached) {
             const now = Date.now();
             const createdAt = new Date(cached.metadata.createdAt).getTime();
-
             const staleAt = cached.metadata.staleAt
                 ? new Date(cached.metadata.staleAt).getTime()
                 : createdAt + (staleTime ?? (ttl ? ttl * 0.9 : 0));
-
             cached.metadata.hitCount++;
-
-            // 🔄 Stale → refresh background con lock suave
             if (now >= staleAt) {
                 this.refreshInBackgroundWithLock(
                     key,
@@ -127,17 +129,10 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
                     fallback,
                     keyvInstance
                 );
-            }
-
-            // Renovar TTL original (no extender artificialmente)
+            };
             await keyvInstance.set(key, cached, cached.metadata.ttl);
-
             return cached.data;
         }
-
-        // ============================
-        // 2️⃣ CACHE MISS → lock fuerte
-        // ============================
         return await this.acquireLockAndFetch(
             key,
             ttl,
@@ -145,11 +140,8 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
             fallback,
             keyvInstance
         );
-    }
+    };
 
-    // =====================================================
-    // 🔐 LOCK FUERTE PARA CACHE MISS (con backoff)
-    // =====================================================
     private async acquireLockAndFetch<T>(
         key: string,
         ttl: number | undefined,
@@ -172,19 +164,28 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
             5_000 // TTL temporal, se ajusta luego
         ) as string | null;
 
-        // ============================
-        // 🟢 LÍDER
-        // ============================
         if (acquired === "OK") {
-            let dynamicLockTTL = 5_000;
+            console.debug(`[StaleWhileRevalidateWithLock] Lock acquired for key: ${key}`);
 
             try {
                 const start = Date.now();
                 const data = await fallback();
                 const duration = Date.now() - start;
 
-                // 🔥 LOCK_TTL dinámico
-                dynamicLockTTL = Math.max(duration * 2, 3_000);
+                // Extender el lock si la operación tomó más tiempo del esperado
+                const dynamicLockTTL = Math.max(duration * 2, 3_000);
+                if (duration > 2500) {
+                    await this.redis.call(
+                        "SET",
+                        lockKey,
+                        lockValue,
+                        "XX", // Solo actualiza si existe
+                        "PX",
+                        dynamicLockTTL
+                    ).catch(err => {
+                        console.warn(`Failed to extend lock for ${lockKey}:`, err);
+                    });
+                }
 
                 await this.saveCache(
                     key,
@@ -194,18 +195,12 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
                     0,
                     keyvInstance
                 );
-
                 return data;
-
             } finally {
-                // 🔐 Liberación segura del lock
                 await this.releaseLock(lockKey, lockValue);
             }
-        }
+        };
 
-        // ============================
-        // 🔵 FOLLOWERS → backoff exponencial
-        // ============================
         const cachedData = await this.waitWithBackoff<T>(
             key,
             keyvInstance,
@@ -214,15 +209,11 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
 
         if (cachedData) return cachedData;
 
-        // ============================
-        // 🔴 Fallback defensivo (muy raro)
-        // ============================
+        console.warn(`[StaleWhileRevalidateWithLock] Failed to acquire cached data for key: ${key}, falling back`);
         return await fallback();
-    }
+    };
 
-    // =====================================================
-    // 🔄 Refresh background con lock suave
-    // =====================================================
+
     private async refreshInBackgroundWithLock<T>(
         key: string,
         ttl: number | undefined,
@@ -261,16 +252,16 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
                 );
 
             } catch (err) {
-                console.error("Background refresh failed:", err);
+                console.error(`[StaleWhileRevalidateWithLock] Background refresh failed for ${key}:`, err);
             } finally {
                 await this.releaseLock(lockKey, lockValue);
             }
-        })();
-    }
+        })().catch(err => {
+            console.error(`[StaleWhileRevalidateWithLock] Critical error in background refresh for ${key}:`, err);
+        });
+    };
 
-    // =====================================================
-    // ⏳ Backoff exponencial para followers
-    // =====================================================
+
     private async waitWithBackoff<T>(
         key: string,
         keyvInstance: Keyv,
@@ -279,21 +270,22 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
 
         let delay = 20;
         const start = Date.now();
+        let attempts = 0;
+        const maxAttempts = 50; // Límite de intentos para evitar loops infinitos
 
-        while (Date.now() - start < maxWait) {
+        while (Date.now() - start < maxWait && attempts < maxAttempts) {
             const cached = await keyvInstance.get<CacheInterface<T>>(key);
             if (cached) return cached.data;
 
             await new Promise(r => setTimeout(r, delay));
             delay = Math.min(delay * 2, 500);
+            attempts++;
         }
 
+        console.warn(`[StaleWhileRevalidateWithLock] waitWithBackoff timeout for key: ${key} after ${attempts} attempts`);
         return null;
-    }
+    };
 
-    // =====================================================
-    // 💾 Guardado de cache
-    // =====================================================
     private async saveCache<T>(
         key: string,
         data: T,
@@ -322,27 +314,34 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
         };
 
         await keyvInstance.set(key, cacheData, ttl);
-    }
+    };
 
-    // =====================================================
-    // 🔓 Release de lock seguro (Lua)
-    // =====================================================
+
     private async releaseLock(lockKey: string, lockValue: string) {
-        await this.redis.eval(
-            `
-            if redis.call("get", KEYS[1]) == ARGV[1] then
-              return redis.call("del", KEYS[1])
-            else
-              return 0
-            end
-            `,
-            1,
-            lockKey,
-            lockValue
-        );
-    }
+        try {
+            await this.redis.eval(
+                `
+                if redis.call("get", KEYS[1]) == ARGV[1] then
+                  return redis.call("del", KEYS[1])
+                else
+                  return 0
+                end
+                `,
+                1,
+                lockKey,
+                lockValue
+            );
+        } catch (err) {
+            console.error(`[StaleWhileRevalidateWithLock] Failed to release lock ${lockKey}:`, err);
+            // Opcional: Intentar liberar el lock de forma forzada en caso de error
+            try {
+                await this.redis.del(lockKey);
+            } catch (delErr) {
+                console.error(`[StaleWhileRevalidateWithLock] Failed to force delete lock ${lockKey}:`, delErr);
+            }
+        }
+    };
 };
-
 /**
  * Stale-While-Revalidate Strategy (SWR).
  * Serves stale data immediately while refreshing it in the background if the stale time has passed.

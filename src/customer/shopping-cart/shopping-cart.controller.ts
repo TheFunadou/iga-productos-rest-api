@@ -3,7 +3,7 @@ import { ShoppingCartService } from './shopping-cart.service';
 import { ApiHeader, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RequiredCustomerAuthGuard } from 'src/customer_auth/customer_auth.required.guard';
 import { CustomerCsrfAuthGuard } from 'src/customer_auth/customer_auth.csrf';
-import { ShoppingCartDTO, ToggleCheckDTO, UpdateItemQtyDTO } from './shopping-cart.dto';
+import { AddItemDTO, ShoppingCartDTO, ToggleCheckDTO, UpdateItemQtyDTO } from './shopping-cart.dto';
 import { AuthenticatedCustomer } from 'src/customer_auth/customer_auth.current.decorator';
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 
@@ -20,7 +20,7 @@ export class ShoppingCartController {
     @ApiResponse({ status: 400, description: "Ocurrio un error al recuperar la información" })
     @ApiResponse({ status: 500, description: "Ocurrio un error inesperado" })
     async getShoppingCart(@AuthenticatedCustomer() customer: CustomerPayload): Promise<ShoppingCartDTO[] | null> {
-        return await this.shoppingCartService.get({ customerUUID: customer.uuid });
+        return await this.shoppingCartService.getShoppingCart({ customerUUID: customer.uuid });
     };
 
     @Post()
@@ -30,8 +30,9 @@ export class ShoppingCartController {
     @ApiResponse({ status: 400, description: "Ocurrio un error al guardar la información" })
     @ApiResponse({ status: 500, description: "Ocurrio un error inesperado" })
     @ApiHeader({ name: "X-CSRF-TOKEN", description: "Token CSRF", required: true })
-    async addItem(@AuthenticatedCustomer() customer: CustomerPayload, @Body() item: ShoppingCartDTO): Promise<ShoppingCartDTO[]> {
-        return await this.shoppingCartService.addItem({ customerUUID: customer.uuid, item });
+    async addItem(@AuthenticatedCustomer() customer: CustomerPayload, @Body() dto: AddItemDTO): Promise<ShoppingCartDTO[]> {
+        console.log(JSON.stringify(dto, null, 2))
+        return await this.shoppingCartService.addItem({ customerUUID: customer.uuid, dto });
     };
 
     @Delete()
@@ -52,8 +53,8 @@ export class ShoppingCartController {
     @ApiResponse({ status: 400, description: "Ocurrio un error al actualizar la información" })
     @ApiResponse({ status: 500, description: "Ocurrio un error inesperado" })
     @ApiHeader({ name: "X-CSRF-TOKEN", description: "Token CSRF", required: true })
-    async updateQty(@AuthenticatedCustomer() customer: CustomerPayload, @Body() item: UpdateItemQtyDTO): Promise<ShoppingCartDTO[]> {
-        return await this.shoppingCartService.updateQty({ customerUUID: customer.uuid, sku: item.sku, quantity: item.newQuantity });
+    async updateQty(@AuthenticatedCustomer() customer: CustomerPayload, @Body() dto: UpdateItemQtyDTO): Promise<ShoppingCartDTO[]> {
+        return await this.shoppingCartService.updateQty({ customerUUID: customer.uuid, dto });
     };
 
 
@@ -76,7 +77,7 @@ export class ShoppingCartController {
     @ApiResponse({ status: 500, description: "Ocurrio un error inesperado" })
     @ApiHeader({ name: "X-CSRF-TOKEN", description: "Token CSRF", required: true })
     async toogleCheck(@AuthenticatedCustomer() customer: CustomerPayload, @Body() data: ToggleCheckDTO): Promise<ShoppingCartDTO[]> {
-        return await this.shoppingCartService.toogleCheck({ customerUUID: customer.uuid, sku: data.sku });
+        return await this.shoppingCartService.toggleCheck({ customerUUID: customer.uuid, sku: data.sku });
     };
 
     @Put("check/all")
