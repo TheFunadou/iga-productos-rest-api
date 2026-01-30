@@ -1,17 +1,19 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { RequiredCustomerAuthGuard } from 'src/customer_auth/customer_auth.required.guard';
 import { CustomerCsrfAuthGuard } from 'src/customer_auth/customer_auth.csrf';
-import { OrderRequestDTO, OrderRequestGuestDTO } from './order.dto';
+import { GetOrdersQuery, OrderRequestDTO, OrderRequestGuestDTO } from './order.dto';
 import { AuthenticatedCustomer } from 'src/customer_auth/customer_auth.current.decorator';
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 import { ApiBody, ApiHeader, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { PaginationDTO } from 'src/common/DTO/pagination.dto';
 
 @Controller('orders')
 export class OrdersController {
     constructor(
         private readonly ordersService: OrdersService,
     ) { };
+
 
     @Post("mercadopago/authenticated")
     @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
@@ -37,5 +39,53 @@ export class OrdersController {
     @ApiBody({ type: OrderRequestGuestDTO })
     async createMPGuestCustomer(@Body() dto: OrderRequestGuestDTO) {
         return await this.ordersService.createMercadoPagoOrderGuest({ orderRequest: dto });
+    };
+
+
+    @Get()
+    @UseGuards(RequiredCustomerAuthGuard)
+    @ApiOperation({ summary: "Obtiene las ordenes de un cliente autenticado" })
+    @ApiResponse({ status: 200, description: "Ordenes obtenidas exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al obtener las ordenes" })
+    @ApiResponse({ status: 401, description: "No se proporciono un token de autenticacion" })
+    @ApiResponse({ status: 403, description: "No se proporciono un token CSRF valido" })
+    @ApiResponse({ status: 404, description: "No se encontro al cliente" })
+    @ApiResponse({ status: 500, description: "Error inesperado al obtener las ordenes" })
+    async getOrders(@AuthenticatedCustomer() customer: CustomerPayload, @Query() query: GetOrdersQuery) {
+        return await this.ordersService.getOrders({ customerUUID: customer.uuid, query });
+    };
+
+    @Get("checkout/:uuid")
+    @ApiOperation({ summary: "Obtiene los detalles de una orden" })
+    @ApiResponse({ status: 200, description: "Items obtenidos exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al obtener los items de la orden" })
+    @ApiResponse({ status: 404, description: "No se encontro la orden" })
+    @ApiResponse({ status: 500, description: "Error inesperado al obtener los items de la orden" })
+    async getCheckoutOrder(@Param("uuid") uuid: string) {
+        return await this.ordersService.getCheckoutOrder({ orderUUID: uuid });
+    };
+
+    @Get("details/:uuid")
+    @UseGuards(RequiredCustomerAuthGuard)
+    @ApiOperation({ summary: "Obtiene los detalles de una orden" })
+    @ApiResponse({ status: 200, description: "Items obtenidos exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al obtener los items de la orden" })
+    @ApiResponse({ status: 404, description: "No se encontro la orden" })
+    @ApiResponse({ status: 500, description: "Error inesperado al obtener los items de la orden" })
+    async getDetails(@AuthenticatedCustomer() customer: CustomerPayload, @Param("uuid") uuid: string) {
+        return await this.ordersService.getOrderDetailsByOrderUUID({ orderUUID: uuid, customerUUID: customer.uuid });
+    };
+
+    @Post("cancel/:uuid")
+    @UseGuards(RequiredCustomerAuthGuard)
+    @ApiOperation({ summary: "Cancela una orden" })
+    @ApiResponse({ status: 200, description: "Orden cancelada exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al cancelar la orden" })
+    @ApiResponse({ status: 401, description: "No se proporciono un token de autenticacion" })
+    @ApiResponse({ status: 403, description: "No se proporciono un token CSRF valido" })
+    @ApiResponse({ status: 404, description: "No se encontro la orden" })
+    @ApiResponse({ status: 500, description: "Error inesperado al cancelar la orden" })
+    async cancelOrder(@Param("uuid") uuid: string) {
+        return await this.ordersService.cancelOrder({ orderUUID: uuid });
     };
 };

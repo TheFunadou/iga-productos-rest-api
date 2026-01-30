@@ -19,10 +19,10 @@ export class OrderItems extends ShoppingCartDTO {
 
 export class PaidOrderShipping {
     @ApiProperty({ description: "Cantidad de cajas", type: Number })
-    boxesQty: number;
+    boxesQty?: number;
 
     @ApiProperty({ description: "Costo de envio", type: Number })
-    shippingCost: string;
+    shippingCost?: string;
 };
 
 
@@ -64,24 +64,13 @@ export class OrderResume {
 export class OrderReadyToPay {
     @ApiProperty({ description: "folio (local) de la operación", type: String })
     folio: string;
-
-    @ApiProperty({ description: "items/productos que estan en proceso de pago", type: [ShoppingCartDTO] as const })
-    items: ShoppingCartDTO[];
-
     @ApiProperty({ description: "ID de la preferencia creada por mercado pago", type: String })
     external_id: string;
-
-    @ApiProperty({ description: "Dirección de envio del destinatario", type: CreateCustomerAddressDTO })
-    receiver_address: CreateCustomerAddressDTO;
-
     @ApiProperty({ description: "Domicilio de envio del producto", type: String })
     payment_method: PaymentProviders;
-
-    @ApiProperty({ description: "Resumen de la operación", type: OrderResume })
-    resume: OrderResume;
 };
 
-export class OrderDetails {
+export class OrderPaymentDetails {
     @ApiProperty({ description: "Detalle de la orden", type: Order })
     order: SafeOrder;
 
@@ -89,11 +78,12 @@ export class OrderDetails {
     payments_details: SafePaymentDetails[];
 
     @ApiProperty({ description: "Detalle de envio", type: PaidOrderShipping })
-    shipping: PaidOrderShipping;
+    shipping?: PaidOrderShipping;
 };
 
 
 export class PaymentProcessed {
+
     @ApiProperty({ description: "Dirección de envio del destinatario", type: GetCustomerAddressPayment })
     address: GetCustomerAddressPayment;
 
@@ -103,8 +93,8 @@ export class PaymentProcessed {
     @ApiProperty({ description: "Cliente", type: CustomerAttributes })
     customer?: CustomerAttributes;
 
-    @ApiProperty({ description: "Detalle de la orden", type: OrderDetails })
-    details: OrderDetails;
+    @ApiProperty({ description: "Detalle de la orden", type: OrderPaymentDetails })
+    details: OrderPaymentDetails;
 };
 
 

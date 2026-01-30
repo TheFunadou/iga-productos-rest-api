@@ -111,24 +111,12 @@ export class OrderUtilsService {
         };
     };
 
-    // calcShippingCost(args: { shoppingCart: ShoppingCartDTO[] }): { boxesQty: number, shippingCost: number } {
-    //     const onlyCheckedItems = args.shoppingCart.filter((item) => item.isChecked);
-    //     const itemsQty = onlyCheckedItems.reduce((acc, item) => {
-    //         return acc + item.quantity
-    //     }, 0);
-    //     const BOX_COST = 264.00;
-    //     const MAX_ITEMS_PER_BOX = 10;
-    //     const boxesQty = Math.ceil(itemsQty / MAX_ITEMS_PER_BOX);
-    //     const shippingCost = boxesQty * BOX_COST;
-    //     return { boxesQty, shippingCost };
-    // };
-
     calcOrderResume(args: { shoppingCart: ShoppingCartDTO[] }): OrderResume {
         const onlyCheckedItems = args.shoppingCart.filter((item) => item.isChecked);
         const itemsQty = onlyCheckedItems.reduce((acc, item) => {
             return acc + item.quantity
         }, 0);
-        const BOX_COST = 264.00;
+        const BOX_COST = 1;
         const MAX_ITEMS_PER_BOX = 10;
         const boxesQty = Math.ceil(itemsQty / MAX_ITEMS_PER_BOX);
         const shippingCost = boxesQty * BOX_COST;
@@ -161,9 +149,7 @@ export class OrderUtilsService {
             total
         };
 
-        console.log(JSON.stringify(response, null, 2));
-
-        return { boxesQty, shippingCost, subtotalBeforeIVA, subtotalWithDiscount, discount, iva, total };
+        return response;
     };
 
 

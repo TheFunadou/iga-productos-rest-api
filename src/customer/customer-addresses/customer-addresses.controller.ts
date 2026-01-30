@@ -25,6 +25,7 @@ export class CustomerAddressesController {
     @ApiHeader({ name: "X-CSRF-TOKEN", description: "Token CSRF" })
     @ApiBody({ type: CreateCustomerAddressDTO })
     async create(@AuthenticatedCustomer() customer: CustomerPayload, @Body() dto: CreateCustomerAddressDTO) {
+        console.log(customer)
         return await this.customerAddressesService.create({ customerUUID: customer.uuid, data: dto });
     };
 

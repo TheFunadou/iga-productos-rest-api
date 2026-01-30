@@ -36,7 +36,7 @@ export class UserAuthService {
             }
         });
 
-        if (!user) throw new NotFoundException("No se encontro al usuario");
+        if (!user) throw new NotFoundException("Correo no registrado");
         const passwordMatch = await bcrypt.compare(dto.password, user.accounts[0].password);
         if (!passwordMatch) throw new BadRequestException("Contraseña incorrecta");
 

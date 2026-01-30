@@ -304,7 +304,7 @@ model Order {
   customer               Customer?             @relation("order:customer", fields: [customer_id], references: [id])
   payment_details        OrderPaymentDetails[] @relation("order_payment_details:order")
   order_items            OrderItemsDetails[]   @relation("order_items_details:order")
-  shipping               Shipping[]            @relation("shipping:order")
+  shipping               Shipping?             @relation("shipping:order")
 }
 
 model OrderPaymentDetails {
@@ -340,7 +340,7 @@ model OrderItemsDetails {
 model Shipping {
   id               String         @id @default(cuid())
   uuid             String         @unique @default(dbgenerated("gen_random_uuid()"))
-  order_id         String
+  order_id         String         @unique
   shipping_status  ShippingStatus
   concept          String
   tracking_number  String?

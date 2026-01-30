@@ -9,6 +9,7 @@ import { OffersModule } from 'src/offers/offers.module';
 @Module({
   providers: [ShoppingCartService, ShoppingCartUtilsService],
   controllers: [ShoppingCartController],
-  imports: [CacheModule, PrismaModule, OffersModule]
+  imports: [CacheModule, PrismaModule, OffersModule],
+  exports: [ShoppingCartService]
 })
 export class ShoppingCartModule { }

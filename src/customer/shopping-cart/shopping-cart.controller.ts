@@ -31,7 +31,6 @@ export class ShoppingCartController {
     @ApiResponse({ status: 500, description: "Ocurrio un error inesperado" })
     @ApiHeader({ name: "X-CSRF-TOKEN", description: "Token CSRF", required: true })
     async addItem(@AuthenticatedCustomer() customer: CustomerPayload, @Body() dto: AddItemDTO): Promise<ShoppingCartDTO[]> {
-        console.log(JSON.stringify(dto, null, 2))
         return await this.shoppingCartService.addItem({ customerUUID: customer.uuid, dto });
     };
 

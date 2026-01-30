@@ -62,9 +62,9 @@ export class PaymentController {
     @ApiResponse({ status: 200, description: "Estado de la orden", type: Object })
     async getOrderStatusWithDetails(
         @Param('uuid') uuid: string,
-        @Query("status") requiredStatus: OrderAndPaymentStatus
+        @Query("status") requiredStatus: OrderAndPaymentStatus[]
     ): Promise<GetPaidOrderDetails> {
-        const status = await this.paymentService.getOrderStatusWithDetails({ orderUUID: uuid, requiredStatus });
+        const status = await this.paymentService.getOrderStatusWithDetails({ orderUUID: uuid, requiredStatus: Array.isArray(requiredStatus) ? requiredStatus : [requiredStatus] });
         return status;
     };
 

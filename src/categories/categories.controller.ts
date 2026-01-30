@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { CreateCategoryDTO, GetCategories, PatchCategoryDTO } from './categories.dto';
+import { CreateCategoryDTO, SummaryCategories, GetCategories, PatchCategoryDTO } from './categories.dto';
 import { ApiBody, ApiHeader, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
@@ -47,6 +47,15 @@ export class CategoriesController {
     @ApiBody({ type: PatchCategoryDTO })
     async patch(@Body() dto: PatchCategoryDTO): Promise<GetCategories> {
         return await this.categoriesService.patch({ data: dto });
+    };
+
+    @Get("summary")
+    @ApiOperation({ summary: "Obtener todas las categorías con sus imágenes" })
+    @ApiResponse({ status: 200, type: SummaryCategories, isArray: true })
+    @ApiResponse({ status: 404, type: Error })
+    @ApiResponse({ status: 500, type: Error })
+    async getCategoriesExtended(): Promise<SummaryCategories[]> {
+        return await this.categoriesService.summaryCategories();
     };
 
 };

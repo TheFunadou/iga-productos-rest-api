@@ -1,10 +1,13 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
-import { OrderShoppingCartDTO } from "./payment/payment.dto";
-import { CreateCustomerAddressDTO as GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
+import { IsArray, IsIn, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
+import { OrderItems, OrderResume, OrderShoppingCartDTO } from "./payment/payment.dto";
+import { GetCustomerAddressPayment, CreateCustomerAddressDTO as GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
 import { CustomerAttributes } from "src/customer/customer.dto";
-import { OrderAndPaymentStatus } from "generated/prisma/enums";
+import { OrderAndPaymentStatus, ShippingStatus } from "generated/prisma/enums";
+import { PaginationDTO } from "src/common/DTO/pagination.dto";
+import { SafeProductVersionImages } from "src/product-version/product-version.dto";
+import { CustomerOrderShippingDetails } from "src/shipping/shipping.dto";
 
 export class Order {
     @ApiProperty({ description: "ID de la orden", type: String })
@@ -165,6 +168,83 @@ export class GuestOrderData {
 
 
 export class SafeOrder extends OmitType(Order, ["id", "external_order_id", "customer_id", "customer_address_id"] as const) { };
+export class LightGetOrders extends OmitType(SafeOrder, ["is_guest_order", "exchange", "payment_provider", "coupon_code" as const]) { };
 export class SafePaymentDetails extends OmitType(OrderPaymentDetails, ["id", "order_id", "payment_id", "fee_amount", "received_amount"] as const) { };
 
 
+export class CheckoutOrder {
+    @ApiProperty({ description: "folio (local) de la operación", type: String })
+    uuid: string;
+    @ApiProperty({ description: "Items de la orden", type: [OrderItems] as const })
+    items: OrderItems[];
+    @ApiProperty({ description: "Resumen de la orden", type: OrderResume })
+    resume: OrderResume;
+    @ApiProperty({ description: "ID externo de la orden", type: String })
+    external_id: string;
+    @ApiProperty({ description: "Dirección de envio del destinatario", type: GetCustomerAddressPayment })
+    address: GetCustomerAddressPayment;
+};
+
+
+export class GetLightOrderExtended {
+    @ApiProperty({ description: "Breve infromacion de la orden" })
+    order: LightGetOrders;
+    @ApiProperty({ description: "Status del envio" })
+    shippingStatus?: ShippingStatus;
+    @ApiProperty({ description: "Algunas de las imagenes de la orden" })
+    orderItemImages: string[];
+    @ApiProperty({ description: "Total de items de la orden" })
+    totalOrderItems: number;
+};
+
+
+export class GetOrders {
+    @ApiProperty({ description: "Array de objetos de las ordenes", type: LightGetOrders, isArray: true })
+    data: GetLightOrderExtended[];
+    @ApiProperty({ description: "Total de paginas", type: Number })
+    totalPages: number;
+    @ApiProperty({ description: "Total de registros", type: Number })
+    totalRecords: number;
+};
+
+export class OrderMoreDetails {
+    @ApiProperty({ description: "Detalle de la orden", type: Order })
+    order: SafeOrder;
+
+    @ApiProperty({ description: "Detalles de pago", type: [SafePaymentDetails], isArray: true })
+    payments_details: SafePaymentDetails[];
+
+    @ApiProperty({ description: "Detalle de envio", type: CustomerOrderShippingDetails })
+    shipping?: CustomerOrderShippingDetails | null;
+
+    @ApiProperty({ description: "Resumen de la orden", type: OrderResume })
+    resume: OrderResume;
+};
+
+
+
+export class OrderDetails {
+    @ApiProperty({ description: "Dirección de envio del destinatario", type: GetCustomerAddressPayment })
+    address: GetCustomerAddressPayment;
+
+    @ApiProperty({ description: "Items de la orden", type: [OrderItems] as const })
+    items: OrderItems[];
+
+    @ApiProperty({ description: "Cliente", type: CustomerAttributes })
+    customer?: CustomerAttributes;
+
+    @ApiProperty({ description: "Detalle de la orden", type: OrderDetails })
+    details: OrderMoreDetails;
+};
+
+export class GetOrderDetails {
+    status: OrderAndPaymentStatus;
+    order?: OrderDetails;
+};
+
+
+export class GetOrdersQuery extends PaginationDTO {
+    @IsOptional()
+    @IsIn(['recent', 'oldest'])
+    orderBy: 'recent' | 'oldest';
+};

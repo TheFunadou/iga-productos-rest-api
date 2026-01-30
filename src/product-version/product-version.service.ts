@@ -131,6 +131,7 @@ export class ProductVersionService {
         });
     };
 
+    //Cambiar de agregar al hijo a agregarlas al padre
     async addReview(args: { customerUUID: string, data: CustomerReviewDTO }): Promise<string> {
         return await this.prisma.$transaction(async (tx) => {
             if (args.data.rating > 5) throw new BadRequestException("El rating no puede ser mayor a 5");

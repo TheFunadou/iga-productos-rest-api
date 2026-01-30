@@ -35,7 +35,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ["http://localhost:3000", "https://photos-technologies-yellow-most.trycloudflare.com", "http://localhost:5173"],
+    origin: ["http://localhost:3000", "https://blah-traffic-royalty-entertainment.trycloudflare.com", "http://localhost:5173"],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
@@ -43,7 +43,7 @@ async function bootstrap() {
       'Accept',
       'Authorization',
       'X-CSRF-Token',
-      'X-Requested-With', // 🔥 CLAVE
+      'X-Requested-With',
     ],
   });
 

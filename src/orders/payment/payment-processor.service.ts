@@ -8,6 +8,7 @@ import { PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { Decimal } from "@prisma/client/runtime/index-browser";
 import { OrderPaymentDetails } from "generated/prisma/client";
 import { ShippingService } from "src/shipping/shipping.service";
+import { ShoppingCartService } from "src/customer/shopping-cart/shopping-cart.service";
 
 
 @Injectable()
@@ -19,7 +20,8 @@ export class PaymentProcessorService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cacheService: CacheService,
-        private readonly shippingService: ShippingService
+        private readonly shippingService: ShippingService,
+        private readonly shoppingCartService: ShoppingCartService
     ) {
         const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN ?? process.env.MERCADO_PAGO_ACCESS_TOKEN_TEST;
         this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: accessToken! });
@@ -114,21 +116,6 @@ export class PaymentProcessorService {
         return { customerUUID: order.customer?.uuid, orderId: order.id, orderStatus: "IN_PROCESS" as const, orderItems: order.order_items }
     };
 
-    private async updateProductVersionStock(args: { tx: any, orderUUID: string }) {
-        const order = await args.tx.order.findUnique({ where: { uuid: args.orderUUID }, include: { order_items: true } });
-        if (!order) throw new Error(`No se encontro la orden con UUID: ${args.orderUUID}`);
-
-        for (const item of order.order_items) {
-            await args.tx.productVersion.update({
-                where: { id: item.product_version_id },
-                data: { stock: { decrement: item.quantity } }
-            });
-
-            this.logger.log(`Stock actualizado para el producto ${item.product_version_id}: -${item.quantity}`);
-        };
-
-    };
-
     private async updateProcessingStatus(args: { externalOrderId: string, status: OrderProcessingStatus }) {
         await this.cacheService.setData<OrderProcessingStatus>({
             entity: "payment:status",
@@ -191,7 +178,11 @@ export class PaymentProcessorService {
                     tx, orderUUID, paymentStatus: paymentStatus!, payment
                 });
 
-                if (orderStatus === "REJECTED" || orderStatus === "CANCELLED") {
+                //    if (orderStatus === "REJECTED" || orderStatus === "CANCELLED") {
+                //         await this.restoreProductVersionStock({ tx, orderUUID });
+                //     };
+
+                if (orderStatus === "CANCELLED") {
                     await this.restoreProductVersionStock({ tx, orderUUID });
                 };
 
@@ -202,6 +193,8 @@ export class PaymentProcessorService {
                             shipping_status: orderStatus === "APPROVED" ? "IN_PREPARATION" : "STAND_BY",
                         }
                     });
+
+                    await this.shoppingCartService.updateShoppingCartByApprovedOrder({ customerUUID, orderId });
                 };
 
                 return { customerUUID, orderStatus, orderId, skipped: false };

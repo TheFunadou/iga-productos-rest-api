@@ -64,15 +64,17 @@ export class OffersUtilsService {
             productId: string,
             categoryId: string,
             subcategoryIds: string[]
-        }>
+        }>,
+        tx?: any
     ): Promise<Map<string, { discount: number, isOffer: boolean }>> {
+        const prisma = tx || this.prisma;
         const now = new Date();
         const versionIds = productVersions.map(pv => pv.versionId);
         const productIds = [...new Set(productVersions.map(pv => pv.productId))];
         const categoryIds = [...new Set(productVersions.map(pv => pv.categoryId))];
         const allSubcategoryIds = [...new Set(productVersions.flatMap(pv => pv.subcategoryIds))];
         // Una sola query para todas las ofertas aplicables
-        const applicableOffers = await this.prisma.offerTarget.findMany({
+        const applicableOffers = await prisma.offerTarget.findMany({
             where: {
                 OR: [
                     { target_type: 'PRODUCT_VERSION', target_id: { in: versionIds } },
@@ -89,7 +91,7 @@ export class OffersUtilsService {
                         { max_uses: null },
                         {
                             max_uses: { not: null },
-                            current_uses: { lt: this.prisma.offers.fields.max_uses }
+                            current_uses: { lt: prisma.offers.fields.max_uses }
                         }
                     ]
                 }

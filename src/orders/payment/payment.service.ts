@@ -215,23 +215,23 @@ export class PaymentService {
                                 customer_installment_amount: details.customer_installment_amount.toString()
                             })),
                             shipping: {
-                                boxesQty: orderDetail.shipping[0].boxes_count,
-                                shippingCost: orderDetail.shipping[0].shipping_amount.toString()
+                                boxesQty: orderDetail.shipping?.boxes_count,
+                                shippingCost: orderDetail.shipping?.shipping_amount.toString()
                             }
                         }
                     }
-                }
+                };
                 return response;
             }
         });
     }
 
-    async getOrderStatusWithDetails(args: { orderUUID: string, customerUUID?: string, requiredStatus: OrderAndPaymentStatus }): Promise<GetPaidOrderDetails> {
+    async getOrderStatusWithDetails(args: { orderUUID: string, customerUUID?: string, requiredStatus: OrderAndPaymentStatus[] }): Promise<GetPaidOrderDetails> {
         const { orderUUID } = args;
         const queryKey = args.customerUUID ? { orderUUID: args.orderUUID, customerUUID: args.customerUUID } : { orderUUID: args.orderUUID };
         const order = await this.prisma.order.findUnique({ where: { uuid: args.orderUUID }, select: { status: true } });
         if (!order) throw new NotFoundException("Orden no encontrada");
-        if (order.status !== args.requiredStatus) return { status: order.status }
+        if (!args.requiredStatus.includes(order.status)) return { status: order.status };
         return await this.getDetails({ orderUUID, queryKey, orderStatus: order.status })
     };
 

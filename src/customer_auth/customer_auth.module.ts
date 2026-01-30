@@ -14,7 +14,7 @@ import { CacheModule } from 'src/cache/cache.module';
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_CUSTOMER_SECRET,
-      signOptions: { expiresIn: '1h' }
+      signOptions: { expiresIn: '24h' }
     }),
     PrismaModule,
     CacheModule]

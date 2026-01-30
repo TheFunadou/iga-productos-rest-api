@@ -54,3 +54,5 @@ export class Shipping {
 
 export class CreateShippingDTO extends OmitType(Shipping, ["id", "order_id", "created_at", "updated_at", "boxes_count", "shipping_amount" as const]) { };
 export class UpdateShippingDTO extends PartialType(CreateShippingDTO) { };
+export class SafeShipping extends OmitType(Shipping, ["id", "order_id"] as const) { };
+export class CustomerOrderShippingDetails extends OmitType(SafeShipping, ["uuid", "concept", "insurance_amount"] as const) { };

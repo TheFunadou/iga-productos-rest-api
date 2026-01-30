@@ -7,6 +7,7 @@ import { PaymentProcessorService } from './payment-processor.service';
 import { PaymentQueueConsumer } from './payment-queue.consumer';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { ShippingModule } from 'src/shipping/shipping.module';
+import { ShoppingCartModule } from 'src/customer/shopping-cart/shopping-cart.module';
 
 @Module({
   providers: [PaymentService, PaymentProcessorService, PaymentQueueConsumer],
@@ -15,6 +16,7 @@ import { ShippingModule } from 'src/shipping/shipping.module';
     CacheModule,
     PrismaModule,
     ShippingModule,
+    ShoppingCartModule,
     BullModule.registerQueue({
       name: "payment-processing",
       defaultJobOptions: {

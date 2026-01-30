@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AddItemDTO, ShoppingCartDTO, UpdateItemQtyDTO } from './shopping-cart.dto';
@@ -8,6 +8,7 @@ import { OffersUtilsService } from 'src/offers/offers.utils.service';
 @Injectable()
 export class ShoppingCartService {
     private readonly nodeEnv = process.env.NODE_ENV;
+    private readonly logger = new Logger(ShoppingCartService.name);
     constructor(
         private readonly cacheService: CacheService,
         private readonly utils: ShoppingCartUtilsService,
@@ -17,16 +18,17 @@ export class ShoppingCartService {
 
 
 
-    public async getShoppingCart(args: { customerUUID: string }): Promise<ShoppingCartDTO[]> {
-        const { customerUUID } = args;
+    public async getShoppingCart(args: { customerUUID: string, tx?: any }): Promise<ShoppingCartDTO[]> {
+        const { customerUUID, tx } = args;
+        const prisma = tx || this.prisma;
         return await this.cacheService.remember<ShoppingCartDTO[]>({
             method: "staleWhileRevalidateWithLock",
             entity: "customer:shopping-cart",
             query: { customerUUID },
             fallback: async () => {
-                const customer = await this.prisma.customer.findUnique({ where: { uuid: customerUUID }, select: { id: true } });
+                const customer = await prisma.customer.findUnique({ where: { uuid: customerUUID }, select: { id: true } });
                 if (!customer) throw new NotFoundException("No se encontro el cliente");
-                const data = await this.prisma.shoppingCart.findFirst({
+                const data = await prisma.shoppingCart.findFirst({
                     where: { customer_id: customer.id },
                     select: {
                         items: {
@@ -76,7 +78,7 @@ export class ShoppingCartService {
                     subcategoryIds: r.product_version.product.subcategories.map(s => s.subcategories.uuid)
                 }));
 
-                const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData);
+                const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData, tx);
 
                 const shoppingCart: ShoppingCartDTO[] = data.items.map((item) => {
                     const discountInfo = discountsMap.get(item.product_version.id.toString()) || { discount: 0, isOffer: false };
@@ -85,7 +87,7 @@ export class ShoppingCartService {
                         uuid: item.uuid,
                         category: item.product_version.product.category.name,
                         subcategories: item.product_version.product.subcategories.map((sub) => sub.subcategories.description),
-                        isChecked: true,
+                        isChecked: item.is_checked,
                         product_images: item.product_version.product_version_images,
                         product_name: item.product_version.product.product_name,
                         product_version: {
@@ -348,15 +350,15 @@ export class ShoppingCartService {
 
         const customer = await prisma.customer.findUnique({
             where: { uuid: customerUUID },
-            select: { id: true, shopping_cart: { select: { id: true } } }
+            select: { id: true, shopping_carts: { select: { id: true } } }
         });
 
         if (!customer) throw new NotFoundException("No se encontró el cliente");
-        if (!customer.shopping_cart) throw new NotFoundException("No se encontró el carrito del cliente");
+        if (!customer.shopping_carts) throw new NotFoundException("No se encontró el carrito del cliente");
 
         return {
             customerId: customer.id,
-            cartId: customer.shopping_cart.id
+            cartId: customer.shopping_carts[0].id
         };
     };
 
@@ -447,7 +449,6 @@ export class ShoppingCartService {
 
     public async updateQty(args: { customerUUID: string, dto: UpdateItemQtyDTO }): Promise<ShoppingCartDTO[]> {
         const { dto: { sku, newQuantity }, customerUUID } = args;
-
         return await this.prisma.$transaction(async (tx) => {
             const { cartId } = await this.getCustomerCartInfo({ customerUUID, tx });
 
@@ -478,16 +479,14 @@ export class ShoppingCartService {
 
             // Después de invalidar
             const result = await this.getShoppingCart({ customerUUID });
-            console.log("🔍 Backend returning:", result.length, "items");
             return result;
-            // return await this.getShoppingCart({ customerUUID });
         });
     };
 
-    public async removeItem(args: { customerUUID: string, sku: string }): Promise<ShoppingCartDTO[]> {
+    public async removeItem(args: { customerUUID: string, sku: string }) {
         const { customerUUID, sku } = args;
 
-        return await this.prisma.$transaction(async (tx) => {
+        await this.prisma.$transaction(async (tx) => {
             const { cartId } = await this.getCustomerCartInfo({ customerUUID, tx });
 
             const productVersion = await tx.productVersion.findFirst({
@@ -495,38 +494,63 @@ export class ShoppingCartService {
                 select: { id: true }
             });
 
-            if (!productVersion) throw new NotFoundException("No se encontró el producto");
-
-            await tx.shoppingCartItems.delete({
-                where: {
-                    shopping_cart_id_product_version_id: {
-                        product_version_id: productVersion.id,
-                        shopping_cart_id: cartId
-                    }
-                }
-            });
-
-            // Verificar si el carrito quedó vacío
-            const remainingItems = await tx.shoppingCartItems.count({
-                where: { shopping_cart_id: cartId }
-            });
-
-            if (remainingItems === 0) {
-                await this.cacheService.removeData({
-                    entity: "customer:shopping-cart",
-                    query: { customerUUID }
-                });
-                return [];
+            if (!productVersion) {
+                throw new NotFoundException("No se encontró el producto");
             }
 
-            await this.cacheService.removeData({
-                entity: "customer:shopping-cart",
-                query: { customerUUID }
+            await tx.shoppingCartItems.deleteMany({
+                where: {
+                    shopping_cart_id: cartId,
+                    product_version_id: productVersion.id
+                }
             });
-
-            return await this.getShoppingCart({ customerUUID });
         });
+
+        // 🔹 FUERA de la transacción
+        await this.cacheService.removeData({
+            entity: "customer:shopping-cart",
+            query: { customerUUID }
+        });
+
+        return this.getShoppingCart({ customerUUID });
     };
+
+
+    async updateShoppingCartByApprovedOrder(args: { customerUUID: string, orderId: string, tx?: any }) {
+        const { customerUUID, orderId, tx } = args;
+        const prisma = tx || this.prisma;
+
+        const orderSkuList = await prisma.orderItemsDetails.findMany({
+            where: { order_id: orderId },
+            select: { product_version: { select: { sku: true } } }
+        });
+
+        const skuList = orderSkuList.map(osd => osd.product_version.sku);
+        const { cartId } = await this.getCustomerCartInfo({ customerUUID, tx });
+
+        const productVersion = await prisma.productVersion.findMany({
+            where: { sku: { in: skuList } },
+            select: { id: true }
+        });
+
+        if (!productVersion) {
+            throw new NotFoundException("No se encontró el producto");
+        }
+
+        await prisma.shoppingCartItems.deleteMany({
+            where: {
+                shopping_cart_id: cartId,
+                product_version_id: { in: productVersion.map(pv => pv.id) }
+            }
+        });
+
+        await this.cacheService.removeData({
+            entity: "customer:shopping-cart",
+            query: { customerUUID }
+        });
+
+    };
+
 
     public async toggleCheck(args: { customerUUID: string, sku: string }): Promise<ShoppingCartDTO[]> {
         const { customerUUID, sku } = args;

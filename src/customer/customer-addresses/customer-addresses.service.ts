@@ -33,47 +33,46 @@ export class CustomerAddressesService {
 
     async patch(args: { customerUUID: string, data: UpdateCustomerAddressDTO }) {
         return await this.prisma.$transaction(async (tx) => {
-            const customer = await tx.customer.findUnique({ where: { uuid: args.customerUUID }, select: { id: true } });
+            const customer = await tx.customer.findUnique({
+                where: { uuid: args.customerUUID },
+                select: { id: true }
+            });
             if (!customer) throw new NotFoundException("Cliente no encontrado");
-            const addresses = await tx.customerAddresses.findMany({ where: { customer_id: customer.id }, omit: { id: true, customer_id: true } });
-            const currentAddress = addresses.find((addr) => addr.uuid === args.data.uuid);
-            if (!currentAddress) throw new NotFoundException("Direccion no encontrada");
-            let defaultAddress = false;
-            if (args.data.default_address && currentAddress.default_address) defaultAddress = true;
-            if (args.data.default_address && !currentAddress.default_address) {
-                await tx.customerAddresses.updateMany({
-                    where: { customer_id: customer.id, uuid: { not: args.data.uuid } },
-                    data: { default_address: false }
-                }).catch((error) => { throw new BadRequestException(`Ocurrio un error inesperado al actualizar la dirección de envio`, this.nodeEnv === "DEVELOPMENT" && error) });
-                defaultAddress = true;
-            };
-            if (args.data.default_address && addresses.length === 1 && currentAddress.default_address) defaultAddress = true;
-            if (!args.data.default_address) {
-                if (!currentAddress.default_address && addresses.length > 1) {
-                    // Set another address as default
-                    const otherAddress = addresses.find((addr) => addr.uuid !== args.data.uuid);
-                    if (otherAddress) {
-                        await tx.customerAddresses.update({
-                            where: { uuid: otherAddress.uuid },
-                            data: { default_address: true }
-                        }).catch((error) => { throw new BadRequestException(`Ocurrio un error inesperado al actualizar la dirección de envio`, this.nodeEnv === "DEVELOPMENT" && error) });
-                    };
-                    defaultAddress = false;
-                };
-                if (!currentAddress.default_address && addresses.length > 1) defaultAddress = false;
-                if (!currentAddress.default_address && addresses.length === 1) defaultAddress = true;
-            };
 
-            await tx.customerAddresses.update({
+            const currentAddress = await tx.customerAddresses.findUnique({
                 where: { uuid: args.data.uuid },
-                data: { default_address: defaultAddress },
-                omit: { id: true, customer_id: true, created_at: true, updated_at: true }
-            }).catch((error) => { throw new BadRequestException(`Ocurrio un error inesperado al actualizar la dirección de envio`, this.nodeEnv === "DEVELOPMENT" && error) });
+                select: { uuid: true, default_address: true, customer_id: true }
+            });
 
-            await this.cacheService.invalidateQuery({ entity: "customer:addresses", query: { customer: args.customerUUID } });
+            if (!currentAddress) throw new NotFoundException("Direccion no encontrada");
+            if (currentAddress.customer_id !== customer.id) throw new BadRequestException("Esta dirección no pertenece al cliente");
+
+            // Extraer uuid del DTO para no incluirlo en la actualización
+            const { uuid, ...updateData } = args.data;
+
+            // Si se está marcando como default, desmarcar las demás
+            if (updateData.default_address && !currentAddress.default_address) {
+                await tx.customerAddresses.updateMany({
+                    where: { customer_id: customer.id, uuid: { not: uuid } },
+                    data: { default_address: false }
+                });
+            }
+
+            // Actualizar la dirección con TODOS los campos enviados
+            await tx.customerAddresses.update({
+                where: { uuid },
+                data: updateData,
+                omit: { id: true, customer_id: true, created_at: true, updated_at: true }
+            });
+
+            await this.cacheService.invalidateQuery({
+                entity: "customer:addresses",
+                query: { customer: args.customerUUID }
+            });
+
             return "Dirección de envio actualizada satisfactoriamente";
         });
-    };
+    }
 
     async delete(args: { customerUUID: string, uuid: string }) {
         return await this.prisma.$transaction(async (tx) => {
