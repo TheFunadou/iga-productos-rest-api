@@ -24,6 +24,9 @@ export class CustomerPayload {
 
     @ApiProperty({ description: "Correo del cliente", type: String })
     email: string;
+
+    @ApiProperty({ description: "Email validado?", type: String })
+    verified: boolean;
 };
 
 

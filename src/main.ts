@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 import { PrismaValidationFilter } from './common/filters/prisma-validation.filter';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -34,8 +35,11 @@ async function bootstrap() {
     new PrismaValidationFilter(),
   );
 
+  const configService = app.get(ConfigService);
+  const port = configService.get("PORT") || 3000;
+
   app.enableCors({
-    origin: ["http://localhost:3000", "https://blah-traffic-royalty-entertainment.trycloudflare.com", "http://localhost:5173"],
+    origin: ["http://localhost:3000", "https://ratings-banana-found-briefly.trycloudflare.com", "http://localhost:5173", "http://192.168.0.27:5173"],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
@@ -51,7 +55,7 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document, {
     swaggerOptions: { persistAuthorization: true },
   });
-  await app.listen(process.env.PORT ?? 3001);
-  console.log("Servidor activo en ", process.env.PORT ?? 3001);
+  await app.listen(port);
+  console.log("Servidor activo en:", port);
 }
 bootstrap();

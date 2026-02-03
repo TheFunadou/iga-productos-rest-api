@@ -21,6 +21,7 @@ import { OrdersModule } from './orders/orders.module';
 import { OffersModule } from './offers/offers.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { ShippingModule } from './shipping/shipping.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ShippingModule } from './shipping/shipping.module';
     OffersModule,
     MetricsModule,
     ShippingModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService, UserService],

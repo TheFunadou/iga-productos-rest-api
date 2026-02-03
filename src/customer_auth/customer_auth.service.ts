@@ -31,6 +31,7 @@ export class CustomerAuthService {
                 email: true,
                 name: true,
                 last_name: true,
+                email_verified: true,
                 accounts: { select: { password: true, } },
             }
         });
@@ -44,6 +45,7 @@ export class CustomerAuthService {
             email: user.email,
             name: user.name,
             last_name: user.last_name,
+            verified: user.email_verified
         };
         return payload;
     };
@@ -62,12 +64,20 @@ export class CustomerAuthService {
                 email: true,
                 name: true,
                 last_name: true,
+                email_verified: true
             }
         });
         if (!customer) throw new NotFoundException("Cliente no encontrado");
+        const payload: CustomerPayload = {
+            uuid: customer.uuid,
+            email: customer.email,
+            name: customer.name,
+            last_name: customer.last_name,
+            verified: customer.email_verified
+        };
         const csrfToken = await this.cacheService.getData<{ csrfToken: string }>({ entity: "customer:session:csrf", query: { customerUUID: args.uuid } });
         if (!csrfToken) throw new NotFoundException("No se encontro token csrf asociado a este cliente");
-        return { payload: customer, csrfToken: csrfToken.csrfToken };
+        return { payload, csrfToken: csrfToken.csrfToken };
     };
 
 };
