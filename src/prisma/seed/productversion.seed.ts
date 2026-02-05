@@ -11,28 +11,39 @@ export async function main() {
 
     for (const item of products) {
         await prisma.$transaction(async (tx) => {
-            const fatherProduct = await tx.product.findUnique({
-                where: { product_name: item.product.product_name }
+            console.log(`Buscando producto padre: ${item.product.product_name}`);
+            const fatherProduct = await tx.product.findFirst({
+                where: { product_name: { equals: item.product.product_name, mode: "insensitive" } }
             });
 
             if (!fatherProduct) throw new Error(`No se encontro el producto padre: ${item.product.product_name}`);
-            await prisma.productVersion.create({
-                data: {
-                    product_id: fatherProduct.id,
-                    sku: item.sku,
-                    code_bar: item.code_bar,
-                    color_line: item.color_line,
-                    color_name: item.color_name,
-                    color_code: item.color_code,
-                    status: item.status,
-                    stock: item.stock,
-                    unit_price: item.unit_price,
-                    technical_sheet_url: item.technical_sheet_url,
-                    created_at: item.created_at,
-                    updated_at: item.updated_at,
-                    main_version: item.main_version,
-                }
-            })
+            console.log(`Producto padre encontrado: ${fatherProduct.product_name}`);
+
+            const productVersionExists = await tx.productVersion.findFirst({
+                where: { sku: item.sku }
+            });
+
+            if (!productVersionExists) {
+                console.log("Insertando version de producto: ", item.sku);
+                const productVersion = await tx.productVersion.create({
+                    data: {
+                        product_id: fatherProduct.id,
+                        sku: item.sku,
+                        color_line: item.color_line,
+                        color_name: item.color_name,
+                        color_code: item.color_code,
+                        status: item.status,
+                        stock: item.stock,
+                        unit_price: item.unit_price,
+                        technical_sheet_url: item.technical_sheet_url,
+                        created_at: item.created_at,
+                        updated_at: item.updated_at,
+                        main_version: item.main_version,
+                    }
+                })
+                console.log(`Version de producto insertada exitosamente: ${productVersion.sku}`);
+                console.log("--------------------------------------------------");
+            }
         });
     }
 }

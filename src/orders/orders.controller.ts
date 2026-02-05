@@ -88,4 +88,14 @@ export class OrdersController {
     async cancelOrder(@Param("uuid") uuid: string) {
         return await this.ordersService.cancelOrder({ orderUUID: uuid });
     };
+
+    @Get("buy-now/:sku")
+    @ApiOperation({ summary: "Obtiene los detalles de una orden" })
+    @ApiResponse({ status: 200, description: "Items obtenidos exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al obtener los items de la orden" })
+    @ApiResponse({ status: 404, description: "No se encontro la orden" })
+    @ApiResponse({ status: 500, description: "Error inesperado al obtener los items de la orden" })
+    async getBuyNowItem(@Param("sku") sku: string) {
+        return await this.ordersService.getBuyNowItem({ sku });
+    };
 };

@@ -67,12 +67,12 @@ export async function main() {
         { sku: "CAS1-AI-013", name: 'Casco de Seguridad Industrial Marca IGA, Plagosur Clase "E" Intervalos', price: "233.88" },
         { sku: "CAS1-AI-014", name: 'Casco de Seguridad Industrial Marca IGA, Plagosur Clase "E" Intervalos', price: "233.88" },
 
-        { sku: "CAS2-AM1-001", name: 'Casco de Seguriad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
-        { sku: "CAS2-AM1-002", name: 'Casco de Seguriad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
-        { sku: "CAS2-AM1-003", name: 'Casco de Seguriad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
-        { sku: "CAS2-AM1-004", name: 'Casco de Seguriad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
-        { sku: "CAS2-AM1-005", name: 'Casco de Seguriad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
-        { sku: "CAS2-AM1-006", name: 'Casco de Seguriad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
+        { sku: "CAS2-AM1-001", name: 'Casco de Seguridad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
+        { sku: "CAS2-AM1-002", name: 'Casco de Seguridad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
+        { sku: "CAS2-AM1-003", name: 'Casco de Seguridad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
+        { sku: "CAS2-AM1-004", name: 'Casco de Seguridad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
+        { sku: "CAS2-AM1-005", name: 'Casco de Seguridad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
+        { sku: "CAS2-AM1-006", name: 'Casco de Seguridad Industrial IGA, Coraza Clase "E", Ajuste Matraca', price: "288.29" },
 
         { sku: "LEN1-001-001", name: 'IGA Lentes de Seguridad Industrial, Mica de Policarbonato con Protección Contra Rayos UV, Ártico-Medical', price: "102.06" },
         { sku: "LEN1-001-002", name: 'IGA Lentes de Seguridad Industrial, Mica de Policarbonato con Protección Contra Rayos UV, Ártico-Medical', price: "99.43" },
@@ -106,14 +106,7 @@ export async function main() {
                     data: {
                         unit_price: new Decimal(items.price)
                     }
-                }).catch((error) => console.error("❌ Error al actualizar la versión del producto:", error));
-
-                await tx.product.update({
-                    where: { id: product.id },
-                    data: {
-                        product_name: items.name
-                    }
-                }).catch((error) => console.error("❌ Error al actualizar el producto:", error));
+                }).catch((error) => console.error("❌ Error al actualizar el precio del producto:", error));
 
                 console.log("OK", items.sku);
             })
@@ -126,7 +119,7 @@ export async function main() {
 main()
     .then(
         async () => {
-            console.log("versiones de productos insertadas exitosamente");
+            console.log("precios actualizados actualizados");
             await prisma.$disconnect();
         })
     .catch(

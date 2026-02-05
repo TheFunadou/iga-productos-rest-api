@@ -116,7 +116,7 @@ export class OrderUtilsService {
         const itemsQty = onlyCheckedItems.reduce((acc, item) => {
             return acc + item.quantity
         }, 0);
-        const BOX_COST = 1;
+        const BOX_COST = 264.00;
         const MAX_ITEMS_PER_BOX = 10;
         const boxesQty = Math.ceil(itemsQty / MAX_ITEMS_PER_BOX);
         const shippingCost = boxesQty * BOX_COST;

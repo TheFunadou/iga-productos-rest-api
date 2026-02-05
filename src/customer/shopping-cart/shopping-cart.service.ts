@@ -340,7 +340,7 @@ export class ShoppingCartService {
     //     await this.prisma.shoppingCartItems.deleteMany({ where: { shopping_cart_id: customerCart.id } });
 
     //     await this.cacheService.removeData({ entity: "customer:shopping-cart", query: { customerUUID } }).catch((error) => {
-    //         throw new BadRequestException("Ocurrio un error al remover los productos del carrito", this.nodeEnv === "DEVELOPMENT" && error);
+    //         throw new BadRequestException("Ocurrio un error al remover los productos del carrito", this.nodeEnv === "DEV" && error);
     //     });
     // };
 

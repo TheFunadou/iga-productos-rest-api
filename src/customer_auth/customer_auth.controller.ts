@@ -5,13 +5,17 @@ import { AuthCustomer, CustomerCredentialsDTO, CustomerPayload } from './custome
 import { Response as ExpressResponse, Request as ExpressRequest } from 'express';
 import { RequiredCustomerAuthGuard } from './customer_auth.required.guard';
 import { AuthenticatedCustomer } from './customer_auth.current.decorator';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('customer-auth')
 export class CustomerAuthController {
-    private readonly nodeEnv = process.env.NODE_ENV;
+    private readonly nodeEnv: string;
     constructor(
-        private readonly customerAuthService: CustomerAuthService
-    ) { };
+        private readonly customerAuthService: CustomerAuthService,
+        private readonly configService: ConfigService
+    ) {
+        this.nodeEnv = this.configService.get<string>("NODE_ENV") || "DEV";
+    };
 
     @Post("login")
     @ApiOperation({ summary: "Inicia sesión de un usuario" })
@@ -24,33 +28,34 @@ export class CustomerAuthController {
         @Req() request: ExpressRequest
     ): Promise<AuthCustomer> {
         const login = await this.customerAuthService.login(dto);
-        // response.cookie("iga_customer_access_token", login.access_token, {
-        //     httpOnly: true,
-        //     secure: this.nodeEnv === "PRODUCTION",
-        //     sameSite: this.nodeEnv === "PRODUCTION" ? "strict" : "lax",
-        //     maxAge: 1000 * 60 * 60 * 24,
-        // });
-
-        // response.cookie("iga_customer_csrf_token", login.csrfToken, {
-        //     httpOnly: false,
-        //     secure: this.nodeEnv === "PRODUCTION",
-        //     sameSite: this.nodeEnv === "PRODUCTION" ? "strict" : "lax",
-        //     maxAge: 1000 * 60 * 60 * 24,
-        // });
-
         response.cookie("iga_customer_access_token", login.access_token, {
             httpOnly: true,
-            secure: true,
-            sameSite: "none",
+            secure: this.nodeEnv === "PROD",
+            sameSite: this.nodeEnv === "PROD" ? "strict" : "lax",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
         response.cookie("iga_customer_csrf_token", login.csrfToken, {
             httpOnly: false,
-            secure: true,
-            sameSite: "none",
+            secure: this.nodeEnv === "PROD",
+            sameSite: this.nodeEnv === "PROD" ? "strict" : "lax",
             maxAge: 1000 * 60 * 60 * 24,
         });
+
+        //For tunnels
+        // response.cookie("iga_customer_access_token", login.access_token, {
+        //     httpOnly: true,
+        //     secure: true,
+        //     sameSite: "none",
+        //     maxAge: 1000 * 60 * 60 * 24,
+        // });
+
+        // response.cookie("iga_customer_csrf_token", login.csrfToken, {
+        //     httpOnly: false,
+        //     secure: true,
+        //     sameSite: "none",
+        //     maxAge: 1000 * 60 * 60 * 24,
+        // });
 
 
         return { payload: login.payload, csrfToken: login.csrfToken };

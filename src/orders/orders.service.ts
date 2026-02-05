@@ -2,11 +2,11 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderItems, OrderReadyToPay } from './payment/payment.dto';
-import { GetOrders, GetOrdersQuery, GuestOrderData, CheckoutOrder, OrderRequestDTO, OrderRequestGuestDTO, OrderDetails, GetOrderDetails } from './order.dto';
+import { GetOrders, GetOrdersQuery, GuestOrderData, CheckoutOrder, OrderRequestDTO, OrderRequestGuestDTO, GetOrderDetails } from './order.dto';
 import { ProductVersionFindService } from 'src/product-version/product-version.find.service';
 import { OrderUtilsService } from './order.utils.service';
-import { MercadoPagoConfig, Preference as MercadoPagoPreference, Order, Preference } from "mercadopago";
-import { PaginationDTO } from 'src/common/DTO/pagination.dto';
+import { MercadoPagoConfig, Preference as MercadoPagoPreference, Preference } from "mercadopago";
+import { ShoppingCartDTO } from 'src/customer/shopping-cart/shopping-cart.dto';
 
 @Injectable()
 export class OrdersService {
@@ -33,7 +33,7 @@ export class OrdersService {
             if (!customerAddress) throw new NotFoundException("Error inesperado al crear la orden, no se encontro la dirección de envio");
             const itemsSKUList = args.orderRequest.shopping_cart.map((item) => item.product);
             const itemCards = await this.productVersionFindService.searchCardsBySKUList({ tx, skuList: itemsSKUList, customerUUID: args.customerUUID, couponCode: args.orderRequest.coupon_code }).catch((error) => {
-                throw new BadRequestException(`Error al obtener las tarjetas de prodcutos ${this.nodeEnv === "DEVELOPMENT" && `: ${error}`}`)
+                throw new BadRequestException(`Error al obtener las tarjetas de prodcutos ${this.nodeEnv === "DEV" && `: ${error}`}`)
             });
             const items = this.orderUtilsService.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
             const vigency = this.orderUtilsService.buildMercadoPagoPaymentVigency();
@@ -61,7 +61,7 @@ export class OrdersService {
                 internalOrderId: orderUUID, items, shoppingCart, vigency, customer, customerAddress, shippingCost: orderResume.shippingCost,
             });
             const preference = await this.mercadoPagoPreference.create(body).catch((error) => {
-                throw new BadRequestException(`Error al crear la orden de pago 1 ${this.nodeEnv === "DEVELOPMENT" && `: ${error.message}`}`)
+                throw new BadRequestException(`Error al crear la orden de pago 1 ${this.nodeEnv === "DEV" && `: ${error.message}`}`)
             });
             if (!preference.id) throw new BadRequestException(`Error al crear la preferencia de pago`);
             const order = await tx.order.create({
@@ -75,13 +75,13 @@ export class OrdersService {
                     total_amount: orderResume.total,
                     exchange: "MXN",
                 },
-            }).catch((error) => { throw new BadRequestException(`Error al crear la orden de pago 2 ${this.nodeEnv === "DEVELOPMENT" && `: ${error.message}`}`) });
+            }).catch((error) => { throw new BadRequestException(`Error al crear la orden de pago 2 ${this.nodeEnv === "DEV" && `: ${error.message}`}`) });
 
             for (const item of items) {
                 const productVersion = await tx.productVersion.findUnique({ where: { sku: item.id }, select: { id: true } });
                 const shoppingCartItem = shoppingCart.find((cartItem) => cartItem.product_version.sku === item.id);
-                if (!shoppingCartItem) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEVELOPMENT" && `: No se encontro el item del carrito ${item.id}`}`);
-                if (!productVersion) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEVELOPMENT" && `: No se encontro la version del producto ${item.id}`}`);
+                if (!shoppingCartItem) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEV" && `: No se encontro el item del carrito ${item.id}`}`);
+                if (!productVersion) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEV" && `: No se encontro la version del producto ${item.id}`}`);
                 await tx.orderItemsDetails.create({
                     data: {
                         order_id: order.id,
@@ -160,7 +160,7 @@ export class OrdersService {
 
             for (const item of items) {
                 const productVersion = await tx.productVersion.findUnique({ where: { sku: item.id }, select: { id: true } });
-                if (!productVersion) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEVELOPMENT" && `: No se encontro la version del producto ${item.id}`}`);
+                if (!productVersion) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEV" && `: No se encontro la version del producto ${item.id}`}`);
                 await tx.orderItemsDetails.create({
                     data: {
                         order_id: order.id,
@@ -501,6 +501,63 @@ export class OrdersService {
             }
         })
 
+    };
+
+    async getBuyNowItem({ sku }: { sku: string }): Promise<ShoppingCartDTO> {
+        return await this.cacheService.remember({
+            method: "staleWhileRevalidateWithLock",
+            entity: "buy-now:item",
+            query: { sku },
+            fallback: async () => {
+                const productVersion = await this.prisma.productVersion.findFirst({
+                    where: { sku: { equals: sku, mode: "insensitive" } },
+                    select: {
+                        unit_price: true,
+                        sku: true,
+                        color_line: true,
+                        color_name: true,
+                        color_code: true,
+                        stock: true,
+                        product_version_images: {
+                            where: { main_image: true },
+                            select: { main_image: true, image_url: true },
+                            orderBy: { main_image: "desc" as const }
+                        },
+                        product: {
+                            select: {
+                                id: true,
+                                category_id: true,
+                                product_name: true,
+                                category: { select: { name: true } },
+                                subcategories: { select: { subcategories: { select: { uuid: true, description: true } }, }, }
+                            }
+                        }
+                    }
+                });
+
+                if (!productVersion) throw new NotFoundException("No se encontro la versión del producto");
+                return {
+                    product_version: {
+                        sku: productVersion.sku,
+                        color_line: productVersion.color_line,
+                        color_name: productVersion.color_name,
+                        color_code: productVersion.color_code,
+                        unit_price: productVersion.unit_price,
+                        stock: productVersion.stock,
+                        unit_price_with_discount: productVersion.unit_price.toString(),
+                    },
+                    product_name: productVersion.product.product_name,
+                    category: productVersion.product.category.name,
+                    subcategories: productVersion.product.subcategories.map((sub) => sub.subcategories.description),
+                    product_images: productVersion.product_version_images,
+                    quantity: 1,
+                    discount: 0,
+                    isFavorite: false,
+                    isOffer: false,
+                    isChecked: true
+                };
+            }
+        })
     };
 
     async cancelOrder({ orderUUID }: { orderUUID: string }) {

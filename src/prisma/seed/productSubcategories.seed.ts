@@ -11,24 +11,38 @@ export async function main() {
 
     for (const item of productSubcategories) {
         await prisma.$transaction(async (tx) => {
-            const product = await tx.product.findUnique({
-                where: { product_name: item.product.product_name }
+            const product = await tx.product.findFirst({
+                where: { product_name: { equals: item.product.product_name, mode: "insensitive" } }
             });
 
             if (!product) throw new Error(`No se encontro al producto: ${item.product.product_name}`);
 
+            console.log("Producto encontrado: ", product.product_name);
             const subcategoryId = await tx.subcategories.findUnique({
                 where: { uuid: item.category_attribute.uuid }, select: { id: true }
             });
-
             if (!subcategoryId) throw new Error(`No se encontro la subcategoria: ${item.category_attribute.uuid}`);
 
-            await prisma.productSubcategories.create({
-                data: {
+            console.log("Subcategoria encontrada: ", subcategoryId.id);
+
+            const exists = await tx.productSubcategories.findFirst({
+                where: {
                     product_id: product.id,
-                    subcategory_id: subcategoryId.id,
-                }
-            })
+                    subcategory_id: subcategoryId.id
+                }, select: { product_id: true }
+            });
+
+            if (!exists) {
+                console.log("Subcategorias no agregadas al producto")
+                await prisma.productSubcategories.create({
+                    data: {
+                        product_id: product.id,
+                        subcategory_id: subcategoryId.id,
+                    }
+                });
+                console.log("Subcategorias agregadas al producto: ", product.product_name);
+                console.log("---------------------------------------------------");
+            }
         });
     }
 }

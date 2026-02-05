@@ -195,6 +195,8 @@ export class PaymentProcessorService {
                     });
 
                     await this.shoppingCartService.updateShoppingCartByApprovedOrder({ customerUUID, orderId });
+
+                    await this.cacheService.invalidateQuery({ entity: "order:paid:details", query: customerUUID ? { orderUUID, customerUUID } : { orderUUID } });
                 };
 
                 return { customerUUID, orderStatus, orderId, skipped: false };
@@ -210,7 +212,6 @@ export class PaymentProcessorService {
             });
 
             if (result.customerUUID) {
-                console.log("result.customerUUID", result.customerUUID);
                 await this.cacheService.invalidateMultipleQueries([
                     {
                         entity: "customer:orders",

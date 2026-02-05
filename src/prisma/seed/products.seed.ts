@@ -9,7 +9,7 @@ export async function main() {
     const file = await fs.readFile(filePath, 'utf8');
     const products: { id: number, uuid: string, product_name: string, category_id: number, description: string, specs: string, recommendations: string, applications: string, certifications_desc: string, created_at: Date, updated_at: Date, user_id: number, category: { name: string } }[] = JSON.parse(file);
 
-    const user = await prisma.user.findUnique({ where: { username: "igaSuperUser" }, select: { id: true } });
+    const user = await prisma.user.findUnique({ where: { username: "igaproductossuperuser" }, select: { id: true } });
     if (!user) throw new Error("No se encontro o no esta creado el usuario superuser");
     for (const item of products) {
         await prisma.$transaction(async (tx) => {

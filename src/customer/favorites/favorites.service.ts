@@ -15,7 +15,7 @@ export class FavoritesService {
     private async add(args: { tx: any, customer: { id: string, uuid: string }, productVersionId: string }) {
         await args.tx.customerFavorites.create({
             data: { customer_id: args.customer.id, product_version_id: args.productVersionId }
-        }).catch((error) => { throw new BadRequestException(`Error al agregar el producto a favoritos ${this.nodeEnv === "DEVELOPMENT" && `: ${error}`}`) });
+        }).catch((error) => { throw new BadRequestException(`Error al agregar el producto a favoritos ${this.nodeEnv === "DEV" && `: ${error}`}`) });
         await this.cacheService.invalidateMultipleEntities([
             { entity: `customer:favorites:${args.customer.uuid}` },
             { entity: `product-version:search:cards:${args.customer.uuid}` }
@@ -26,7 +26,7 @@ export class FavoritesService {
     private async remove(args: { tx: any, customer: { id: string, uuid: string }, favoriteID: string }) {
         await args.tx.customerFavorites.delete({
             where: { id: args.favoriteID }
-        }).catch((error) => { throw new BadRequestException(`Error al eliminar el producto de favoritos ${this.nodeEnv === "DEVELOPMENT" && `: ${error}`}`) });
+        }).catch((error) => { throw new BadRequestException(`Error al eliminar el producto de favoritos ${this.nodeEnv === "DEV" && `: ${error}`}`) });
         await this.cacheService.invalidateMultipleEntities([
             { entity: `customer:favorites:${args.customer.uuid}` },
             { entity: `product-version:search:cards:${args.customer.uuid}` }

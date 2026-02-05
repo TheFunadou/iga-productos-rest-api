@@ -115,8 +115,8 @@ export class ProductVersionUtilsService {
                                 'description', sub.description
                             )
                         )
-                        FROM "ProductSubcategories" ps
-                        INNER JOIN "Subcategories" sub ON ps.subcategory_id = sub.id
+                        FROM "product_subcategories" ps
+                        INNER JOIN "subcategories" sub ON ps.subcategory_id = sub.id
                         WHERE ps.product_id = p.id
                     ),
                     '[]'::json
@@ -140,10 +140,10 @@ export class ProductVersionUtilsService {
                     'unit_price', pv.unit_price::text
                 ) as product_version,
                 false as "isFavorite"
-                FROM "ProductVersion" pv
-                INNER JOIN "Product" p ON pv.product_id = p.id
-                INNER JOIN "Category" c ON p.category_id = c.id
-                LEFT JOIN "ProductVersionImages" pi ON pi.product_version_id = pv.id AND pi.main_image = true
+                FROM "product_version" pv
+                INNER JOIN "product" p ON pv.product_id = p.id
+                INNER JOIN "category" c ON p.category_id = c.id
+                LEFT JOIN "product_version_images" pi ON pi.product_version_id = pv.id AND pi.main_image = true
                 GROUP BY 
                     pv.id,
                     pv.sku,
@@ -208,8 +208,8 @@ export class ProductVersionUtilsService {
                                 'description', sub.description
                             )
                         )
-                        FROM "ProductSubcategories" ps
-                        INNER JOIN "Subcategories" sub ON ps.subcategory_id = sub.id
+                        FROM "product_subcategories" ps
+                        INNER JOIN "subcategories" sub ON ps.subcategory_id = sub.id
                         WHERE ps.product_id = p.id
                     ),
                     '[]'::json
@@ -236,12 +236,12 @@ export class ProductVersionUtilsService {
                     'stock', pv.stock,
                     'unit_price', pv.unit_price::text
                 ) as product_version
-                FROM "ProductVersion" pv
-                INNER JOIN "Product" p ON pv.product_id = p.id
-                INNER JOIN "Category" c ON p.category_id = c.id
-                LEFT JOIN "ProductVersionImages" pi ON pi.product_version_id = pv.id AND pi.main_image = true
-                LEFT JOIN "CustomerFavorites" cf ON cf.product_version_id = pv.id
-                LEFT JOIN "Customer" cust ON cf.customer_id = cust.id AND cust.uuid = ${args.customerUUID}
+                FROM "product_version" pv
+                INNER JOIN "product" p ON pv.product_id = p.id
+                INNER JOIN "category" c ON p.category_id = c.id
+                LEFT JOIN "product_version_images" pi ON pi.product_version_id = pv.id AND pi.main_image = true
+                LEFT JOIN "customer_favorites" cf ON cf.product_version_id = pv.id
+                LEFT JOIN "customer" cust ON cf.customer_id = cust.id AND cust.uuid = ${args.customerUUID}
                 GROUP BY 
                     pv.id,
                     pv.sku,

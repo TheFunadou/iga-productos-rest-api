@@ -152,7 +152,7 @@ export class ProductVersionService {
                     product_version_id: productVersion.id
                 }
             }).catch((error) => {
-                throw new BadRequestException("Ocurrio un error inesperado", this.nodeEnv === "DEVELOPMENT" && error);
+                throw new BadRequestException("Ocurrio un error inesperado", this.nodeEnv === "DEV" && error);
             });
             await this.cacheService.invalidateEntity({ entity: `product-version:show:details:${args.customerUUID}` })
             return `Tu reseña ha sido enviada`;

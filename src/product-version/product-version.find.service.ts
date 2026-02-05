@@ -71,7 +71,7 @@ export class ProductVersionFindService {
             fallback: async () => {
 
                 const result: any = await this.prisma.productVersion.findFirst({
-                    where: { sku: { contains: args.sku, mode: "insensitive" } },
+                    where: { sku: args.sku.toUpperCase() },
                     select: builtFilters.select
                 });
                 if (!result) return null;

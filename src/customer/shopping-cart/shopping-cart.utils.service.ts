@@ -54,7 +54,7 @@ export class ShoppingCartUtilsService {
             },
             data: args.data
         }).catch((error) => {
-            throw new BadRequestException("Error al guardar articulos en carrito de compras", this.nodeEnv === "DEVELOPMENT" && error);
+            throw new BadRequestException("Error al guardar articulos en carrito de compras", this.nodeEnv === "DEV" && error);
         });
     };
 

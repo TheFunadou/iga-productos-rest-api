@@ -1,6 +1,6 @@
-import { ApiProperty, OmitType } from "@nestjs/swagger";
+import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsIn, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsIn, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
 import { OrderItems, OrderResume, OrderShoppingCartDTO } from "./payment/payment.dto";
 import { GetCustomerAddressPayment, CreateCustomerAddressDTO as GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
 import { CustomerAttributes } from "src/customer/customer.dto";
@@ -165,7 +165,6 @@ export class GuestOrderData {
     @ApiProperty({ description: "Fecha de creación", type: Date })
     createdAt: Date | string;
 };
-
 
 export class SafeOrder extends OmitType(Order, ["id", "external_order_id", "customer_id", "customer_address_id"] as const) { };
 export class LightGetOrders extends OmitType(SafeOrder, ["is_guest_order", "exchange", "payment_provider", "coupon_code" as const]) { };

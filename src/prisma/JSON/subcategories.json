@@ -19,7 +19,7 @@
   },
   {
     "uuid": "7Y-0KX0Z8-ILjQGMgZzTM",
-    "description": "Cuatro puntos",
+    "description": "Cuatro Puntos de Anclaje",
     "level": 0,
     "father_uuid": null,
     "category": {
@@ -37,7 +37,7 @@
   },
   {
     "uuid": "zKWDr581sN_vJ9SX0jNhF",
-    "description": "Sin mentonera",
+    "description": "Sin Mentonera",
     "level": 0,
     "father_uuid": null,
     "category": {
@@ -64,7 +64,7 @@
   },
   {
     "uuid": "VjeKst02UJBBK9TeN-OKy",
-    "description": "Ajuste de intervalo",
+    "description": "Ajuste De Intervalo",
     "level": 0,
     "father_uuid": null,
     "category": {
@@ -73,7 +73,7 @@
   },
   {
     "uuid": "_LSK4psS-btlc8CwxLXUy",
-    "description": "Ajuste matraca",
+    "description": "Ajuste De Matraca",
     "level": 0,
     "father_uuid": null,
     "category": {
@@ -127,7 +127,7 @@
   },
   {
     "uuid": "YmQixU9iKT58Q4e6AXjxg",
-    "description": "Seis puntos",
+    "description": "Seis Puntos De Anclaje",
     "level": 1,
     "father_uuid": "VjeKst02UJBBK9TeN-OKy",
     "category": {
@@ -136,7 +136,7 @@
   },
   {
     "uuid": "oehgbHddo2sp4XeK01L1c",
-    "description": "Cuatro puntos",
+    "description": "Cuatro Puntos De Anclaje",
     "level": 1,
     "father_uuid": "VjeKst02UJBBK9TeN-OKy",
     "category": {
@@ -145,7 +145,7 @@
   },
   {
     "uuid": "AXk-5d9-EGLvIOp2Up2jq",
-    "description": "Seis puntos",
+    "description": "Seis Puntos De Anclaje",
     "level": 1,
     "father_uuid": "_LSK4psS-btlc8CwxLXUy",
     "category": {
@@ -154,7 +154,7 @@
   },
   {
     "uuid": "c8J7cy1oQwd5r_w7DaRTw",
-    "description": "Cuatro puntos",
+    "description": "Cuatro Puntos De Anclaje",
     "level": 1,
     "father_uuid": "_LSK4psS-btlc8CwxLXUy",
     "category": {
@@ -172,7 +172,7 @@
   },
   {
     "uuid": "FLGrHXv6Te8VmR56SY6hS",
-    "description": "Coraza Tipo A",
+    "description": "Coraza (Ala Ancha)",
     "level": 1,
     "father_uuid": "gYGhgUO4GHBECXninMd9R",
     "category": {
@@ -181,7 +181,7 @@
   },
   {
     "uuid": "K1cYZD21hXb4E-YuVJcD4",
-    "description": "Ajuste de Matraca",
+    "description": "Ajuste De Matraca",
     "level": 2,
     "father_uuid": "FLGrHXv6Te8VmR56SY6hS",
     "category": {
@@ -190,7 +190,7 @@
   },
   {
     "uuid": "DMeVpVLOpf4G1uyUgZ1Nk",
-    "description": "Ajuste de Intervalo",
+    "description": "Ajuste De Intervalo",
     "level": 2,
     "father_uuid": "XyGUdWja-eBMNsXdN0Gvj",
     "category": {
@@ -199,7 +199,7 @@
   },
   {
     "uuid": "E3TSbai1l22mTxWYayEps",
-    "description": "Ajuste de matraca",
+    "description": "Ajuste De Matraca",
     "level": 2,
     "father_uuid": "XyGUdWja-eBMNsXdN0Gvj",
     "category": {

@@ -16,13 +16,23 @@ export async function main() {
             });
 
             if (!fatherVersion) throw new Error(`No se encontro a la version padre: ${item.product_version.sku}`);
-            await prisma.productVersionImages.create({
-                data: {
+
+            const existingImage = await tx.productVersionImages.findFirst({
+                where: {
                     product_version_id: fatherVersion.id,
-                    image_url: item.image_url,
-                    main_image: item.main_image
+                    image_url: item.image_url
                 }
-            })
+            });
+
+            if (!existingImage) {
+                await prisma.productVersionImages.create({
+                    data: {
+                        product_version_id: fatherVersion.id,
+                        image_url: item.image_url,
+                        main_image: item.main_image
+                    }
+                })
+            }
         });
     }
 }

@@ -235,7 +235,6 @@ export class PaymentService {
         return await this.getDetails({ orderUUID, queryKey, orderStatus: order.status })
     };
 
-
     // async getProccessedPaymentDetails(args: { orderUUID: string, customerUUID?: string }): Promise<GetSuccessPaymentProcessed> {
     //     const queryKey = args.customerUUID ? { orderUUID: args.orderUUID, customerUUID: args.customerUUID } : { orderUUID: args.orderUUID };
     //     return await this.cacheService.remember({

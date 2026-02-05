@@ -5,12 +5,17 @@ import { UserAuthService } from './user_auth.service';
 import { AuthUser, UserCredentialsDTO, UserPayload } from './user_auth.dto';
 import { AuthenticatedUser } from './user_auth.current_user.decorator';
 import { RequiredUserAuthGuard } from './user_auth.required.guard';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('user-auth')
 export class UserAuthController {
+    private readonly nodeEnv: string;
     constructor(
-        private readonly userAuthService: UserAuthService
-    ) { };
+        private readonly userAuthService: UserAuthService,
+        private readonly configService: ConfigService
+    ) {
+        this.nodeEnv = this.configService.get<string>("NODE_ENV") || "DEV";
+    };
 
     @Post("login")
     @ApiOperation({ summary: "Inicia sesión de un usuario" })
@@ -25,15 +30,15 @@ export class UserAuthController {
         const login = await this.userAuthService.login(dto);
         response.cookie("iga_user_access_token", login.access_token, {
             httpOnly: true,
-            secure: false,
-            sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+            secure: this.nodeEnv === "PROD",
+            sameSite: this.nodeEnv === "PROD" ? "strict" : "lax",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
         response.cookie("iga_user_csrf_token", login.csrfToken, {
             httpOnly: false,
-            secure: false,
-            sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+            secure: this.nodeEnv === "PROD",
+            sameSite: this.nodeEnv === "PROD" ? "strict" : "lax",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
