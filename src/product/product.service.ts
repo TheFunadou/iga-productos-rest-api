@@ -1,30 +1,41 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateProductDTO, PatchProductDTO, ProductDetail, SearchedProducts } from './product.dto';
+import { CreateProductDTO, GetDashboardReviews, GetProductReviewResume, GetProductReviews, PatchProductDTO, ProductDetail, SearchedProducts } from './product.dto';
+import { ConfigService } from '@nestjs/config';
+import { PaginationDTO } from 'src/common/DTO/pagination.dto';
+import { CustomerReviewDTO } from 'src/customer/customer.dto';
+import { StockDashboardParams } from 'src/product-version/product-version.dto';
 
 @Injectable()
 export class ProductService {
+    private readonly logger = new Logger(ProductService.name);
+    private readonly nodeEnv: string;
     constructor(
         private readonly cacheService: CacheService,
+        private readonly configService: ConfigService,
         private readonly prisma: PrismaService,
-    ) { };
+    ) {
+        this.nodeEnv = this.configService.get<string>("NODE_ENV", "DEV");
+    };
 
     async create(args: { userUUID: string, data: CreateProductDTO }) {
         return await this.prisma.$transaction(async (tx) => {
-            const { subcategories_path, ...productData } = args.data;
+            const { subcategories_path, category_uuid, ...productData } = args.data;
             const user = await tx.user.findUnique({ where: { uuid: args.userUUID }, select: { id: true } });
             if (!user) throw new NotFoundException("Usuario no encontrado");
-            const category = await tx.category.findUnique({ where: { uuid: args.data.category_uuid }, select: { id: true } });
+            const category = await tx.category.findUnique({ where: { uuid: category_uuid }, select: { id: true } });
             if (!category) throw new NotFoundException("Categoria no encontrada");
             const product = await tx.product.create({
                 data: { ...productData, user_id: user.id, category_id: category.id }
+            }).catch((error) => {
+                if (this.nodeEnv === "DEV") this.logger.error(error);
+                this.logger.error("Error al crear el producto");
+                throw new BadRequestException(`Error al crear el producto`);
             });
-
             const subcategories = await tx.subcategories.findMany({
                 where: { uuid: { in: subcategories_path } }
             });
-
             await tx.productSubcategories.createMany({
                 data: subcategories.map((sub) => ({
                     product_id: product.id,
@@ -38,10 +49,10 @@ export class ProductService {
 
     async patch(args: { data: PatchProductDTO }) {
         return await this.prisma.$transaction(async (tx) => {
-            const { subcategories_path, category_uuid, ...productData } = args.data;
+            const { subcategories_path, category_uuid, uuid, ...productData } = args.data;
 
             const productUpdated = await tx.product.update({
-                where: { uuid: args.data.uuid },
+                where: { uuid },
                 data: productData,
                 select: {
                     id: true,
@@ -50,11 +61,14 @@ export class ProductService {
                 }
             });
 
+            this.logger.log(`Producto ${productUpdated.product_name} actualizado exitosamente`);
+            console.log(JSON.stringify(productUpdated, null, 2))
+
             if (category_uuid && category_uuid !== productUpdated.category.uuid) {
                 const category = await tx.category.findUnique({ where: { uuid: args.data.category_uuid }, select: { id: true } });
                 if (!category) throw new NotFoundException("Categoria no encontrada");
                 await tx.product.update({
-                    where: { uuid: args.data.uuid },
+                    where: { uuid },
                     data: { category_id: category.id }
                 });
             };
@@ -75,6 +89,8 @@ export class ProductService {
                     }))
                 });
             };
+
+            await this.cacheService.invalidateQuery({ entity: "product:detail", query: { uuid: args.data.uuid } });
 
             return `Producto ${productUpdated.product_name} actualizado exitosamente`;
         });
@@ -132,6 +148,10 @@ export class ProductService {
             method: "staleWhileRevalidate",
             entity: "product:detail",
             query: { uuid: args.uuid },
+            aditionalOptions: {
+                staleTimeMilliseconds: 1000 * 60 * 10,
+                ttlMilliseconds: 1000 * 60 * 15
+            },
             fallback: async () => {
                 const result = await this.prisma.product.findUnique({
                     where: { uuid: args.uuid },
@@ -162,7 +182,8 @@ export class ProductService {
                                 technical_sheet_url: true,
                                 created_at: true,
                                 updated_at: true
-                            }
+                            },
+                            orderBy: { sku: "asc" }
                         }
                     }
                 });
@@ -198,8 +219,199 @@ export class ProductService {
         });
     };
 
-    async detail(sku: string) {
+    //Cambiar de agregar al hijo a agregarlas al padre
+    async addReview(args: { customerUUID: string, data: CustomerReviewDTO }): Promise<string> {
+        if (args.data.rating > 5) throw new BadRequestException("El rating no puede ser mayor a 5");
+        const customer = await this.prisma.customer.findUnique({ where: { uuid: args.customerUUID }, select: { id: true } });
+        const productVersion = await this.prisma.productVersion.findFirst({ where: { sku: { equals: args.data.sku, mode: "insensitive" } }, select: { id: true, product: { select: { id: true } } } });
+        if (!customer) throw new NotFoundException("No se encontro el cliente");
+        if (!productVersion) throw new NotFoundException("No se encontro la version de producto");
 
+        const review = await this.prisma.productReviews.findFirst({ where: { customer_id: customer.id, product_version_id: productVersion.id }, select: { uuid: true } });
+        if (review) throw new BadRequestException("Ya has agregado un comentario para esta version de producto");
+        return await this.prisma.$transaction(async (tx) => {
+            await tx.productReviews.create({
+                data: {
+                    title: args.data.title,
+                    comment: args.data.comment,
+                    rating: args.data.rating,
+                    customer_id: customer.id,
+                    product_id: productVersion.product.id,
+                    product_version_id: productVersion.id
+                }
+            }).catch((error) => {
+                if (this.nodeEnv === "DEV") this.logger.error(error);
+                this.logger.error("Ocurrio un error al agregar una reseña");
+                throw new BadRequestException("Ocurrio un error inesperado al agregar la reseña");
+            });
+            await this.cacheService.invalidateEntity({ entity: `product-version:show:details:${args.customerUUID}` })
+            return `Tu reseña ha sido enviada`;
+        });
     };
+
+    async findManyReviewsByUUID({ productUUID, pagination: { limit, page } }: { productUUID: string, pagination: PaginationDTO }) {
+        return await this.cacheService.remember<GetProductReviews>({
+            method: "staleWhileRevalidateWithLock",
+            entity: "product:reviews",
+            query: { productUUID },
+            aditionalOptions: {
+                ttlMilliseconds: 1000 * 60 * 60,
+                staleTimeMilliseconds: 1000 * 60 * 50
+            },
+            fallback: async () => {
+                return await this.prisma.$transaction(async (tx) => {
+                    const result = await tx.productReviews.findMany({
+                        take: limit || 10,
+                        skip: (page || 1) - 1,
+                        where: { product_version: { product: { uuid: productUUID } } },
+                        select: {
+                            uuid: true,
+                            title: true,
+                            comment: true,
+                            rating: true,
+                            created_at: true,
+                            customer: { select: { name: true } }
+                        },
+                    });
+
+                    const totalRecords = await tx.productReviews.count({
+                        where: { product_version: { product: { uuid: productUUID } } },
+                    });
+
+                    const reviews = result.map((review) => ({ ...review, customer: review.customer.name }));
+
+                    const response: GetProductReviews = {
+                        reviews,
+                        totalRecords,
+                        totalPages: Math.ceil(totalRecords / (limit || 10))
+                    };
+                    return response;
+                })
+            }
+        })
+    };
+
+    async getReviewRatingResumeByUUID({ productUUID }: { productUUID: string }): Promise<GetProductReviewResume> {
+        return await this.cacheService.remember({
+            method: "staleWhileRevalidateWithLock",
+            entity: "product-version:reviews:rating-review-resume",
+            query: { productUUID },
+            aditionalOptions: {
+                ttlMilliseconds: 1000 * 60 * 60,
+                staleTimeMilliseconds: 1000 * 60 * 50
+            },
+            fallback: async () => {
+                const ratingPerStar = await this.prisma.productReviews.groupBy({
+                    by: ['rating'],
+                    where: { product_version: { product: { uuid: productUUID } } },
+                    _count: { rating: true }
+                });
+
+                const totalRecords = ratingPerStar.reduce((acc, r) => acc + r._count.rating, 0);
+                const totalStarts = ratingPerStar.reduce((acc, r) => acc + (r.rating * r._count.rating), 0);
+
+                const ratingResume = Array.from({ length: 5 }, (_, i) => {
+                    const star = i + 1
+                    const found = ratingPerStar.find(r => r.rating === star)
+                    const count = found?._count.rating ?? 0
+
+                    return {
+                        rating: star,
+                        percentage: totalRecords === 0 ? 0 : Math.round((count / totalRecords) * 100)
+                    }
+                });
+
+                const ratingAverage = totalRecords === 0 ? 0 : Math.round(((totalStarts / totalRecords) * 100) / 5);
+                return {
+                    ratingResume: ratingResume.reverse(),
+                    ratingAverage,
+                    totalReviews: totalRecords
+                }
+            }
+        })
+    };
+
+    async getReviewsDashboard({ params: { orderBy, limit, page, type, value } }: { params: StockDashboardParams }): Promise<GetDashboardReviews> {
+        if (!limit || !page) throw new BadRequestException("Los parametros de paginacion son requeridos");
+        return await this.cacheService.remember({
+            method: "staleWhileRevalidateWithLock",
+            entity: "product:reviews:dashboard",
+            query: { params: { orderBy, limit, page, type, value } },
+            aditionalOptions: {
+                ttlMilliseconds: 1000 * 60 * 60,
+                staleTimeMilliseconds: 1000 * 60 * 50
+            },
+            fallback: async () => {
+                let where = {};
+                if (type && type === "product") {
+                    if (!value) throw new BadRequestException("El parametro value no esta incluido en la petición");
+                    where = {
+                        product: { uuid: value }
+                    }
+                };
+                if (type && type === "version") {
+                    if (!value) throw new BadRequestException("El parametro value no esta incluido en la petición");
+                    where = { product_version: { sku: value.toUpperCase() } }
+                };
+
+                const data = await this.prisma.productReviews.findMany({
+                    take: limit,
+                    skip: (page || 1) - 1,
+                    where,
+                    select: {
+                        uuid: true,
+                        customer: { select: { name: true, last_name: true } },
+                        title: true,
+                        comment: true,
+                        rating: true,
+                        created_at: true,
+                        product_version: {
+                            select: {
+                                sku: true,
+                                product: {
+                                    select: { product_name: true }
+                                },
+                                product_version_images: {
+                                    where: { main_image: true },
+                                    take: 1,
+                                    select: { image_url: true }
+                                }
+                            }
+                        }
+                    },
+                    orderBy: { created_at: orderBy || "desc" }
+                }).catch((error) => {
+                    if (this.nodeEnv === "DEV") this.logger.error(error);
+                    this.logger.error(`Ocurrio un error inesperado al obtener el stock del producto`);
+                    throw new BadRequestException(`Ocurrio un error inesperado al obtener el stock del producto`, this.nodeEnv === "DEV" && error);
+                });
+                ;
+                const totalRecords = await this.prisma.productReviews.count({ where });
+                const totalPages = Math.ceil(totalRecords / limit);
+                const response: GetDashboardReviews = {
+                    data: data.map((review) => ({
+                        ...review,
+                        uuid: review.uuid,
+                        customer: `${review.customer.name} ${review.customer.last_name}`,
+                        sku: review.product_version.sku,
+                        product_name: review.product_version.product.product_name,
+                        image_url: review.product_version.product_version_images[0].image_url
+                    })),
+                    totalRecords,
+                    totalPages
+                };
+                return response;
+            }
+        })
+    };
+
+    async deleteReview({ uuid, sku }: { uuid: string, sku: string }): Promise<string> {
+        await this.prisma.productReviews.delete({ where: { uuid, product_version: { sku } } });
+        await this.cacheService.invalidateEntity({ entity: "product:reviews:dashboard" });
+        return "Reseña del producto eliminada correctamente";
+    };
+
+
+
 
 };

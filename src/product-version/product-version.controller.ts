@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ProductVersionService } from './product-version.service';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { CreateProductVersionDTO, GetProductVersionCardsRandomOptionsDTO, GetProductVersionReviews, GetPVReviewRating, GetPVReviewResume, ProductVersionCardsFiltersDTO } from './product-version.dto';
+import { CreateProductVersionDTO, GetProductVersionCardsRandomOptionsDTO, PatchProductVersionDTO, ProductVersionCardsFiltersDTO, StockDashboardParams, UpdateStockBySKUDTO } from './product-version.dto';
 import { ProductVersionFindService } from './product-version.find.service';
 import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
@@ -10,11 +10,7 @@ import { RequirePermissions } from 'src/user_auth/user_auth.module.permissions.d
 import { OptionalCustomer } from 'src/customer_auth/customer_auth.optional.decorator';
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 import { OptionalCustomerAuthGuard } from 'src/customer_auth/customer_auth.optional.guard';
-import { CustomerReviewDTO } from 'src/customer/customer.dto';
-import { AuthenticatedCustomer } from 'src/customer_auth/customer_auth.current.decorator';
-import { RequiredCustomerAuthGuard } from 'src/customer_auth/customer_auth.required.guard';
-import { CustomerCsrfAuthGuard } from 'src/customer_auth/customer_auth.csrf';
-import { PaginationDTO } from 'src/common/DTO/pagination.dto';
+import { AuthenticatedUser } from 'src/user_auth/user_auth.current_user.decorator';
 
 @Controller('product-version')
 export class ProductVersionController {
@@ -46,8 +42,8 @@ export class ProductVersionController {
     @ApiResponse({ status: 404, description: "No se encontro el producto padre relacionado a la version" })
     @ApiResponse({ status: 500, description: "Error al actualizar version de producto" })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
-    @ApiBody({ type: CreateProductVersionDTO })
-    async update(@Body() dto: CreateProductVersionDTO) {
+    @ApiBody({ type: PatchProductVersionDTO })
+    async update(@Body() dto: PatchProductVersionDTO) {
         return await this.productVersionService.patch({ data: dto });
     };
 
@@ -109,43 +105,35 @@ export class ProductVersionController {
     };
 
 
-    @Post("review")
-    @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
-    @ApiOperation({ description: "Agregar comentario a version de producto" })
-    @ApiResponse({ status: 200, description: "Comentario agregado exitosamente" })
-    @ApiResponse({ status: 400, description: "Error al agregar comentario a version de producto" })
-    @ApiResponse({ status: 500, description: "Error al agregar comentario a version de producto" })
-    @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
-    @ApiBody({ type: CustomerReviewDTO })
-    async addReview(@AuthenticatedCustomer() customer: CustomerPayload, @Body() dto: CustomerReviewDTO): Promise<string> {
-        return await this.productVersionService.addReview({ customerUUID: customer.uuid, data: dto });
-    };
-
-
-    @Get("review/:sku")
-    @ApiOperation({ description: "Mostrar reseñas de version de producto" })
-    @ApiResponse({ status: 200, description: "Reseñas de version de producto obtenidas exitosamente" })
-    @ApiResponse({ status: 400, description: "Error al mostrar reseñas de version de producto" })
-    @ApiResponse({ status: 500, description: "Error al mostrar reseñas de version de producto" })
-    @ApiParam({ name: "sku", description: "Buscar versiones de producto", required: true })
-    @ApiQuery({ name: "page", description: "Pagina", required: true })
+    @Get("stock/dashboard")
+    @UseGuards(RequiredUserAuthGuard, UserModulePermissionsGuard)
+    @RequirePermissions({ PRODUCTS: ["READ"] })
+    @ApiOperation({ description: "Obtener dashboard de stock" })
+    @ApiResponse({ status: 200, description: "Dashboard de stock obtenido exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al obtener dashboard de stock" })
+    @ApiResponse({ status: 500, description: "Error al obtener dashboard de stock" })
     @ApiQuery({ name: "limit", description: "Limite de registro a buscar", required: true })
-    async showReviews(@Param("sku") sku: string, @Query() pagination: PaginationDTO): Promise<GetProductVersionReviews> {
-        return await this.productVersionService.findManyReviewsBySKU({ sku, pagination });
+    @ApiQuery({ name: "page", description: "Pagina", required: true })
+    @ApiQuery({ name: "orderBy", description: "Ordenamiento", required: true })
+    @ApiQuery({ name: "type", description: "Tipo de busqueda", required: false })
+    @ApiQuery({ name: "value", description: "Busqueda", required: false })
+    async getStockDashboard(@Query() params: StockDashboardParams) {
+        return await this.productVersionService.stockDashboard({ params });
     };
 
-    @Get("review/resume/:sku")
-    @ApiOperation({ description: "Mostrar resumen de reseñas de version de producto" })
-    @ApiResponse({ status: 200, description: "Resumen de reseñas de version de producto obtenido exitosamente" })
-    @ApiResponse({ status: 400, description: "Error al buscar resumen de reseñas de version de producto" })
-    @ApiResponse({ status: 500, description: "Error al buscar resumen de reseñas de version de producto" })
-    @ApiParam({ name: "sku", description: "Buscar versiones de producto", required: true })
-    async showReviewResume(@Param("sku") sku: string): Promise<GetPVReviewResume> {
-        return await this.productVersionService.getReviewRatingResumeBySKU({ sku });
+    @Patch("stock")
+    @UseGuards(RequiredUserAuthGuard, UserCsrfAuthGuard, UserModulePermissionsGuard)
+    @RequirePermissions({ PRODUCTS: ["UPDATE"] })
+    @ApiOperation({ description: "Actualizar stock de version de producto" })
+    @ApiResponse({ status: 200, description: "Stock de version de producto actualizado exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al actualizar stock de version de producto" })
+    @ApiResponse({ status: 404, description: "No se encontro la version de producto" })
+    @ApiResponse({ status: 500, description: "Error al actualizar stock de version de producto" })
+    @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
+    @ApiBody({ type: UpdateStockBySKUDTO })
+    async updateStock(@Body() dto: UpdateStockBySKUDTO) {
+        return await this.productVersionService.updateStock({ dto });
     };
-
-
-
 
 
 };

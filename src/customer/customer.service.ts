@@ -66,7 +66,7 @@ export class CustomerService {
             entity: "customer:product-version:reviews",
             query: { customerUUID: args.customerUUID },
             fallback: async () => {
-                const response = await this.prisma.productVersionReviews.findMany({
+                const response = await this.prisma.productReviews.findMany({
                     where: { customer_id: args.customerUUID },
                     select: {
                         title: true,

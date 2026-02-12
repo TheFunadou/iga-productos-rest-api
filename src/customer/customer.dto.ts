@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsBoolean, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { ProductVersionReviewsAttributes, ProductVersionReviewsVersionAttributes } from "src/product-version/product-version.dto";
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { ProductReviews, ProductReviewsAttributes, ProductReviewsVersionAttributes } from "src/product/product.dto";
 
 
 export class Customer {
@@ -185,13 +185,14 @@ export class UpdateEmailDTO {
 };
 
 
-export class CustomerReviewDTO extends ProductVersionReviewsAttributes {
+export class CustomerReviewDTO extends ProductReviewsAttributes {
     @ApiProperty({ description: "SKU del producto" })
     @IsString()
     @IsNotEmpty({ message: "El sku no puede estar vacio" })
     sku: string;
 };
 
-export class GetCustomerReviews extends ProductVersionReviewsAttributes {
-    product_version: ProductVersionReviewsVersionAttributes;
-}
+export class GetCustomerReviews extends ProductReviewsAttributes {
+    product_version: ProductReviewsVersionAttributes;
+};
+

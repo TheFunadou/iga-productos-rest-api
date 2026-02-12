@@ -11,10 +11,26 @@ export class SubcategoriesService {
     ) { };
 
     async create(args: { data: CreateSubcategoryDTO }): Promise<string> {
+        console.log(JSON.stringify(args.data, null, 2));
         return await this.prisma.$transaction(async (tx) => {
             const category = await tx.category.findUnique({ where: { uuid: args.data.category_uuid }, select: { id: true } });
             if (!category) throw new NotFoundException("No se encontro la categoria principal/padre");
+
             const parentsPath = args.data.uuid_path.slice(0, -1);
+            if (parentsPath.length === 0) {
+                const created = await tx.subcategories.create({
+                    data: {
+                        category_id: category.id,
+                        description: args.data.description,
+                        level: 1,
+                        father_id: null,
+                        father_uuid: null,
+                    }
+                });
+                await this.cacheService.invalidateQuery({ entity: "subcategories", query: { category: args.data.category_uuid } });
+                return `Subcategoria ${created.description} creada satisfactoriamente`;
+            }
+
             const parents = await tx.subcategories.findMany({
                 where: {
                     category_id: category.id,
@@ -22,7 +38,9 @@ export class SubcategoriesService {
                 },
                 select: { uuid: true, id: true }
             });
+
             if (parents.length !== parentsPath.length) throw new BadRequestException("Los parientes de la nueva subcategoria no coinciden con la ruta proporcionada");
+
             const created = await tx.subcategories.create({
                 data: {
                     category_id: category.id,

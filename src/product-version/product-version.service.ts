@@ -1,9 +1,8 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateProductVersionDTO, GetProductVersionReviews, GetPVReviewRating, GetPVReviewResume, PatchProductVersionDTO, SafeProductVersionImages, SearchProductVersionsDTO } from './product-version.dto';
+import { CreateProductVersionDTO, GetStockDashboard, PatchProductVersionDTO, SafeProductVersionImages, SearchProductVersionsDTO, StockDashboardParams, UpdateStockBySKUDTO } from './product-version.dto';
 import { Decimal } from '@prisma/client/runtime/index-browser';
-import { CustomerReviewDTO } from 'src/customer/customer.dto';
 
 @Injectable()
 export class ProductVersionService {
@@ -23,6 +22,7 @@ export class ProductVersionService {
             const created = await tx.productVersion.create({
                 data: {
                     ...data,
+                    sku: data.sku.toUpperCase(),
                     unit_price: new Decimal(data.unit_price),
                     product_id: product.id
                 }
@@ -52,11 +52,9 @@ export class ProductVersionService {
         });
     };
 
-    async patch(args: { data: PatchProductVersionDTO }) {
-        const { father_uuid, version_images, ...data } = args.data;
-
+    async patch({ data: { fatherUUID, productVersionSKU, product_version: data, version_images } }: { data: PatchProductVersionDTO }) {
         return await this.prisma.$transaction(async (tx) => {
-            const product = await tx.product.findUnique({ where: { uuid: father_uuid }, select: { id: true } });
+            const product = await tx.product.findUnique({ where: { uuid: fatherUUID }, select: { id: true } });
             if (!product) throw new NotFoundException("No se encontro el producto padre relacionado a la version");
             if (data.main_version) {
                 await tx.productVersion.updateMany({
@@ -65,24 +63,31 @@ export class ProductVersionService {
                 });
             };
             const udpated = await tx.productVersion.update({
-                where: { sku: data.sku },
+                where: { sku: productVersionSKU },
                 data: {
                     ...data,
                     unit_price: data.unit_price ? new Decimal(data.unit_price) : undefined,
-                    product_id: product.id
                 }
+            }).catch((error) => {
+                if (this.nodeEnv === "DEV") this.logger.error(error);
+                this.logger.error("Error al actualizar la version del producto");
+                throw new BadRequestException("Error al actualizar la version del producto");
             });
+            this.logger.log(`Version ${udpated.sku} actualizada`);
             if (version_images) {
                 await tx.productVersionImages.deleteMany({ where: { product_version_id: udpated.id } });
                 await this.createVersionImages({ tx, versionImages: version_images, productVersionId: udpated.id });
+                this.logger.log(`Imagenes de version ${udpated.sku} actualizadas`);
             };
+            this.logger.log(`Version ${udpated.sku} actualizada satisfactoriamente`);
+            await this.cacheService.invalidateQuery({ entity: "product:detail", query: { uuid: fatherUUID } });
             return `Version ${udpated.sku} actualizada satisfactoriamente`;
         });
     };
 
-    async delete(args: { sku: string }): Promise<string> {
+    async delete({ sku }: { sku: string }): Promise<string> {
         return await this.prisma.$transaction(async (tx) => {
-            const deleted = await tx.productVersion.delete({ where: { sku: args.sku }, select: { id: true, sku: true, main_version: true, product: { select: { id: true } } } });
+            const deleted = await tx.productVersion.delete({ where: { sku }, select: { id: true, sku: true, main_version: true, product: { select: { id: true } } } });
             if (deleted.main_version) {
                 const list = await tx.productVersion.findMany({
                     where: { product_id: deleted.product.id },
@@ -131,114 +136,88 @@ export class ProductVersionService {
         });
     };
 
-    //Cambiar de agregar al hijo a agregarlas al padre
-    async addReview(args: { customerUUID: string, data: CustomerReviewDTO }): Promise<string> {
-        return await this.prisma.$transaction(async (tx) => {
-            if (args.data.rating > 5) throw new BadRequestException("El rating no puede ser mayor a 5");
-            const customer = await tx.customer.findUnique({ where: { uuid: args.customerUUID }, select: { id: true } });
-            const productVersion = await tx.productVersion.findFirst({ where: { sku: { equals: args.data.sku, mode: "insensitive" } }, select: { id: true } });
-            if (!customer) throw new NotFoundException("No se encontro el cliente");
-            if (!productVersion) throw new NotFoundException("No se encontro la version de producto");
+    async stockDashboard({ params: { orderBy, limit, page, type, value } }: { params: StockDashboardParams }): Promise<GetStockDashboard> {
+        if (!limit || !page) throw new BadRequestException("Los parametros de paginacion son requeridos");
+        if (!orderBy) throw new BadRequestException("El ordenamiento es requerido");
+        return await this.cacheService.remember({
+            method: "staleWhileRevalidateWithLock",
+            entity: "product-version:stock:dashboard",
+            query: { params: { orderBy, limit, page, type, value } },
+            aditionalOptions: {
+                ttlMilliseconds: 1000 * 60 * 15,
+                staleTimeMilliseconds: 1000 * 60 * 10
+            },
+            fallback: async () => {
+                let where = {};
+                if (type && type === "product") {
+                    if (!value) throw new BadRequestException("El parametro value no esta incluido en la petición");
+                    where = {
+                        product: { uuid: value }
+                    }
+                };
+                if (type && type === "version") {
+                    if (!value) throw new BadRequestException("El parametro value no esta incluido en la petición");
+                    where = { sku: value.toUpperCase() }
+                };
+                const data = await this.prisma.productVersion.findMany({
+                    take: limit,
+                    skip: (page - 1) * limit,
+                    orderBy: { stock: orderBy },
+                    where,
+                    select: {
+                        sku: true,
+                        color_line: true,
+                        color_code: true,
+                        stock: true,
+                        product_version_images: {
+                            where: { main_image: true },
+                            take: 1,
+                            select: { image_url: true }
+                        }
+                    },
 
-            const review = await tx.productVersionReviews.findFirst({ where: { customer_id: customer.id, product_version_id: productVersion.id }, select: { uuid: true } });
-            if (review) throw new BadRequestException("Ya has agregado un comentario para esta version de producto");
+                }).catch((error) => {
+                    if (this.nodeEnv === "DEV") this.logger.error(error);
+                    this.logger.error(`Ocurrio un error inesperado al obtener el stock del producto`);
+                    throw new BadRequestException(`Ocurrio un error inesperado al obtener el stock del producto`, this.nodeEnv === "DEV" && error);
+                });
 
-            await tx.productVersionReviews.create({
-                data: {
-                    title: args.data.title,
-                    comment: args.data.comment,
-                    rating: args.data.rating,
-                    customer_id: customer.id,
-                    product_version_id: productVersion.id
+                const totalRecords = await this.prisma.productVersion.count({ where });
+                const totalPages = Math.ceil(totalRecords / limit);
+                const response: GetStockDashboard = {
+                    data: data.map((pv) => ({
+                        sku: pv.sku,
+                        color_code: pv.color_code,
+                        color_line: pv.color_line,
+                        stock: pv.stock,
+                        product_version_images: pv.product_version_images[0]?.image_url || "",
+                    })),
+                    totalPages,
+                    totalRecords
                 }
-            }).catch((error) => {
-                throw new BadRequestException("Ocurrio un error inesperado", this.nodeEnv === "DEV" && error);
+                return response;
+            }
+        })
+    }
+
+    async updateStock({ dto: { sku, stock } }: { dto: UpdateStockBySKUDTO }) {
+        return await this.prisma.$transaction(async (tx) => {
+            const productVersion = await tx.productVersion.findUnique({ where: { sku }, select: { id: true } });
+            if (!productVersion) throw new NotFoundException("No se encontro la version de producto");
+            await tx.productVersion.update({ where: { sku }, data: { stock } }).catch((error) => {
+                if (this.nodeEnv === "DEV") this.logger.error(error);
+                this.logger.error(`Ocurrio un error inesperado al actualizar el stock del version ${sku}`);
+                throw new BadRequestException(`Ocurrio un error inesperado al actualizar el stock del version ${sku}`, this.nodeEnv === "DEV" && error);
             });
-            await this.cacheService.invalidateEntity({ entity: `product-version:show:details:${args.customerUUID}` })
-            return `Tu reseña ha sido enviada`;
+
+            await this.cacheService.invalidateEntity({ entity: "product-version:stock:dashboard" })
+            return `Stock de la version ${sku} actualizado satisfactoriamente`;
         });
     };
 
 
-    async findManyReviewsBySKU(args: { sku: string, pagination: { page: number, limit: number } }): Promise<GetProductVersionReviews> {
-        return await this.cacheService.remember<GetProductVersionReviews>({
-            method: "staleWhileRevalidateWithLock",
-            entity: "product-version:reviews",
-            query: { sku: args.sku },
-            aditionalOptions: {
-                ttlMilliseconds: 1000 * 60 * 60,
-                staleTimeMilliseconds: 1000 * 60 * 50
-            },
-            fallback: async () => {
-                return await this.prisma.$transaction(async (tx) => {
-                    const result = await tx.productVersionReviews.findMany({
-                        take: args.pagination.limit || 10,
-                        skip: (args.pagination.page || 1) - 1,
-                        where: { product_version: { sku: { equals: args.sku, mode: "insensitive" } } },
-                        select: {
-                            uuid: true,
-                            title: true,
-                            comment: true,
-                            rating: true,
-                            created_at: true,
-                            customer: { select: { name: true } }
-                        },
-                    });
 
-                    const totalRecords = await tx.productVersionReviews.count({
-                        where: { product_version: { sku: { equals: args.sku, mode: "insensitive" } } }
-                    });
 
-                    const reviews = result.map((review) => ({ ...review, customer: review.customer.name }));
-
-                    return { reviews, totalRecords, totalPages: Math.ceil(totalRecords / (args.pagination?.limit || 10)) }
-                })
-            }
-        })
-    };
-
-    async getReviewRatingResumeBySKU(args: { sku: string }): Promise<GetPVReviewResume> {
-        return await this.cacheService.remember({
-            method: "staleWhileRevalidateWithLock",
-            entity: "product-version:reviews:rating-review-resume",
-            query: { sku: args.sku },
-            aditionalOptions: {
-                ttlMilliseconds: 1000 * 60 * 60,
-                staleTimeMilliseconds: 1000 * 60 * 50
-            },
-            fallback: async () => {
-                return await this.prisma.$transaction(async (tx) => {
-                    const ratingPerStar = await tx.productVersionReviews.groupBy({
-                        by: ['rating'],
-                        where: { product_version: { sku: { equals: args.sku, mode: 'insensitive' } } },
-                        _count: { rating: true }
-                    });
-
-                    const totalRecords = ratingPerStar.reduce((acc, r) => acc + r._count.rating, 0);
-                    const totalStarts = ratingPerStar.reduce((acc, r) => acc + (r.rating * r._count.rating), 0);
-
-                    const ratingResume = Array.from({ length: 5 }, (_, i) => {
-                        const star = i + 1
-                        const found = ratingPerStar.find(r => r.rating === star)
-                        const count = found?._count.rating ?? 0
-
-                        return {
-                            rating: star,
-                            percentage: totalRecords === 0 ? 0 : Math.round((count / totalRecords) * 100)
-                        }
-                    });
-
-                    const ratingAverage = totalRecords === 0 ? 0 : Math.round(((totalStarts / totalRecords) * 100) / 5);
-                    return {
-                        ratingResume: ratingResume.reverse(),
-                        ratingAverage,
-                        totalReviews: totalRecords
-                    }
-
-                })
-            }
-        })
-    }
 
 
 

@@ -27,6 +27,7 @@ export class UserCredentialsDTO {
     email_or_username: string;
 
     @ApiProperty({ example: "password", description: "contraseña del usuario" })
+    @IsString()
     @IsNotEmpty({ message: "La contraseña no puede estar vacia" })
     password: string;
 };

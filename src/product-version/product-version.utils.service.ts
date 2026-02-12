@@ -301,6 +301,7 @@ export class ProductVersionUtilsService {
 
         return {
             product: {
+                uuid: args.version.product.uuid,
                 applications: args.version.product.applications,
                 certifications_desc: args.version.product.certifications_desc,
                 description: args.version.product.description,

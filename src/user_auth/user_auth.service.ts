@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthUserPermissions, UserCredentialsDTO, UserPayload, UserPermissions } from './user_auth.dto';
+import { AuthUser, AuthUserPermissions, UserCredentialsDTO, UserPayload, UserPermissions } from './user_auth.dto';
 import * as bcrypt from 'bcrypt';
 import { Permission, UserModules } from 'generated/prisma/enums';
 import { JwtService } from '@nestjs/jwt';
@@ -19,6 +19,8 @@ export class UserAuthService {
     async login(dto: UserCredentialsDTO) {
         const authUser = await this.authentication(dto);
         const token = this.jwtService.sign(authUser, { secret: this.secret });
+        const csrfToken = randomUUID();
+        await this.cacheService.setData({ entity: "user:session:csrf", query: { userUUID: authUser.uuid }, data: { csrfToken }, aditionalOptions: { ttlMilliseconds: 1000 * 60 * 60 } });
         return { access_token: token, payload: authUser, csrfToken: randomUUID() };
     };
 
@@ -35,11 +37,9 @@ export class UserAuthService {
                 permissions: { select: { module: true, permissions: true } }
             }
         });
-
         if (!user) throw new NotFoundException("Correo no registrado");
         const passwordMatch = await bcrypt.compare(dto.password, user.accounts[0].password);
         if (!passwordMatch) throw new BadRequestException("Contraseña incorrecta");
-
         const formattedPermissions = Object.fromEntries(
             user.permissions.map(perm => [perm.module, perm.permissions])
         ) as Partial<Record<UserModules, Permission[]>>;
@@ -65,6 +65,44 @@ export class UserAuthService {
         };
         return payload;
     };
+
+    async getCsrfToken(args: { uuid: string }): Promise<string> {
+        const data = await this.cacheService.getData<{ csrfToken: string }>({ entity: "user:session:csrf", query: { userUUID: args.uuid } });
+        if (!data) throw new NotFoundException("No se encontro al usuario o no hay token guardado");
+        return data.csrfToken;
+    };
+
+    async getProfile({ uuid }: { uuid: string }): Promise<AuthUser> {
+        const user = await this.prisma.user.findFirst({
+            where: { uuid },
+            select: {
+                uuid: true,
+                email: true,
+                name: true,
+                last_name: true,
+                role: true,
+                accounts: { select: { password: true, } },
+                permissions: { select: { module: true, permissions: true } }
+            }
+        });
+        if (!user) throw new NotFoundException("Usuario no encontrado");
+        const formattedPermissions = Object.fromEntries(
+            user.permissions.map(perm => [perm.module, perm.permissions])
+        ) as Partial<Record<UserModules, Permission[]>>;
+
+        const payload: UserPayload = {
+            uuid: user.uuid,
+            email: user.email,
+            name: user.name,
+            last_name: user.last_name,
+            role: user.role,
+            permissions: formattedPermissions
+        };
+        const csrfToken = await this.cacheService.getData<{ csrfToken: string }>({ entity: "user:session:csrf", query: { userUUID: uuid } });
+        if (!csrfToken) throw new NotFoundException("No se encontro token csrf asociado a este usuario");
+        return { payload, csrfToken: csrfToken.csrfToken };
+    };
+
 
     async logout(uuid: string) {
         this.cacheService.removeData({

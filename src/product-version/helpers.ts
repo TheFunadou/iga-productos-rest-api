@@ -66,6 +66,7 @@ export interface ProductVersionDetailSelect {
         image_url: string;
     }[];
     product: {
+        uuid: string;
         product_name: string;
         specs: string;
         recommendations: string;
@@ -115,6 +116,7 @@ export const PRODUCT_VERSION_DETAIL_BASE_SELECT = {
     },
     product: {
         select: {
+            uuid: true,
             product_name: true,
             specs: true,
             recommendations: true,

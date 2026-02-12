@@ -1,11 +1,11 @@
 import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
 import { Decimal } from "@prisma/client/runtime/index-browser";
 import { Transform, Type } from "class-transformer";
-import { IsArray, IsBoolean, IsDate, IsDecimal, IsInt, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
-import { ProductAttributes } from "src/product/product.dto";
-import { GetSubcategories } from "src/subcategories/subcategories.dto";
+import { IsArray, IsBoolean, IsDate, IsDecimal, IsEnum, IsInt, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
+import { PaginationDTO } from "src/common/DTO/pagination.dto";
+import { ProductAttributesWithUUID } from "src/product/product.dto";
 
-class ProductVersion {
+export class ProductVersion {
     @ApiProperty({ example: 1, description: "ID del producto" })
     id: number;
 
@@ -123,7 +123,48 @@ export class CreateProductVersionDTO extends ProductVersionAttributes {
     version_images: SafeProductVersionImages[];
 };
 
-export class PatchProductVersionDTO extends PartialType(CreateProductVersionDTO) { };
+// export class PatchProductVersionDTO extends PartialType(CreateProductVersionDTO) { };
+export class PartialPVAttributes extends PartialType(ProductVersionAttributes) { };
+export class PatchProductVersionDTO {
+    @ApiProperty({ example: "123e4567-e89b-12d3-a456-426614174000", description: "UUID del producto padre" })
+    @IsString()
+    @IsNotEmpty({ message: "The father_uuid field cannot be empty" })
+    @Type(() => String)
+    fatherUUID: string;
+
+    @ApiProperty({ example: "123e4567-e89b-12d3-a456-426614174000", description: "UUID del producto padre" })
+    @IsString()
+    @IsNotEmpty({ message: "The father_uuid field cannot be empty" })
+    @Type(() => String)
+    productVersionSKU: string;
+
+    @ApiProperty({ description: "Información de version de producto", type: PartialPVAttributes })
+    @IsObject()
+    @ValidateNested()
+    @Type(() => PartialPVAttributes)
+    product_version: PartialPVAttributes;
+
+    @ApiProperty({ description: "Imagenes del producto", type: [SafeProductVersionImages] as const, isArray: true })
+    @IsArray()
+    @IsOptional()
+    @ValidateNested({ each: true })
+    @Type(() => SafeProductVersionImages)
+    version_images?: SafeProductVersionImages[];
+};
+
+export class UpdateStockBySKUDTO {
+    @ApiProperty({ example: "123e4567-e89b-12d3-a456-426614174000", description: "UUID del producto padre" })
+    @IsString()
+    @IsNotEmpty({ message: "The father_uuid field cannot be empty" })
+    @Type(() => String)
+    sku: string;
+
+    @ApiProperty({ example: 15, description: "Numero de piezas disponibles del producto" })
+    @IsNotEmpty({ message: "The stock field cannot be empty" })
+    @IsNumber()
+    @Type(() => Number)
+    stock: number;
+};
 
 export class GetProductVersion extends SafeProductVersion {
     version_images: SafeProductVersionImages[];
@@ -138,8 +179,8 @@ class ParentVersions extends PickType(ProductVersion, ["sku", "unit_price"] as c
 };
 
 export class ProductVersionDetail {
-    @ApiProperty({ description: "Información del producto padre", type: ProductAttributes })
-    product: ProductAttributes;
+    @ApiProperty({ description: "Información del producto padre", type: ProductAttributesWithUUID })
+    product: ProductAttributesWithUUID;
 
     @ApiProperty({
         description: "Obtener subcategorias de un producto",
@@ -297,7 +338,6 @@ export class ProductVersionCardsFiltersDTO {
     moreExpensive?: boolean;
 };
 
-
 export class GetProductVersionCardsRandomOptionsDTO {
     @ApiProperty({ description: "Limite de objetos recueperados MAX 25" })
     @IsInt()
@@ -310,82 +350,38 @@ export class GetProductVersionCardsRandomOptionsDTO {
     entity?: string;
 };
 
-export class ProductVersionReviews {
-    @ApiProperty({ description: "ID de la review" })
-    id: string;
-
-    @ApiProperty({ description: "UUID del cliente" })
-    uuid: string;
-
-    @ApiProperty({ description: "ID de la version del producto" })
-    product_version_id: string;
-
-    @ApiProperty({ description: "ID del cliente" })
-    customer_id: string;
-
-    @ApiProperty({ description: "Calificacion" })
-    @IsInt()
-    @IsNotEmpty({ message: "La calificacion no puede estar vacia" })
-    rating: number;
-
-    @ApiProperty({ description: "Titulo" })
+export class StockDashboardParams extends PaginationDTO {
+    @ApiProperty({ description: "Ordenamiento" })
     @IsString()
-    @IsNotEmpty({ message: "El titulo no puede estar vacio" })
-    title: string;
+    @IsOptional()
+    @Type(() => String)
+    orderBy?: "asc" | "desc";
 
-    @ApiProperty({ description: "Comentario" })
+    @ApiProperty({ description: "Tipo de busqueda", enum: ["product", "version"] })
     @IsString()
-    @IsNotEmpty({ message: "El comentario no puede estar vacio" })
-    comment: string;
+    @IsOptional()
+    @Type(() => String)
+    type?: "product" | "version";
 
-    @ApiProperty({ description: "Fecha de creacion" })
-    created_at: Date;
+    @ApiProperty({ description: "Busqueda", required: false })
+    @IsString()
+    @IsOptional()
+    @Type(() => String)
+    value?: string;
 };
 
-export class ProductVersionReviewsAttributes extends PickType(ProductVersionReviews, ["rating", "title", "comment"] as const) { };
+export class StockDashboard extends PickType(ProductVersion, ["sku", "color_line", "color_code", "stock"] as const) { };
 
-export class PVCustomerReview extends OmitType(ProductVersionReviews, ["id", "product_version_id", "customer_id"] as const) {
-    @ApiProperty({ description: "Informacion del cliente", type: String })
-    customer: string;
+export class StockDashboardData extends StockDashboard {
+    @ApiProperty({ description: "Imagenes de la version del producto", type: String })
+    product_version_images: string;
 };
 
-export class GetProductVersionReviews {
-    @ApiProperty({ description: "Arreglo con las reseñas", type: PVCustomerReview, isArray: true })
-    reviews: PVCustomerReview[];
+export class GetStockDashboard {
+    @ApiProperty({ description: "Arreglo con los datos" })
+    data: StockDashboardData[];
     @ApiProperty({ description: "Total de registros encontrados en la base de datos" })
     totalRecords: number;
     @ApiProperty({ description: "Total de paginas" })
     totalPages: number;
-}
-
-export class GetPVReviewRating {
-    @ApiProperty({ description: "Calificacion" })
-    rating: number;
-
-    @ApiProperty({ description: "Porcentaje" })
-    percentage: number;
-};
-
-
-export class GetPVReviewResume {
-    @ApiProperty({ description: "Arreglo con las calificaciones" })
-    ratingResume: GetPVReviewRating[];
-    @ApiProperty({ description: "Calificacion promedio" })
-    ratingAverage: number;
-    @ApiProperty({ description: "Cantidad total de reseñas" })
-    totalReviews: number;
-}
-
-export class ProductVersionReviewsVersionAttributes extends PickType(ProductVersion, ["sku", "color_name", "color_code", "color_line"] as const) {
-
-    @ApiProperty({ description: "Imagenes de la version del producto", type: SafeTinyProductVersionImages, isArray: true })
-    @Type(() => SafeTinyProductVersionImages)
-    @ValidateNested({ each: true })
-    product_version_images: SafeTinyProductVersionImages[];
-
-    @ApiProperty({ description: "Nombre de la categoria" })
-    category_name: string;
-
-    @ApiProperty({ description: "Arreglo de nombres de subcategorias", type: String, isArray: true })
-    subcategories: string[];
 };

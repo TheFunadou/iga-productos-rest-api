@@ -11,7 +11,9 @@ export class CategoriesService {
     ) { };
 
     async create(args: { data: CreateCategoryDTO }): Promise<GetCategories> {
-        return await this.prisma.category.create({ data: args.data, omit: { id: true } });
+        const category = await this.prisma.category.create({ data: args.data, omit: { id: true } });
+        await this.cacheService.invalidateQuery({ entity: "categories", query: { all: true } });
+        return category;
     };
 
     async findAll(): Promise<GetCategories[]> {

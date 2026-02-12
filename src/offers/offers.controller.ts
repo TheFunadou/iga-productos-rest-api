@@ -7,6 +7,8 @@ import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
 import { UserModulePermissionsGuard } from 'src/user_auth/user_auth.module.permissions.guard';
 import { RequirePermissions } from 'src/user_auth/user_auth.module.permissions.decorator';
 import { CreateOfferDTO, GetOffers, UpdateOfferDTO } from './offers.dto';
+import { AuthenticatedUser } from 'src/user_auth/user_auth.current_user.decorator';
+import { UserPayload } from 'src/user_auth/user_auth.dto';
 
 @Controller('offers')
 export class OffersController {
@@ -24,8 +26,8 @@ export class OffersController {
     @ApiQuery({ name: 'page', required: true, type: Number })
     @ApiQuery({ name: 'limit', required: true, type: Number })
     @ApiHeader({ name: 'X-CSRF-TOKEN', required: true })
-    async findMany(@Query() query: PaginationDTO): Promise<GetOffers> {
-        return await this.offersService.findMany({ pagination: { limit: query.limit, page: query.page } });
+    async dashboard(@Query() query: PaginationDTO): Promise<GetOffers> {
+        return await this.offersService.dashboard({ pagination: { limit: query.limit, page: query.page } });
     };
 
     @Post()
@@ -35,8 +37,8 @@ export class OffersController {
     @ApiResponse({ status: 200, description: 'Oferta creada correctamente' })
     @ApiResponse({ status: 500, description: 'Error al crear la oferta' })
     @ApiHeader({ name: 'X-CSRF-TOKEN', required: true })
-    async create(@Body() body: CreateOfferDTO) {
-        return await this.offersService.create({ data: body });
+    async create(@Body() body: CreateOfferDTO, @AuthenticatedUser() user: UserPayload) {
+        return await this.offersService.create({ data: body, userUUID: user.uuid });
     };
 
     @Patch()

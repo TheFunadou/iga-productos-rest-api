@@ -43,7 +43,7 @@ export class CreateSubcategoryDTO extends PickType(Subcategories, ["description"
     uuid_path: string[] = [];
 
     @ApiProperty({ example: "xxxx-xxxx-xxxx-xxxx-xxxx-xxxx-xxxx", description: "UUID de la categoria padre", type: String })
-    @IsUUID()
+    @IsString()
     @IsNotEmpty({ message: "El UUID de la categoria principal no puede estar vacio" })
     category_uuid: string;
 };

@@ -1,8 +1,9 @@
 import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
-import { Type } from "class-transformer";
-import { ArrayNotEmpty, IsArray, IsDate, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { ArrayNotEmpty, IsArray, IsDate, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from "class-validator";
 import { SafeCategory } from "src/categories/categories.dto";
-import { GetProductVersion } from "src/product-version/product-version.dto";
+import { PaginationDTO } from "src/common/DTO/pagination.dto";
+import { GetProductVersion, ProductVersion, SafeTinyProductVersionImages } from "src/product-version/product-version.dto";
 import { SafeSubcategories } from "src/subcategories/subcategories.dto";
 
 class Product {
@@ -61,6 +62,7 @@ class Product {
 
 export class SafeProduct extends OmitType(Product, ["id", "category_id", "user_id"] as const) { };
 export class ProductAttributes extends OmitType(Product, ["id", "category_id", "created_at", "updated_at", "user_id", "uuid"] as const) { };
+export class ProductAttributesWithUUID extends OmitType(Product, ["id", "category_id", "created_at", "updated_at", "user_id"] as const) { };
 export class ProductTinyDetail extends PickType(Product, ["product_name"] as const) {
     @ApiProperty({ description: "Subcategorias del producto" })
     subcategories: string[];
@@ -68,14 +70,24 @@ export class ProductTinyDetail extends PickType(Product, ["product_name"] as con
 
 export class CreateProductDTO extends ProductAttributes {
     @ApiProperty({ description: "UUID de la categoria del producto", type: String })
-    @IsUUID()
+    @IsString()
     category_uuid: string;
 
-    @ApiProperty({ example: ["xxx", "yyy", "zzz"], isArray: true, description: "Subcategorias asociadas al producto" })
+    @ApiProperty({
+        example: ["xxx", "yyy", "zzz"],
+        type: [String], // Es más explícito para Swagger
+        description: "Subcategorias asociadas al producto"
+    })
     @IsArray()
     @ArrayNotEmpty()
-    @Type(() => String)
     @IsString({ each: true })
+    @Transform(({ value }) => {
+        // Si recibes un string (ej. desde un form-data) lo convierte a array
+        if (typeof value === 'string') {
+            return value.split(',').map(s => s.trim());
+        }
+        return value;
+    })
     subcategories_path: string[];
 };
 
@@ -155,8 +167,116 @@ export class ProductDetail {
     versions: GetProductVersion[];
 };
 
+export class ProductReviews {
+    @ApiProperty({ description: "ID de la review" })
+    id: string;
+
+    @ApiProperty({ description: "UUID del cliente" })
+    uuid: string;
+
+    @ApiProperty({ description: "ID de la version del producto" })
+    product_version_id: string;
+
+    @ApiProperty({ description: "ID del cliente" })
+    customer_id: string;
+
+    @ApiProperty({ description: "Calificacion" })
+    @IsInt()
+    @IsNotEmpty({ message: "La calificacion no puede estar vacia" })
+    rating: number;
+
+    @ApiProperty({ description: "Titulo" })
+    @IsString()
+    @IsNotEmpty({ message: "El titulo no puede estar vacio" })
+    title: string;
+
+    @ApiProperty({ description: "Comentario" })
+    @IsString()
+    @IsNotEmpty({ message: "El comentario no puede estar vacio" })
+    comment: string;
+
+    @ApiProperty({ description: "Fecha de creacion" })
+    created_at: Date;
+};
+
+export class ProductReviewsAttributes extends PickType(ProductReviews, ["rating", "title", "comment"] as const) { };
+
+export class ProductCustomerReview extends OmitType(ProductReviews, ["id", "product_version_id", "customer_id"] as const) {
+    @ApiProperty({ description: "Informacion del cliente", type: String })
+    customer: string;
+};
+
+export class GetProductReviews {
+    @ApiProperty({ description: "Arreglo con las reseñas", type: ProductCustomerReview, isArray: true })
+    reviews: ProductCustomerReview[];
+    @ApiProperty({ description: "Total de registros encontrados en la base de datos" })
+    totalRecords: number;
+    @ApiProperty({ description: "Total de paginas" })
+    totalPages: number;
+};
 
 
+export class GetProductReviewRating {
+    @ApiProperty({ description: "Calificacion" })
+    rating: number;
+
+    @ApiProperty({ description: "Porcentaje" })
+    percentage: number;
+};
+
+
+export class GetProductReviewResume {
+    @ApiProperty({ description: "Arreglo con las calificaciones" })
+    ratingResume: GetProductReviewRating[];
+    @ApiProperty({ description: "Calificacion promedio" })
+    ratingAverage: number;
+    @ApiProperty({ description: "Cantidad total de reseñas" })
+    totalReviews: number;
+};
+
+
+export class ProductReviewsVersionAttributes extends PickType(ProductVersion, ["sku", "color_name", "color_code", "color_line"] as const) {
+    @ApiProperty({ description: "Imagenes de la version del producto", type: SafeTinyProductVersionImages, isArray: true })
+    @Type(() => SafeTinyProductVersionImages)
+    @ValidateNested({ each: true })
+    product_version_images: SafeTinyProductVersionImages[];
+
+    @ApiProperty({ description: "Nombre de la categoria" })
+    category_name: string;
+
+    @ApiProperty({ description: "Arreglo de nombres de subcategorias", type: String, isArray: true })
+    subcategories: string[];
+};
+
+export class ProductReviewsAttributesWithDateAndUUID extends PickType(ProductReviews, ["title", "comment", "rating", "created_at", "uuid"] as const) { };
+export class GetReviewsData extends ProductReviewsAttributesWithDateAndUUID {
+
+    @ApiProperty({ description: "UUID de la reseña", type: String })
+    uuid: string;
+
+    @ApiProperty({ description: "Informacion del cliente", type: String })
+    customer: string;
+
+    @ApiProperty({ description: "SKU del producto", type: String })
+    sku: string;
+
+    @ApiProperty({ description: "Nombre del producto", type: String })
+    product_name: string;
+
+    @ApiProperty({ description: "URL de la imagen del producto", type: String })
+    image_url: string;
+}
+export class GetDashboardReviews {
+    @ApiProperty({ description: "Arreglo con las reseñas", type: GetReviewsData, isArray: true })
+    @Type(() => GetReviewsData)
+    data: GetReviewsData[];
+
+    @ApiProperty({ description: "Total de registros encontrados en la base de datos" })
+    totalRecords: number;
+
+    @ApiProperty({ description: "Total de paginas" })
+    totalPages: number;
+};
 
 
 

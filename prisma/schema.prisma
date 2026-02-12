@@ -30,6 +30,7 @@ model User {
   products       Product[]         @relation("product:user")
   permissions    UserPermissions[] @relation("user_permissions:user")
   logs           UserLogs[]        @relation("user_logs:user")
+  offers         Offers[]          @relation("offer:user")
 
   @@index([role]) // Búsquedas por rol (listar staff, admins, etc.)
   @@index([created_at]) // Ordenar usuarios por fecha de creación
@@ -116,22 +117,22 @@ model Verification {
 }
 
 model Customer {
-  id                 String                  @id @default(dbgenerated("gen_random_uuid()"))
-  uuid               String                  @unique @default(cuid())
+  id                 String              @id @default(dbgenerated("gen_random_uuid()"))
+  uuid               String              @unique @default(cuid())
   name               String
   last_name          String
-  email              String                  @unique
-  email_verified     Boolean                 @default(false)
+  email              String              @unique
+  email_verified     Boolean             @default(false)
   image              String?
-  created_at         DateTime                @default(now())
-  updated_at         DateTime                @updatedAt
-  sessions           CustomerSession[]       @relation("customer_session:customer")
-  accounts           CustomerAccount[]       @relation("customer_account:customer")
-  favorites          CustomerFavorites[]     @relation("customer_favorites:customer")
-  customer_addresses CustomerAddresses[]     @relation("customer_address:customer")
-  orders             Order[]                 @relation("order:customer")
-  reviews            ProductVersionReviews[] @relation("product_version_reviews:customer")
-  shopping_carts     ShoppingCart[]          @relation("shopping_cart:customer")
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
+  sessions           CustomerSession[]   @relation("customer_session:customer")
+  accounts           CustomerAccount[]   @relation("customer_account:customer")
+  favorites          CustomerFavorites[] @relation("customer_favorites:customer")
+  customer_addresses CustomerAddresses[] @relation("customer_address:customer")
+  orders             Order[]             @relation("order:customer")
+  reviews            ProductReviews[]    @relation("product_version_reviews:customer")
+  shopping_carts     ShoppingCart[]      @relation("shopping_cart:customer")
 
   @@index([email]) // Búsquedas por email
   @@index([created_at]) // Ordenar clientes por fecha de registro
@@ -248,6 +249,7 @@ model Product {
   user_id             String
   category            Category               @relation("product:category", fields: [category_id], references: [id])
   user                User                   @relation("product:user", fields: [user_id], references: [id], onDelete: Restrict)
+  reviews             ProductReviews[]       @relation("product_reviews:product")
   product_resources   ProductResources[]     @relation("product_sources:product")
   subcategories       ProductSubcategories[] @relation("product_subcategories:product")
   product_versions    ProductVersion[]       @relation("product_version:product")
@@ -260,26 +262,26 @@ model Product {
 }
 
 model ProductVersion {
-  id                     String                  @id @default(dbgenerated("gen_random_uuid()"))
+  id                     String                 @id @default(dbgenerated("gen_random_uuid()"))
   product_id             String
-  sku                    String                  @unique
-  code_bar               String?                 @unique
+  sku                    String                 @unique
+  code_bar               String?                @unique
   color_line             String
   color_name             String
   color_code             String
   status                 String
-  stock                  Int                     @default(0)
-  unit_price             Decimal                 @db.Decimal(10, 2)
-  technical_sheet_url    String                  @default("N/A")
-  created_at             DateTime                @default(now())
-  updated_at             DateTime                @updatedAt
-  main_version           Boolean                 @default(false)
-  product                Product                 @relation("product_version:product", fields: [product_id], references: [id])
-  customer_favorites     CustomerFavorites[]     @relation("customer_favorites:product_version")
-  order_items            OrderItemsDetails[]     @relation("order_items_details:product_version")
-  product_version_images ProductVersionImages[]  @relation("product_version_images:product_version")
-  reviews                ProductVersionReviews[] @relation("product_version_reviews:product_version")
-  shopping_cart_items    ShoppingCartItems[]     @relation("shopping_cart_items:product_version")
+  stock                  Int                    @default(0)
+  unit_price             Decimal                @db.Decimal(10, 2)
+  technical_sheet_url    String                 @default("N/A")
+  created_at             DateTime               @default(now())
+  updated_at             DateTime               @updatedAt
+  main_version           Boolean                @default(false)
+  product                Product                @relation("product_version:product", fields: [product_id], references: [id])
+  customer_favorites     CustomerFavorites[]    @relation("customer_favorites:product_version")
+  order_items            OrderItemsDetails[]    @relation("order_items_details:product_version")
+  product_version_images ProductVersionImages[] @relation("product_version_images:product_version")
+  reviews                ProductReviews[]       @relation("product_version_reviews:product_version")
+  shopping_cart_items    ShoppingCartItems[]    @relation("shopping_cart_items:product_version")
 
   @@index([product_id]) // Buscar versiones de un producto
   @@index([status]) // Filtrar por estado (activo, descontinuado, etc.)
@@ -448,12 +450,15 @@ model Offers {
   current_uses        Int           @default(0)
   created_at          DateTime      @default(now())
   updated_at          DateTime      @updatedAt
+  user_id             String
   offer_targets       OfferTarget[] @relation("offer_target:offers")
+  user                User          @relation("offer:user", fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([status]) // Filtrar ofertas activas/pausadas
   @@index([type]) // Filtrar por tipo de oferta
   @@index([start_date, end_date]) // Buscar ofertas vigentes
   @@index([code]) // Búsqueda rápida de cupones
+  @@index([user_id]) // Filtrar ofertas por usuario
   @@map("offers")
 }
 
@@ -471,24 +476,27 @@ model OfferTarget {
   @@map("offer_target")
 }
 
-model ProductVersionReviews {
+model ProductReviews {
   id                 String         @id @default(cuid())
   uuid               String         @unique @default(cuid())
+  product_id         String
   product_version_id String
   customer_id        String
   rating             Int
   title              String
   comment            String
   created_at         DateTime       @default(now())
+  product            Product        @relation("product_reviews:product", fields: [product_id], references: [id], onDelete: Cascade)
   product_version    ProductVersion @relation("product_version_reviews:product_version", fields: [product_version_id], references: [id], onDelete: Cascade)
   customer           Customer       @relation("product_version_reviews:customer", fields: [customer_id], references: [id], onDelete: Cascade)
 
-  @@unique([product_version_id, customer_id]) // Un cliente solo puede dejar una reseña por producto
-  @@index([product_version_id]) // Buscar reseñas de un producto
-  @@index([customer_id]) // Buscar reseñas de un cliente
-  @@index([rating]) // Filtrar por calificación
-  @@index([created_at]) // Ordenar reseñas por fecha
-  @@map("product_version_reviews")
+  @@index([product_id])
+  @@index([product_version_id])
+  @@index([customer_id, product_version_id])
+  @@index([customer_id])
+  @@index([rating])
+  @@index([created_at])
+  @@map("product_reviews")
 }
 
 model ShoppingCart {

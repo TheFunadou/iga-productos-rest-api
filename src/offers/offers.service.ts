@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOfferDTO, GetOffers, UpdateOfferDTO } from './offers.dto';
@@ -10,11 +10,14 @@ export class OffersService {
         private readonly cache: CacheService
     ) { };
 
-    async create(args: { data: CreateOfferDTO }) {
-        const { target, ...offerData } = args.data
+    async create(args: { data: CreateOfferDTO, userUUID: string }) {
+        const { target, ...offerData } = args.data;
+        const user = await this.prisma.user.findUnique({ where: { uuid: args.userUUID }, select: { id: true } })
+        if (!user) throw new NotFoundException("No se encontro el usuario");
         await this.prisma.offers.create({
             data: {
                 ...offerData,
+                user_id: user.id,
                 offer_targets: {
                     create: {
                         ...target,
@@ -41,12 +44,12 @@ export class OffersService {
         return `Oferta eliminada exitosamente`;
     };
 
-    async findMany(args: { pagination: { page: number, limit: number } }): Promise<GetOffers> {
+    async dashboard(args: { pagination: { page: number, limit: number } }): Promise<GetOffers> {
         const { page, limit } = args.pagination;
         const skip = (page - 1) * limit;
         return await this.cache.remember<GetOffers>({
             method: "staleWhileRevalidateWithLock",
-            entity: "offers",
+            entity: "offers:dashboard",
             query: args.pagination,
             aditionalOptions: {
                 ttlMilliseconds: 1000 * 60 * 15,

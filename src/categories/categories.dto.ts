@@ -1,6 +1,5 @@
-import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
-import { IsString } from "class-validator";
-import { SafeTinyProductVersionImages } from "src/product-version/product-version.dto";
+import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
+import { IsNotEmpty, IsString } from "class-validator";
 
 
 class Categories {
@@ -12,6 +11,7 @@ class Categories {
 
     @ApiProperty({ description: "Nombre de la categoria", example: "Cascos", type: "string" })
     @IsString()
+    @IsNotEmpty()
     name: string;
 
     @ApiProperty({ description: "Fecha de creación", example: "2025-12-17T14:20:03.000Z", type: "string" })
