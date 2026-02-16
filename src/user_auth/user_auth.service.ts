@@ -1,30 +1,34 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthUser, AuthUserPermissions, UserCredentialsDTO, UserPayload, UserPermissions } from './user_auth.dto';
+import { AuthUser, AuthUserPermissions, UserCredentialsDTO, UserPayload } from './user_auth.dto';
 import * as bcrypt from 'bcrypt';
 import { Permission, UserModules } from 'generated/prisma/enums';
 import { JwtService } from '@nestjs/jwt';
 import { CacheService } from 'src/cache/cache.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserAuthService {
-    private readonly secret = process.env.JWT_USER_SECRET;
+    private readonly secret: string;
     constructor(
         private readonly prisma: PrismaService,
         private readonly jwtService: JwtService,
-        private readonly cacheService: CacheService
-    ) { };
+        private readonly cacheService: CacheService,
+        private readonly config: ConfigService,
+    ) {
+        this.secret = this.config.get<string>("JWT_USER_SECRET") || "";
+    };
 
     async login(dto: UserCredentialsDTO) {
         const authUser = await this.authentication(dto);
         const token = this.jwtService.sign(authUser, { secret: this.secret });
         const csrfToken = randomUUID();
         await this.cacheService.setData({ entity: "user:session:csrf", query: { userUUID: authUser.uuid }, data: { csrfToken }, aditionalOptions: { ttlMilliseconds: 1000 * 60 * 60 } });
-        return { access_token: token, payload: authUser, csrfToken: randomUUID() };
+        return { access_token: token, payload: authUser, csrfToken };
     };
 
-    private async authentication(dto: UserCredentialsDTO) {
+    private async authentication(dto: UserCredentialsDTO): Promise<UserPayload> {
         const user = await this.prisma.user.findFirst({
             where: { OR: [{ email: dto.email_or_username }, { username: dto.email_or_username }] },
             select: {

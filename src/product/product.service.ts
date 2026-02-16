@@ -6,6 +6,8 @@ import { ConfigService } from '@nestjs/config';
 import { PaginationDTO } from 'src/common/DTO/pagination.dto';
 import { CustomerReviewDTO } from 'src/customer/customer.dto';
 import { StockDashboardParams } from 'src/product-version/product-version.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserLogEvent } from 'src/audit/user-log.event';
 
 @Injectable()
 export class ProductService {
@@ -15,6 +17,7 @@ export class ProductService {
         private readonly cacheService: CacheService,
         private readonly configService: ConfigService,
         private readonly prisma: PrismaService,
+        private readonly eventEmmiter: EventEmitter2,
     ) {
         this.nodeEnv = this.configService.get<string>("NODE_ENV", "DEV");
     };
@@ -28,11 +31,8 @@ export class ProductService {
             if (!category) throw new NotFoundException("Categoria no encontrada");
             const product = await tx.product.create({
                 data: { ...productData, user_id: user.id, category_id: category.id }
-            }).catch((error) => {
-                if (this.nodeEnv === "DEV") this.logger.error(error);
-                this.logger.error("Error al crear el producto");
-                throw new BadRequestException(`Error al crear el producto`);
             });
+
             const subcategories = await tx.subcategories.findMany({
                 where: { uuid: { in: subcategories_path } }
             });
@@ -43,29 +43,41 @@ export class ProductService {
                 }))
             });
 
+            this.eventEmmiter.emit("user.log", new UserLogEvent(
+                "PRODUCT",
+                product.uuid,
+                "Creación de producto",
+                { product_name: product.product_name },
+                args.userUUID
+            ));
+
             return `Producto ${product.product_name} creado exitosamente`;
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al crear el producto");
+            throw new BadRequestException(`Error al crear el producto`);
         });
     };
 
-    async patch(args: { data: PatchProductDTO }) {
-        return await this.prisma.$transaction(async (tx) => {
-            const { subcategories_path, category_uuid, uuid, ...productData } = args.data;
+    async patch({ data, userUUID }: { data: PatchProductDTO, userUUID: string }) {
+        const productUpdated = await this.prisma.$transaction(async (tx) => {
+            const { subcategories_path, category_uuid, uuid, ...productData } = data;
 
             const productUpdated = await tx.product.update({
                 where: { uuid },
                 data: productData,
                 select: {
                     id: true,
+                    uuid: true,
                     product_name: true,
                     category: { select: { uuid: true } }
                 }
             });
 
             this.logger.log(`Producto ${productUpdated.product_name} actualizado exitosamente`);
-            console.log(JSON.stringify(productUpdated, null, 2))
 
             if (category_uuid && category_uuid !== productUpdated.category.uuid) {
-                const category = await tx.category.findUnique({ where: { uuid: args.data.category_uuid }, select: { id: true } });
+                const category = await tx.category.findUnique({ where: { uuid: data.category_uuid }, select: { id: true } });
                 if (!category) throw new NotFoundException("Categoria no encontrada");
                 await tx.product.update({
                     where: { uuid },
@@ -90,17 +102,45 @@ export class ProductService {
                 });
             };
 
-            await this.cacheService.invalidateQuery({ entity: "product:detail", query: { uuid: args.data.uuid } });
-
-            return `Producto ${productUpdated.product_name} actualizado exitosamente`;
+            await this.cacheService.invalidateQuery({ entity: "product:detail", query: { uuid: data.uuid } });
+            return productUpdated;
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al actualizar el producto");
+            throw new BadRequestException(`Error al actualizar el producto`);
         });
+
+        this.eventEmmiter.emit("user.log", new UserLogEvent(
+            "PRODUCT",
+            productUpdated.uuid,
+            "Actualización de producto",
+            { product_name: productUpdated.product_name },
+            userUUID
+        ));
+
+        return `Producto ${productUpdated.product_name} actualizado exitosamente`;
     };
 
-    async delete(args: { uuid: string }) {
-        return await this.prisma.$transaction(async (tx) => {
-            const product = await tx.product.delete({ where: { uuid: args.uuid } });
-            return `Producto ${product.product_name} eliminado exitosamente`;
+    async delete({ productUUID, userUUID }: { productUUID: string, userUUID: string }) {
+        const product = await this.prisma.product.delete({ where: { uuid: productUUID } }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al eliminar el producto");
+            throw new BadRequestException(`Error al eliminar el producto`);
         });
+        await this.cacheService.invalidateMultipleEntities([
+            { entity: "products" },
+            { entity: "product:detail" }
+        ]);
+
+        this.eventEmmiter.emit("user.log", new UserLogEvent(
+            "PRODUCT",
+            product.uuid,
+            "Eliminación de producto",
+            { product_name: product.product_name },
+            userUUID
+        ));
+        return `Producto ${product.product_name} eliminado exitosamente`;
+
     };
 
     async search(args: { query: string }): Promise<SearchedProducts[]> {
@@ -140,6 +180,10 @@ export class ProductService {
                     updated_at: product.updated_at
                 }));
             }
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Ocurrio un error al obtener los productos");
+            throw new BadRequestException("Ocurrio un error inesperado al obtener los productos");
         });
     };
 
@@ -216,6 +260,10 @@ export class ProductService {
                     }))
                 }
             }
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Ocurrio un error al obtener el producto");
+            throw new BadRequestException("Ocurrio un error inesperado al obtener el producto");
         });
     };
 
@@ -229,24 +277,23 @@ export class ProductService {
 
         const review = await this.prisma.productReviews.findFirst({ where: { customer_id: customer.id, product_version_id: productVersion.id }, select: { uuid: true } });
         if (review) throw new BadRequestException("Ya has agregado un comentario para esta version de producto");
-        return await this.prisma.$transaction(async (tx) => {
-            await tx.productReviews.create({
-                data: {
-                    title: args.data.title,
-                    comment: args.data.comment,
-                    rating: args.data.rating,
-                    customer_id: customer.id,
-                    product_id: productVersion.product.id,
-                    product_version_id: productVersion.id
-                }
-            }).catch((error) => {
-                if (this.nodeEnv === "DEV") this.logger.error(error);
-                this.logger.error("Ocurrio un error al agregar una reseña");
-                throw new BadRequestException("Ocurrio un error inesperado al agregar la reseña");
-            });
-            await this.cacheService.invalidateEntity({ entity: `product-version:show:details:${args.customerUUID}` })
-            return `Tu reseña ha sido enviada`;
+        await this.prisma.productReviews.create({
+            data: {
+                title: args.data.title,
+                comment: args.data.comment,
+                rating: args.data.rating,
+                customer_id: customer.id,
+                product_id: productVersion.product.id,
+                product_version_id: productVersion.id
+            }
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Ocurrio un error al agregar una reseña");
+            throw new BadRequestException("Ocurrio un error inesperado al agregar la reseña");
         });
+
+        await this.cacheService.invalidateEntity({ entity: `product-version:show:details:${args.customerUUID}` })
+        return `Tu reseña ha sido enviada`;
     };
 
     async findManyReviewsByUUID({ productUUID, pagination: { limit, page } }: { productUUID: string, pagination: PaginationDTO }) {
@@ -259,35 +306,37 @@ export class ProductService {
                 staleTimeMilliseconds: 1000 * 60 * 50
             },
             fallback: async () => {
-                return await this.prisma.$transaction(async (tx) => {
-                    const result = await tx.productReviews.findMany({
-                        take: limit || 10,
-                        skip: (page || 1) - 1,
-                        where: { product_version: { product: { uuid: productUUID } } },
-                        select: {
-                            uuid: true,
-                            title: true,
-                            comment: true,
-                            rating: true,
-                            created_at: true,
-                            customer: { select: { name: true } }
-                        },
-                    });
+                const result = await this.prisma.productReviews.findMany({
+                    take: limit || 10,
+                    skip: (page || 1) - 1,
+                    where: { product_version: { product: { uuid: productUUID } } },
+                    select: {
+                        uuid: true,
+                        title: true,
+                        comment: true,
+                        rating: true,
+                        created_at: true,
+                        customer: { select: { name: true } }
+                    },
+                });
 
-                    const totalRecords = await tx.productReviews.count({
-                        where: { product_version: { product: { uuid: productUUID } } },
-                    });
+                const totalRecords = await this.prisma.productReviews.count({
+                    where: { product_version: { product: { uuid: productUUID } } },
+                });
 
-                    const reviews = result.map((review) => ({ ...review, customer: review.customer.name }));
+                const reviews = result.map((review) => ({ ...review, customer: review.customer.name }));
 
-                    const response: GetProductReviews = {
-                        reviews,
-                        totalRecords,
-                        totalPages: Math.ceil(totalRecords / (limit || 10))
-                    };
-                    return response;
-                })
+                const response: GetProductReviews = {
+                    reviews,
+                    totalRecords,
+                    totalPages: Math.ceil(totalRecords / (limit || 10))
+                };
+                return response;
             }
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Ocurrio un error al obtener las reseñas");
+            throw new BadRequestException("Ocurrio un error inesperado al obtener las reseñas");
         })
     };
 
@@ -328,6 +377,10 @@ export class ProductService {
                     totalReviews: totalRecords
                 }
             }
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Ocurrio un error al obtener el resumen de reseñas");
+            throw new BadRequestException("Ocurrio un error inesperado al obtener el resumen de reseñas");
         })
     };
 
@@ -380,12 +433,8 @@ export class ProductService {
                         }
                     },
                     orderBy: { created_at: orderBy || "desc" }
-                }).catch((error) => {
-                    if (this.nodeEnv === "DEV") this.logger.error(error);
-                    this.logger.error(`Ocurrio un error inesperado al obtener el stock del producto`);
-                    throw new BadRequestException(`Ocurrio un error inesperado al obtener el stock del producto`, this.nodeEnv === "DEV" && error);
                 });
-                ;
+
                 const totalRecords = await this.prisma.productReviews.count({ where });
                 const totalPages = Math.ceil(totalRecords / limit);
                 const response: GetDashboardReviews = {
@@ -402,12 +451,30 @@ export class ProductService {
                 };
                 return response;
             }
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Ocurrio un error al obtener el stock del producto");
+            throw new BadRequestException("Ocurrio un error inesperado al obtener el stock del producto");
         })
     };
 
-    async deleteReview({ uuid, sku }: { uuid: string, sku: string }): Promise<string> {
-        await this.prisma.productReviews.delete({ where: { uuid, product_version: { sku } } });
-        await this.cacheService.invalidateEntity({ entity: "product:reviews:dashboard" });
+    async deleteReview({ uuid, sku, userUUID }: { uuid: string, sku: string, userUUID: string }): Promise<string> {
+        await this.prisma.productReviews.delete({ where: { uuid, product_version: { sku } } }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al eliminar la reseña");
+            throw new BadRequestException("Error al eliminar la reseña");
+        });
+        await this.cacheService.invalidateMultipleEntities([
+            { entity: "product:reviews:dashboard" },
+            { entity: "product:reviews:rating-review-resume" }
+        ]);
+        this.eventEmmiter.emit("user.log", new UserLogEvent(
+            "PRODUCT",
+            uuid,
+            "Eliminación de reseña de producto",
+            { sku },
+            userUUID
+        ));
         return "Reseña del producto eliminada correctamente";
     };
 

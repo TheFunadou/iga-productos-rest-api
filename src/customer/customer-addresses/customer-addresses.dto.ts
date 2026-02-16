@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsNumberString, IsOptional, IsString, IsUUID, Length } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsNumberString, IsOptional, IsString, Length } from "class-validator";
 
 export class CustomerAddress {
     @ApiProperty({ example: 1, description: "ID de registro" })

@@ -22,12 +22,15 @@ import { OffersModule } from './offers/offers.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { ShippingModule } from './shipping/shipping.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AuditModule } from './audit/audit.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 15, }]),
     BullModule.forRoot({ connection: redisConfig }),
+    EventEmitterModule.forRoot(),
     PrismaModule,
     UserModule,
     CustomerAuthModule,
@@ -44,6 +47,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     MetricsModule,
     ShippingModule,
     NotificationsModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [AppService, UserService],

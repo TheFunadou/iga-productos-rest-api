@@ -92,11 +92,14 @@ model UserPermissions {
 }
 
 model UserLogs {
-  id          String   @id @default(cuid())
-  user_id     String
-  description String
-  created_at  DateTime @default(now())
-  user        User     @relation("user_logs:user", fields: [user_id], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  user_id    String?
+  entity     String
+  entity_id  String
+  action     String
+  metadata   Json?
+  created_at DateTime @default(now())
+  user       User?    @relation("user_logs:user", fields: [user_id], references: [id], onDelete: SetNull)
 
   @@index([user_id]) // Buscar logs de un usuario
   @@index([created_at]) // Ordenar logs por fecha

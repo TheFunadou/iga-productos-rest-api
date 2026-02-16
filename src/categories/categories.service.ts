@@ -1,18 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCategoryDTO, SummaryCategories, GetCategories, PatchCategoryDTO } from './categories.dto';
+import { UserLogEvent } from 'src/audit/user-log.event';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CategoriesService {
+    private readonly nodeEnv: string;
+    private readonly logger = new Logger(CategoriesService.name);
     constructor(
         private readonly prisma: PrismaService,
         private readonly cacheService: CacheService,
-    ) { };
+        private readonly eventEmmiter: EventEmitter2,
+        private readonly config: ConfigService,
+    ) {
+        this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
+    };
 
-    async create(args: { data: CreateCategoryDTO }): Promise<GetCategories> {
-        const category = await this.prisma.category.create({ data: args.data, omit: { id: true } });
-        await this.cacheService.invalidateQuery({ entity: "categories", query: { all: true } });
+    async create({ data, userUUID }: { data: CreateCategoryDTO, userUUID: string }): Promise<GetCategories> {
+        const category = await this.prisma.category.create({ data: data, omit: { id: true } }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al actualizar la oferta");
+            throw new BadRequestException("Error al actualizar la oferta");
+        });
+        await this.cacheService.invalidateMultipleEntities([
+            { entity: "categories" },
+            { entity: "categories:summary" }
+        ]);
+        this.eventEmmiter.emit("user.log", new UserLogEvent(
+            "CATEGORY",
+            category.uuid,
+            "Creación de categoría",
+            { category_name: category.name },
+            userUUID
+        ));
         return category;
     };
 
@@ -31,16 +54,45 @@ export class CategoriesService {
         });
     };
 
-    async patch(args: { data: PatchCategoryDTO }): Promise<GetCategories> {
-        return await this.prisma.category.update({
-            where: { uuid: args.data.uuid },
-            data: args.data
+    async patch({ data, userUUID }: { data: PatchCategoryDTO, userUUID: string }): Promise<GetCategories> {
+        const updated = await this.prisma.category.update({
+            where: { uuid: data.uuid }, data
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al actualizar la oferta");
+            throw new BadRequestException("Error al actualizar la oferta");
         });
+        await this.cacheService.invalidateMultipleEntities([
+            { entity: "categories" },
+            { entity: "categories:summary" }
+        ]);
+        this.eventEmmiter.emit("user.log", new UserLogEvent(
+            "CATEGORY",
+            updated.uuid,
+            "Actualización de categoría",
+            { category_name: updated.name },
+            userUUID
+        ));
+        return updated;
     };
 
-    async delete(args: { uuid: string }): Promise<string> {
-        const deleted = await this.prisma.category.delete({ where: { uuid: args.uuid } });
-        await this.cacheService.invalidateQuery({ entity: "categories", query: { all: true } });
+    async delete({ uuid, userUUID }: { uuid: string, userUUID: string }): Promise<string> {
+        const deleted = await this.prisma.category.delete({ where: { uuid } }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al eliminar la categoría");
+            throw new BadRequestException("Error al eliminar la categoría");
+        });
+        await this.cacheService.invalidateMultipleEntities([
+            { entity: "categories" },
+            { entity: "categories:summary" }
+        ]);
+        this.eventEmmiter.emit("user.log", new UserLogEvent(
+            "CATEGORY",
+            deleted.uuid,
+            "Eliminación de categoría",
+            { category_name: deleted.name },
+            userUUID
+        ));
         return `Categoria eliminada sastisfactoriamente ${deleted.name}`
     };
 

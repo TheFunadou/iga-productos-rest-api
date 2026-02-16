@@ -1,4 +1,3 @@
-// src/user_auth/decorators/current-user.decorator.ts
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { UserPayload } from './user_auth.dto';
 

@@ -50,8 +50,8 @@ export class ProductController {
     @ApiResponse({ status: 500, description: 'Internal server error' })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     @ApiBody({ type: PatchProductDTO })
-    async updateProduct(@Body() dto: PatchProductDTO) {
-        return this.productService.patch({ data: dto });
+    async updateProduct(@AuthenticatedUser() user: UserPayload, @Body() dto: PatchProductDTO) {
+        return this.productService.patch({ userUUID: user.uuid, data: dto });
     };
 
     @Delete("/:uuid")
@@ -65,8 +65,8 @@ export class ProductController {
     @ApiResponse({ status: 404, description: 'Not found' })
     @ApiResponse({ status: 500, description: 'Internal server error' })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
-    async deleteProduct(@Param("uuid") uuid: string) {
-        return this.productService.delete({ uuid });
+    async deleteProduct(@AuthenticatedUser() user: UserPayload, @Param("uuid") uuid: string) {
+        return this.productService.delete({ userUUID: user.uuid, productUUID: uuid });
     };
 
     @Get("search")
@@ -161,8 +161,8 @@ export class ProductController {
     @ApiResponse({ status: 404, description: "No se encontro la reseña" })
     @ApiResponse({ status: 500, description: "Error al eliminar reseña" })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
-    async deleteReview(@Param("uuid") uuid: string, @Param("sku") sku: string): Promise<string> {
-        return await this.productService.deleteReview({ sku, uuid });
+    async deleteReview(@AuthenticatedUser() user: UserPayload, @Param("uuid") uuid: string, @Param("sku") sku: string): Promise<string> {
+        return await this.productService.deleteReview({ sku, uuid, userUUID: user.uuid });
     };
 
 };

@@ -1,11 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Decimal } from "@prisma/client/runtime/index-browser";
-import { Type } from "class-transformer";
-import { IsArray, IsNumber, IsObject, IsString, ValidateNested } from "class-validator";
+import { IsNumber, IsString } from "class-validator";
 import { OrderAndPaymentStatus } from "generated/prisma/enums";
 import { Order } from "mercadopago";
-import { CreateCustomerAddressDTO, GetCustomerAddressPayment, SafeCustomerAddress } from "src/customer/customer-addresses/customer-addresses.dto";
-import { CustomerAttributes, SafeCustomer } from "src/customer/customer.dto";
+import { GetCustomerAddressPayment } from "src/customer/customer-addresses/customer-addresses.dto";
+import { CustomerAttributes } from "src/customer/customer.dto";
 import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
 import { SafeOrder, SafePaymentDetails } from "../order.dto";
 

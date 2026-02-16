@@ -56,3 +56,17 @@ export class CreateShippingDTO extends OmitType(Shipping, ["id", "order_id", "cr
 export class UpdateShippingDTO extends PartialType(CreateShippingDTO) { };
 export class SafeShipping extends OmitType(Shipping, ["id", "order_id"] as const) { };
 export class CustomerOrderShippingDetails extends OmitType(SafeShipping, ["uuid", "concept", "insurance_amount"] as const) { };
+
+class SafeShippingWithOrderUUID extends SafeShipping {
+    @ApiProperty({ description: "UUID de la orden" })
+    order_uuid: string;
+}
+
+export class GetShippingDashboard {
+    @ApiProperty({ description: "Array de objetos de los envios", type: SafeShippingWithOrderUUID, isArray: true })
+    data: SafeShippingWithOrderUUID[];
+    @ApiProperty({ description: "Total de paginas", type: Number })
+    totalPages: number;
+    @ApiProperty({ description: "Total de registros", type: Number })
+    totalRecords: number;
+};

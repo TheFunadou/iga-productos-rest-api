@@ -6,6 +6,8 @@ import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
 import { UserModulePermissionsGuard } from 'src/user_auth/user_auth.module.permissions.guard';
 import { RequirePermissions } from 'src/user_auth/user_auth.module.permissions.decorator';
+import { AuthenticatedUser } from 'src/user_auth/user_auth.current_user.decorator';
+import { UserPayload } from 'src/user_auth/user_auth.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -31,8 +33,8 @@ export class CategoriesController {
     @ApiResponse({ status: 500, type: Error })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     @ApiBody({ type: CreateCategoryDTO })
-    async create(@Body() dto: CreateCategoryDTO): Promise<GetCategories> {
-        return await this.categoriesService.create({ data: dto });
+    async create(@Body() dto: CreateCategoryDTO, @AuthenticatedUser() user: UserPayload): Promise<GetCategories> {
+        return await this.categoriesService.create({ data: dto, userUUID: user.uuid });
     };
 
 
@@ -45,8 +47,8 @@ export class CategoriesController {
     @ApiResponse({ status: 500, type: Error })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     @ApiBody({ type: PatchCategoryDTO })
-    async patch(@Body() dto: PatchCategoryDTO): Promise<GetCategories> {
-        return await this.categoriesService.patch({ data: dto });
+    async patch(@Body() dto: PatchCategoryDTO, @AuthenticatedUser() user: UserPayload): Promise<GetCategories> {
+        return await this.categoriesService.patch({ data: dto, userUUID: user.uuid });
     };
 
     @Get("summary")

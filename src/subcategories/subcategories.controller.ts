@@ -7,6 +7,8 @@ import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
 import { UserModulePermissionsGuard } from 'src/user_auth/user_auth.module.permissions.guard';
 import { RequirePermissions } from 'src/user_auth/user_auth.module.permissions.decorator';
+import { AuthenticatedUser } from 'src/user_auth/user_auth.current_user.decorator';
+import { UserPayload } from 'src/user_auth/user_auth.dto';
 
 @Controller('subcategories')
 export class SubcategoriesController {
@@ -24,8 +26,8 @@ export class SubcategoriesController {
     @ApiResponse({ status: 500, description: "Error al crear la subcategoria", type: String })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     @ApiBody({ type: CreateSubcategoryDTO })
-    async create(@Body() dto: CreateSubcategoryDTO) {
-        return await this.subcategoriesService.create({ data: dto });
+    async create(@Body() dto: CreateSubcategoryDTO, @AuthenticatedUser() user: UserPayload) {
+        return await this.subcategoriesService.create({ data: dto, userUUID: user.uuid });
     };
 
     @Patch()
@@ -38,8 +40,8 @@ export class SubcategoriesController {
     @ApiResponse({ status: 500, description: "Error al actualizar la subcategoria", type: String })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     @ApiBody({ type: PatchSubcategoryDTO })
-    async update(@Body() dto: PatchSubcategoryDTO) {
-        return await this.subcategoriesService.patch({ data: dto });
+    async update(@Body() dto: PatchSubcategoryDTO, @AuthenticatedUser() user: UserPayload) {
+        return await this.subcategoriesService.patch({ data: dto, userUUID: user.uuid });
     };
 
     @Delete("/:uuid")
@@ -52,8 +54,8 @@ export class SubcategoriesController {
     @ApiResponse({ status: 500, description: "Error al eliminar la subcategoria", type: String })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     @ApiParam({ name: "uuid", description: "UUID de la subcategoria", required: true })
-    async delete(@Param("uuid") uuid: string) {
-        return await this.subcategoriesService.delete({ uuid });
+    async delete(@Param("uuid") uuid: string, @AuthenticatedUser() user: UserPayload) {
+        return await this.subcategoriesService.delete({ subcategoryUUID: uuid, userUUID: user.uuid });
     };
 
     @Get("/:category_uuid")

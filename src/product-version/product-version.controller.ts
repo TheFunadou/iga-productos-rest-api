@@ -11,6 +11,7 @@ import { OptionalCustomer } from 'src/customer_auth/customer_auth.optional.decor
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 import { OptionalCustomerAuthGuard } from 'src/customer_auth/customer_auth.optional.guard';
 import { AuthenticatedUser } from 'src/user_auth/user_auth.current_user.decorator';
+import { UserPayload } from 'src/user_auth/user_auth.dto';
 
 @Controller('product-version')
 export class ProductVersionController {
@@ -29,8 +30,8 @@ export class ProductVersionController {
     @ApiResponse({ status: 500, description: "Error al crear version de producto" })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     @ApiBody({ type: CreateProductVersionDTO })
-    async create(@Body() dto: CreateProductVersionDTO) {
-        return await this.productVersionService.create({ data: dto });
+    async create(@Body() dto: CreateProductVersionDTO, @AuthenticatedUser() user: UserPayload) {
+        return await this.productVersionService.create({ data: dto, userUUID: user.uuid });
     };
 
     @Patch()
@@ -43,8 +44,8 @@ export class ProductVersionController {
     @ApiResponse({ status: 500, description: "Error al actualizar version de producto" })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     @ApiBody({ type: PatchProductVersionDTO })
-    async update(@Body() dto: PatchProductVersionDTO) {
-        return await this.productVersionService.patch({ data: dto });
+    async update(@Body() dto: PatchProductVersionDTO, @AuthenticatedUser() user: UserPayload) {
+        return await this.productVersionService.patch({ data: dto, userUUID: user.uuid });
     };
 
     @Delete()
@@ -56,8 +57,8 @@ export class ProductVersionController {
     @ApiResponse({ status: 404, description: "No se encontro el producto padre relacionado a la version" })
     @ApiResponse({ status: 500, description: "Error al eliminar version de producto" })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
-    async delete(@Query() sku: string) {
-        return await this.productVersionService.delete({ sku });
+    async delete(@Query() sku: string, @AuthenticatedUser() user: UserPayload) {
+        return await this.productVersionService.delete({ sku, userUUID: user.uuid });
     };
 
     @Get("list/:input")
@@ -131,8 +132,8 @@ export class ProductVersionController {
     @ApiResponse({ status: 500, description: "Error al actualizar stock de version de producto" })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
     @ApiBody({ type: UpdateStockBySKUDTO })
-    async updateStock(@Body() dto: UpdateStockBySKUDTO) {
-        return await this.productVersionService.updateStock({ dto });
+    async updateStock(@Body() dto: UpdateStockBySKUDTO, @AuthenticatedUser() user: UserPayload) {
+        return await this.productVersionService.updateStock({ dto, userUUID: user.uuid });
     };
 
 

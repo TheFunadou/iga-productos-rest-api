@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { ProductReviews, ProductReviewsAttributes, ProductReviewsVersionAttributes } from "src/product/product.dto";
+import { ProductReviewsAttributes, ProductReviewsVersionAttributes } from "src/product/product.dto";
 
 
 export class Customer {

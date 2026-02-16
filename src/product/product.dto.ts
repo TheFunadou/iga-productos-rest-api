@@ -1,8 +1,7 @@
 import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
-import { ArrayNotEmpty, IsArray, IsDate, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsDate, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from "class-validator";
 import { SafeCategory } from "src/categories/categories.dto";
-import { PaginationDTO } from "src/common/DTO/pagination.dto";
 import { GetProductVersion, ProductVersion, SafeTinyProductVersionImages } from "src/product-version/product-version.dto";
 import { SafeSubcategories } from "src/subcategories/subcategories.dto";
 

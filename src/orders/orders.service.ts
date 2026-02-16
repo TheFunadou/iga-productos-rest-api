@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderItems, OrderReadyToPay } from './payment/payment.dto';
-import { GetOrders, GetOrdersQuery, GuestOrderData, CheckoutOrder, OrderRequestDTO, OrderRequestGuestDTO, GetOrderDetails } from './order.dto';
+import { GetOrders, GetOrdersQuery, GuestOrderData, CheckoutOrder, OrderRequestDTO, OrderRequestGuestDTO, GetOrderDetails, OrdersDashboardParams, GetOrdersDashboard, SafeOrder } from './order.dto';
 import { ProductVersionFindService } from 'src/product-version/product-version.find.service';
 import { OrderUtilsService } from './order.utils.service';
 import { MercadoPagoConfig, Preference as MercadoPagoPreference, Preference } from "mercadopago";
@@ -594,5 +594,54 @@ export class OrdersService {
     };
 
 
+    async dashboard({ query: { limit, page, orderby, uuid } }: { query: OrdersDashboardParams }): Promise<GetOrdersDashboard> {
+        const skip = (page - 1) * limit;
+        const orderBy = orderby || "asc";
+        let where = {};
+        if (uuid) where = { uuid };
+
+        return await this.cacheService.remember<GetOrdersDashboard>({
+            method: "staleWhileRevalidateWithLock",
+            entity: "orders:dashboard",
+            query: uuid ? { limit, page, orderby, uuid } : { limit, page, orderby },
+            aditionalOptions: {
+                ttlMilliseconds: 1000 * 60 * 15,
+                staleTimeMilliseconds: 1000 * 60 * 12
+            },
+            fallback: async () => {
+                const data = await this.prisma.order.findMany({
+                    take: limit,
+                    skip,
+                    where,
+                    orderBy: { created_at: orderBy },
+                    omit: {
+                        id: true,
+                        external_order_id: true,
+                        customer_id: true,
+                        customer_address_id: true,
+                    },
+                    include: {
+                        shipping: { select: { shipping_status: true } },
+                        customer: { select: { uuid: true } }
+                    }
+                });
+
+                const totalRecords = await this.prisma.order.count({ where });
+                const totalPages = Math.ceil(totalRecords / limit);
+                const response: GetOrdersDashboard = {
+                    data: data.map((order) => ({
+                        ...order,
+                        total_amount: order.total_amount.toString(),
+                        shipping_status: order.shipping?.shipping_status ? order.shipping.shipping_status : null,
+                        customer_uuid: order.customer?.uuid
+                    })),
+                    totalRecords,
+                    totalPages,
+                };
+                return response;
+            }
+        })
+
+    };
 
 };

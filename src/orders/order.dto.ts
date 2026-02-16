@@ -6,7 +6,6 @@ import { GetCustomerAddressPayment, CreateCustomerAddressDTO as GuestAddressDTO 
 import { CustomerAttributes } from "src/customer/customer.dto";
 import { OrderAndPaymentStatus, ShippingStatus } from "generated/prisma/enums";
 import { PaginationDTO } from "src/common/DTO/pagination.dto";
-import { SafeProductVersionImages } from "src/product-version/product-version.dto";
 import { CustomerOrderShippingDetails } from "src/shipping/shipping.dto";
 
 export class Order {
@@ -246,4 +245,35 @@ export class GetOrdersQuery extends PaginationDTO {
     @IsOptional()
     @IsIn(['recent', 'oldest'])
     orderBy: 'recent' | 'oldest';
+};
+
+export class OrdersDashboardParams extends PaginationDTO {
+    @ApiProperty({ description: "Ordenamiento (asc por defecto)", enum: ["asc", "desc"] })
+    @IsString()
+    @IsOptional()
+    @Type(() => String)
+    orderby?: "asc" | "desc";
+
+    @ApiProperty({ example: "xxxx-xxxxx-xxxx-xxxx", description: "UUID de la orden" })
+    @IsString()
+    @IsOptional()
+    uuid?: string;
+};
+
+class SafeOrderWithShippingStatusAndCustomerUUID extends SafeOrder {
+    @ApiProperty({ description: "Status del envio", enum: ShippingStatus })
+    shipping_status: ShippingStatus | null;
+
+    @ApiProperty({ description: "UUID del cliente", type: String })
+    customer_uuid?: string;
+};
+
+
+export class GetOrdersDashboard {
+    @ApiProperty({ description: "Array de objetos de las ordenes", type: SafeOrder, isArray: true })
+    data: SafeOrderWithShippingStatusAndCustomerUUID[];
+    @ApiProperty({ description: "Total de paginas", type: Number })
+    totalPages: number;
+    @ApiProperty({ description: "Total de registros", type: Number })
+    totalRecords: number;
 };

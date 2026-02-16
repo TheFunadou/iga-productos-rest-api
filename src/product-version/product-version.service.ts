@@ -3,6 +3,8 @@ import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductVersionDTO, GetStockDashboard, PatchProductVersionDTO, SafeProductVersionImages, SearchProductVersionsDTO, StockDashboardParams, UpdateStockBySKUDTO } from './product-version.dto';
 import { Decimal } from '@prisma/client/runtime/index-browser';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserLogEvent } from 'src/audit/user-log.event';
 
 @Injectable()
 export class ProductVersionService {
@@ -10,25 +12,39 @@ export class ProductVersionService {
     private readonly nodeEnv = process.env.NODE_ENV;
     constructor(
         private readonly prisma: PrismaService,
-        private readonly cacheService: CacheService
+        private readonly cache: CacheService,
+        private readonly eventEmmiter: EventEmitter2
     ) { };
 
-    async create(args: { data: CreateProductVersionDTO }) {
-        const { father_uuid, version_images, ...data } = args.data;
+    async create({ data, userUUID }: { data: CreateProductVersionDTO, userUUID: string }) {
+        const { father_uuid, version_images, ...versionAttributes } = data;
 
         return await this.prisma.$transaction(async (tx) => {
             const product = await tx.product.findUnique({ where: { uuid: father_uuid }, select: { id: true } });
             if (!product) throw new NotFoundException("No se encontro el producto padre relacionado a la version");
             const created = await tx.productVersion.create({
                 data: {
-                    ...data,
-                    sku: data.sku.toUpperCase(),
-                    unit_price: new Decimal(data.unit_price),
+                    ...versionAttributes,
+                    sku: versionAttributes.sku.toUpperCase(),
+                    unit_price: new Decimal(versionAttributes.unit_price),
                     product_id: product.id
-                }
+                },
+                select: { sku: true, id: true }
             });
             await this.createVersionImages({ tx, versionImages: version_images, productVersionId: created.id });
-            // await this.cacheService.invalidateQuery({entity: "product-version:detail"})
+            await this.cache.invalidateMultipleEntities([
+                { entity: "product:detail" },
+                { entity: "product-version:list" },
+                { entity: "product-version:stock:dashboard" }
+            ]);
+
+            this.eventEmmiter.emit("user.log", new UserLogEvent(
+                "PRODUCT_VERSION",
+                created.sku,
+                "Creación de versión de producto",
+                userUUID
+            ));
+
             return `Version ${created.sku} creada satisfactoriamente`;
         });
     };
@@ -52,7 +68,7 @@ export class ProductVersionService {
         });
     };
 
-    async patch({ data: { fatherUUID, productVersionSKU, product_version: data, version_images } }: { data: PatchProductVersionDTO }) {
+    async patch({ data: { fatherUUID, productVersionSKU, product_version: data, version_images }, userUUID }: { data: PatchProductVersionDTO, userUUID: string }) {
         return await this.prisma.$transaction(async (tx) => {
             const product = await tx.product.findUnique({ where: { uuid: fatherUUID }, select: { id: true } });
             if (!product) throw new NotFoundException("No se encontro el producto padre relacionado a la version");
@@ -80,12 +96,19 @@ export class ProductVersionService {
                 this.logger.log(`Imagenes de version ${udpated.sku} actualizadas`);
             };
             this.logger.log(`Version ${udpated.sku} actualizada satisfactoriamente`);
-            await this.cacheService.invalidateQuery({ entity: "product:detail", query: { uuid: fatherUUID } });
+            await this.cache.invalidateQuery({ entity: "product:detail", query: { uuid: fatherUUID } });
+
+            this.eventEmmiter.emit("user.log", new UserLogEvent(
+                "PRODUCT_VERSION",
+                udpated.sku,
+                "Actualización de versión de producto",
+                userUUID
+            ));
             return `Version ${udpated.sku} actualizada satisfactoriamente`;
         });
     };
 
-    async delete({ sku }: { sku: string }): Promise<string> {
+    async delete({ sku, userUUID }: { sku: string, userUUID: string }): Promise<string> {
         return await this.prisma.$transaction(async (tx) => {
             const deleted = await tx.productVersion.delete({ where: { sku }, select: { id: true, sku: true, main_version: true, product: { select: { id: true } } } });
             if (deleted.main_version) {
@@ -100,18 +123,26 @@ export class ProductVersionService {
                     data: { main_version: true }
                 })
             };
-            await this.cacheService.invalidateMultipleEntities([
+            await this.cache.invalidateMultipleEntities([
                 { entity: "product-version:search:cards" },
                 { entity: "product-version:show-details" }
             ])
             await tx.productVersionImages.deleteMany({ where: { product_version_id: deleted.id } });
+
+            this.eventEmmiter.emit("user.log", new UserLogEvent(
+                "PRODUCT_VERSION",
+                deleted.sku,
+                "Eliminación de versión de producto",
+                userUUID
+            ));
+
             return `Version ${deleted.sku} eliminada exitosamente`;
         });
     }
 
     async list(args: { input: string }): Promise<SearchProductVersionsDTO[]> {
         if (!args.input || args.input.length < 4) return [];
-        return await this.cacheService.remember<SearchProductVersionsDTO[]>({
+        return await this.cache.remember<SearchProductVersionsDTO[]>({
             method: "staleWhileRevalidate",
             entity: "product-version:list",
             query: { input: args.input },
@@ -139,7 +170,7 @@ export class ProductVersionService {
     async stockDashboard({ params: { orderBy, limit, page, type, value } }: { params: StockDashboardParams }): Promise<GetStockDashboard> {
         if (!limit || !page) throw new BadRequestException("Los parametros de paginacion son requeridos");
         if (!orderBy) throw new BadRequestException("El ordenamiento es requerido");
-        return await this.cacheService.remember({
+        return await this.cache.remember({
             method: "staleWhileRevalidateWithLock",
             entity: "product-version:stock:dashboard",
             query: { params: { orderBy, limit, page, type, value } },
@@ -200,7 +231,7 @@ export class ProductVersionService {
         })
     }
 
-    async updateStock({ dto: { sku, stock } }: { dto: UpdateStockBySKUDTO }) {
+    async updateStock({ dto: { sku, stock }, userUUID }: { dto: UpdateStockBySKUDTO, userUUID: string }) {
         return await this.prisma.$transaction(async (tx) => {
             const productVersion = await tx.productVersion.findUnique({ where: { sku }, select: { id: true } });
             if (!productVersion) throw new NotFoundException("No se encontro la version de producto");
@@ -209,8 +240,13 @@ export class ProductVersionService {
                 this.logger.error(`Ocurrio un error inesperado al actualizar el stock del version ${sku}`);
                 throw new BadRequestException(`Ocurrio un error inesperado al actualizar el stock del version ${sku}`, this.nodeEnv === "DEV" && error);
             });
-
-            await this.cacheService.invalidateEntity({ entity: "product-version:stock:dashboard" })
+            await this.cache.invalidateEntity({ entity: "product-version:stock:dashboard" });
+            this.eventEmmiter.emit("user.log", new UserLogEvent(
+                "PRODUCT_VERSION",
+                sku,
+                "Actualización de stock de versión de producto",
+                userUUID
+            ));
             return `Stock de la version ${sku} actualizado satisfactoriamente`;
         });
     };
