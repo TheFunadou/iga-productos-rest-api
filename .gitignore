@@ -56,3 +56,5 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /generated/prisma
+
+client_secret_1091552531175-1favop40fs5ln1g6vetmfi0mrft7igsf.apps.googleusercontent.com.json

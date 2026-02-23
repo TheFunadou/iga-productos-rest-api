@@ -70,7 +70,6 @@ export class UserService {
         });
 
         await this.cache.invalidateEntity({ entity: "users:dashboard" });
-        console.log("UUID del usuario:", userUUID)
         this.eventEmmiter.emit("user.log", new UserLogEvent(
             "USER",
             uuid,

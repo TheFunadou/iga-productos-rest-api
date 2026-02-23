@@ -38,7 +38,7 @@ export class CategoriesController {
     };
 
 
-    @Patch("/:uuid")
+    @Patch()
     @UseGuards(RequiredUserAuthGuard, UserCsrfAuthGuard, UserModulePermissionsGuard)
     @RequirePermissions({ CATEGORIES: ["UPDATE"] })
     @ApiOperation({ summary: "Actualizar una categoría" })

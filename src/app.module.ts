@@ -24,6 +24,7 @@ import { ShippingModule } from './shipping/shipping.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AuditModule } from './audit/audit.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ShippingModule,
     NotificationsModule,
     AuditModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService, UserService],

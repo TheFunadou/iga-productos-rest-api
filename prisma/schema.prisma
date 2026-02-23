@@ -506,6 +506,7 @@ model ShoppingCart {
   id          String              @id @default(dbgenerated("gen_random_uuid()"))
   customer_id String              @unique
   status      ShoppingCartStatus  @default(ACTIVE)
+  version     Int                 @default(1)
   updated_at  DateTime            @updatedAt
   customer    Customer            @relation("shopping_cart:customer", fields: [customer_id], references: [id], onDelete: Cascade)
   items       ShoppingCartItems[] @relation("shopping_cart_items:shopping_cart")
@@ -522,6 +523,7 @@ model ShoppingCartItems {
   product_version_id String
   quantity           Int            @default(1)
   is_checked         Boolean        @default(true)
+  snapshot_json      Json?
   updated_at         DateTime       @updatedAt
   shopping_cart      ShoppingCart   @relation("shopping_cart_items:shopping_cart", fields: [shopping_cart_id], references: [id], onDelete: Cascade)
   product_version    ProductVersion @relation("shopping_cart_items:product_version", fields: [product_version_id], references: [id], onDelete: Cascade)

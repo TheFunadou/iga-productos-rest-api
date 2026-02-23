@@ -1,13 +1,13 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { MercadoPagoConfig, Payment } from "mercadopago";
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GuestOrderData } from '../order.dto';
 import { GetPaidOrderDetails, OrderItems } from './payment.dto';
-import { ShoppingCartDTO } from 'src/customer/shopping-cart/shopping-cart.dto';
 import { OrderAndPaymentStatus } from 'generated/prisma/enums';
+import { ConfigService } from '@nestjs/config';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 @Injectable()
 export class PaymentService {
@@ -15,18 +15,27 @@ export class PaymentService {
     private readonly mercadoPagoAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN ?? process.env.MERCADO_PAGO_ACCESS_TOKEN_TEST;
     private readonly mercadoPagoClient: MercadoPagoConfig;
     private readonly mercadoPagoPayment: Payment;
+    private readonly nodeEnv?: string;
+    private readonly mercadoPagoWebhookSecret?: string;
 
     constructor(
         private readonly cacheService: CacheService,
         @InjectQueue("payment-processing") private readonly paymentQueue: Queue,
         private readonly prisma: PrismaService,
+        private readonly config: ConfigService
     ) {
         this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: this.mercadoPagoAccessToken! });
         this.mercadoPagoPayment = new Payment(this.mercadoPagoClient);
+        this.nodeEnv = this.config.get<string>("NODE_ENV");
+        this.mercadoPagoWebhookSecret = this.config.get<string>("MERCADO_PAGO_WEBHOOK_SECRET");
     };
 
     async getMercadoPagoPaymentInfo(args: { orderId: string }) {
         return await this.mercadoPagoPayment.get({ id: args.orderId }).catch((error) => {
+            if (this.nodeEnv === "DEV") {
+                this.logger.error(`Error al obtener la información de la orden de pago: ${args.orderId}, ${error}`);
+            };
+            this.logger.error("Error al obtener la información de la orden de pago");
             throw new BadRequestException("Error al obtener la información de la orden de pago");
         });
     };
@@ -69,16 +78,15 @@ export class PaymentService {
     };
 
     async getOrderStatusByUUID(args: { orderUUID: string }): Promise<OrderProcessingStatus | null> {
-        try {
-            const status = await this.cacheService.getData<OrderProcessingStatus>({
-                entity: "payment:status:uuid",
-                query: { orderUUID: args.orderUUID }
-            });
-            return status || null;
-        } catch (error) {
-            this.logger.error(`Error al obtener el estado de la orden de pago: ${args.orderUUID}, ${error}`);
-            return null;
-        }
+        const status = await this.cacheService.getData<OrderProcessingStatus>({
+            entity: "payment:status:uuid",
+            query: { orderUUID: args.orderUUID }
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(`Error al obtener el status del la orden, ${error}`);
+            this.logger.error("Error al obtener el status del la orden");
+            throw new BadRequestException("Error al obtener el status de la orden");
+        });
+        return status || null;
     };
 
 
@@ -235,143 +243,60 @@ export class PaymentService {
         return await this.getDetails({ orderUUID, queryKey, orderStatus: order.status })
     };
 
-    // async getProccessedPaymentDetails(args: { orderUUID: string, customerUUID?: string }): Promise<GetSuccessPaymentProcessed> {
-    //     const queryKey = args.customerUUID ? { orderUUID: args.orderUUID, customerUUID: args.customerUUID } : { orderUUID: args.orderUUID };
-    //     return await this.cacheService.remember({
-    //         method: "simpleFind",
-    //         entity: "order:proccesed:details",
-    //         query: queryKey,
-    //         aditionalOptions: {
-    //             ttlMilliseconds: 1000 * 60 * 5
-    //         },
-    //         fallback: async () => {
-    //             if (args.customerUUID) {
-    //                 const order = await this.prisma.order.findUnique({
-    //                     where: { uuid: args.orderUUID, customer: { uuid: args.customerUUID } },
-    //                     select: {
-    //                         uuid: true,
-    //                         payment_provider: true,
-    //                         coupon_code: true,
-    //                         customer_address: {
-    //                             omit: {
-    //                                 id: true,
-    //                                 customer_id: true,
-    //                                 created_at: true,
-    //                                 updated_at: true
-    //                             }
-    //                         },
-    //                         order_items: {
-    //                             select: {
-    //                                 quantity: true,
-    //                                 unit_price: true,
-    //                                 subtotal: true,
-    //                                 product_version: {
-    //                                     select: {
-    //                                         unit_price: true,
-    //                                         sku: true,
-    //                                         color_line: true,
-    //                                         color_name: true,
-    //                                         color_code: true,
-    //                                         stock: true,
-    //                                         product_version_images: {
-    //                                             where: { main_image: true },
-    //                                             select: { main_image: true, image_url: true },
-    //                                             orderBy: { main_image: "desc" as const }
-    //                                         },
-    //                                         product: {
-    //                                             select: {
-    //                                                 id: true,
-    //                                                 category_id: true,
-    //                                                 product_name: true,
-    //                                                 category: { select: { name: true } },
-    //                                                 subcategories: { select: { subcategories: { select: { uuid: true, description: true } }, }, }
-    //                                             }
-    //                                         }
-    //                                     }
-    //                                 }
-    //                             }
-    //                         }
-    //                     }
-    //                 });
-    //                 if (!order) throw new NotFoundException("Orden no encontrada");
 
+    /**
+     * Verify the signature of the MercadoPago webhook using HMAC-SHA256.
+     * Throws UnauthorizedException if the signature is invalid.
+     * @see https://www.mercadopago.com.mx/developers/es/docs/checkout-pro/payment-notifications
+    */
+    verifyWebhookSignature(args: {
+        xSignature: string;
+        xRequestId: string;
+        dataId: string;
+    }): void {
+        const { xSignature, xRequestId, dataId } = args;
 
-    //                 // const shoppingCart:ShoppingCartDTO[] = order.order_items.map((items) => ({
-    //                 //     category: items.product_version.product.category.name,
-    //                 //     isChecked: true,
-    //                 //     product_images: items.product_version.product_version_images,
-    //                 //     product_name: items.product_version.product.product_name,
-    //                 //     quantity: items.quantity,
-    //                 //     product_version: {
-    //                 //         color_code: items.product_version.color_code,
-    //                 //         color_name: items.product_version.color_name,
-    //                 //         color_line: items.product_version.color_line,
-    //                 //         unit_price: items.product_version.unit_price,
-    //                 //         sku: items.product_version.sku,
-    //                 //         stock: items.product_version.stock,
-    //                 //         code_bar: null,
-    //                 //         unit_price_with_discount: items.
-    //                 //     }
-    //                 // }))
+        if (!this.mercadoPagoWebhookSecret) {
+            this.logger.error('MERCADO_PAGO_WEBHOOK_SECRET no está configurado');
+            throw new UnauthorizedException('Webhook secret no configurado');
+        }
 
-    //                 return order;
-    //             } else {
-    //                 const order = await this.prisma.order.findUnique({
-    //                     where: { uuid: args.orderUUID, customer: { uuid: args.customerUUID } },
-    //                     select: {
-    //                         uuid: true,
-    //                         payment_provider: true,
-    //                         coupon_code: true,
-    //                         order_items: {
-    //                             select: {
-    //                                 quantity: true,
-    //                                 unit_price: true,
-    //                                 subtotal: true,
-    //                                 product_version: {
-    //                                     select: {
-    //                                         unit_price: true,
-    //                                         sku: true,
-    //                                         color_line: true,
-    //                                         color_name: true,
-    //                                         color_code: true,
-    //                                         stock: true,
-    //                                         product_version_images: {
-    //                                             where: { main_image: true },
-    //                                             select: { main_image: true, image_url: true },
-    //                                             orderBy: { main_image: "desc" as const }
-    //                                         },
-    //                                         product: {
-    //                                             select: {
-    //                                                 id: true,
-    //                                                 category_id: true,
-    //                                                 product_name: true,
-    //                                                 category: { select: { name: true } },
-    //                                                 subcategories: { select: { subcategories: { select: { uuid: true, description: true } }, }, }
-    //                                             }
-    //                                         }
-    //                                     }
-    //                                 }
-    //                             }
-    //                         }
-    //                     }
-    //                 });
+        // Extraer ts y v1 del header x-signature
+        // Formato: "ts=<timestamp>,v1=<hash>"
+        const parts = xSignature.split(',');
+        let ts: string | undefined;
+        let v1: string | undefined;
 
-    //                 if (!order) throw new NotFoundException("Orden no encontrada");
+        for (const part of parts) {
+            const [key, value] = part.split('=');
+            if (key?.trim() === 'ts') ts = value?.trim();
+            if (key?.trim() === 'v1') v1 = value?.trim();
+        }
 
-    //                 const guestOrderData = await this.cacheService.getData<GuestOrderData | null>({
-    //                     entity: "order:guest:customer:data",
-    //                     query: { orderUUID: args.orderUUID }
-    //                 });
+        if (!ts || !v1) {
+            throw new UnauthorizedException('Formato de x-signature inválido');
+        }
 
-    //                 if (!guestOrderData) throw new NotFoundException("Datos del cliente invitado no encontrados");
+        // Construir el template según la documentación oficial de MercadoPago
+        const signedTemplate = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
 
-    //                 return {
-    //                     address: guestOrderData.address,
-    //                     items: [],
+        // Generar HMAC-SHA256
+        const generatedHash = createHmac('sha256', this.mercadoPagoWebhookSecret)
+            .update(signedTemplate)
+            .digest('hex');
 
-    //                 }
-    //             }
-    //         }
-    //     });
-    // };
+        // Comparación segura en tiempo constante para evitar timing attacks
+        const hashBuffer = Buffer.from(generatedHash, 'hex');
+        const v1Buffer = Buffer.from(v1, 'hex');
+
+        if (
+            hashBuffer.length !== v1Buffer.length ||
+            !timingSafeEqual(hashBuffer, v1Buffer)
+        ) {
+            this.logger.warn(`Firma de webhook inválida para dataId: ${dataId}`);
+            throw new UnauthorizedException('Firma del webhook inválida');
+        }
+
+        this.logger.log(`Webhook verificado correctamente para dataId: ${dataId}`);
+    };
 };

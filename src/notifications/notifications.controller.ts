@@ -5,8 +5,8 @@ import { NotificationsService } from './notifications.service';
 export class NotificationsController {
     constructor(private readonly notificationsService: NotificationsService) { }
 
-    @Post()
-    async testSendEmail() {
-        await this.notificationsService.sendEmail();
-    }
+    // @Post()
+    // async testSendEmail() {
+    //     await this.notificationsService.sendEmail();
+    // }
 }

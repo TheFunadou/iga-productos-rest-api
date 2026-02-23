@@ -1,39 +1,66 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCustomerDTO, GetCustomerReviews } from './customer.dto';
 import * as bcrypt from 'bcrypt';
+import { CustomerAuthService } from 'src/customer_auth/customer_auth.service';
+import { ConfigService } from '@nestjs/config';
 
 
 @Injectable()
 export class CustomerService {
+    private readonly logger = new Logger(CustomerService.name);
+    private readonly nodeEnv: string;
     constructor(
         private readonly prisma: PrismaService,
-        private readonly cacheService: CacheService
-    ) { };
-
+        private readonly cache: CacheService,
+        private readonly auth: CustomerAuthService,
+        private readonly config: ConfigService
+    ) {
+        this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
+    };
 
     async register(args: { data: CreateCustomerDTO }) {
+        const validation = await this.auth.validateToken({
+            email: args.data.email,
+            sessionId: args.data.session_id,
+            token: args.data.token,
+            type: "verification"
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al validar el token");
+            throw new BadRequestException("Ocurrio un error inesperado al validar el token");
+        });
+        if (!validation) throw new BadRequestException("Verificación invalida, ingrese nuevamente el código de verificación");
         if (args.data.password !== args.data.confirm_password) throw new Error("Las contraseñas no coinciden");
         const hashedPassword = await bcrypt.hash(args.data.password, 12);
-        const { password, confirm_password, ...data } = args.data;
-        await this.prisma.customer.create({
-            data: {
-                ...data,
-                accounts: {
-                    create: {
-                        password: hashedPassword,
-                        account_id: data.email,
-                        provider_id: "credentials"
-                    }
+        const { password, confirm_password, token, session_id, ...data } = args.data;
+        await this.prisma.$transaction(async (tx) => {
+            const customer = await tx.customer.create({
+                data: { ...data, email_verified: validation },
+                select: { id: true }
+            });
+
+            await tx.customerAccount.create({
+                data: {
+                    customer_id: customer.id,
+                    password: hashedPassword,
+                    account_id: data.email,
+                    provider_id: "credentials"
                 }
-            }
+            })
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al crear al cliente");
+            throw new BadRequestException("Ocurrio un error inesperado al crear al cliente")
+        }).then(async () => {
+            await this.cache.removeData({ entity: `register:verification:token:${args.data.email}`, query: { sessionId: args.data.session_id } });
         });
         return `Registro completado exitosamente`
     };
 
     async findAll(args: { page: number, limit: number }) {
-        return await this.cacheService.remember({
+        return await this.cache.remember({
             method: "staleWhileRevalidateWithLock",
             entity: "customer:all",
             query: { page: args.page, limit: args.limit },
@@ -49,7 +76,7 @@ export class CustomerService {
     };
 
     async findUnique(args: { uuid: string }) {
-        return await this.cacheService.remember({
+        return await this.cache.remember({
             method: "staleWhileRevalidate",
             entity: "customer",
             query: { customer: args.uuid },
@@ -61,7 +88,7 @@ export class CustomerService {
 
 
     async findManyReviews(args: { customerUUID: string }): Promise<GetCustomerReviews[]> {
-        return await this.cacheService.remember({
+        return await this.cache.remember({
             method: "staleWhileRevalidate",
             entity: "customer:product-version:reviews",
             query: { customerUUID: args.customerUUID },

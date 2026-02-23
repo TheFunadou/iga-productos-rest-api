@@ -23,10 +23,11 @@ export class PaymentController {
         @Headers('x-signature') xSignature: string,
         @Headers('x-request-id') xRequestId: string,
     ) {
+        // Verify signature before processing anything
+        if (xSignature && xRequestId) this.paymentService.verifyWebhookSignature({ xSignature, xRequestId, dataId });
 
         if (type !== "payment") return { success: true, message: "Ignored non-payment notification" };
-        // Firma del webhook
-        // if(xSignature && xRequestId) this.paymentService.verifyWebhookSignature({xSignature,xRequestId,dataId});
+
         await this.cacheService.setData<OrderProcessingStatus>({
             entity: "payment:status",
             query: { externalOrderId: dataId },
@@ -41,6 +42,7 @@ export class PaymentController {
 
         return { success: true };
     };
+
 
     @Get('status/:externalOrderId')
     @ApiOperation({ summary: "Obtiene el estado de procesamiento de un pago por ID externo" })

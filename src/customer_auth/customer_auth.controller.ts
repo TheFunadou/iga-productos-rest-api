@@ -1,11 +1,13 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { CustomerAuthService } from './customer_auth.service';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { AuthCustomer, CustomerCredentialsDTO, CustomerPayload } from './customer_auth.dto';
+import { AuthCustomer, CustomerCredentialsDTO, CustomerPayload, GoogleAuthDTO, RestorePasswordAuthDTO, RestorePasswordPublicDTO } from './customer_auth.dto';
 import { Response as ExpressResponse, Request as ExpressRequest } from 'express';
 import { RequiredCustomerAuthGuard } from './customer_auth.required.guard';
 import { AuthenticatedCustomer } from './customer_auth.current.decorator';
 import { ConfigService } from '@nestjs/config';
+import { OptionalCustomerAuthGuard } from './customer_auth.optional.guard';
+import { OptionalCustomer } from './customer_auth.optional.decorator';
 
 @Controller('customer-auth')
 export class CustomerAuthController {
@@ -61,6 +63,32 @@ export class CustomerAuthController {
         return { payload: login.payload, csrfToken: login.csrfToken };
     };
 
+    @Post("login/google")
+    @ApiOperation({ summary: "Inicia sesión con Google OAuth" })
+    @ApiResponse({ status: 201, description: "Sesión iniciada exitosamente con Google", type: AuthCustomer })
+    @ApiResponse({ status: 401, description: "Token de Google inválido o expirado" })
+    @ApiResponse({ status: 400, description: "No se pudo obtener información del perfil de Google" })
+    @ApiBody({ type: GoogleAuthDTO })
+    async loginWithGoogle(
+        @Body() dto: GoogleAuthDTO,
+        @Res({ passthrough: true }) response: ExpressResponse,
+    ): Promise<AuthCustomer> {
+        const login = await this.customerAuthService.loginWithGoogle(dto);
+        response.cookie("iga_customer_access_token", login.access_token, {
+            httpOnly: true,
+            secure: this.nodeEnv === "PROD",
+            sameSite: this.nodeEnv === "PROD" ? "strict" : "lax",
+            maxAge: 1000 * 60 * 60 * 24,
+        });
+        response.cookie("iga_customer_csrf_token", login.csrfToken, {
+            httpOnly: false,
+            secure: this.nodeEnv === "PROD",
+            sameSite: this.nodeEnv === "PROD" ? "strict" : "lax",
+            maxAge: 1000 * 60 * 60 * 24,
+        });
+        return { payload: login.payload, csrfToken: login.csrfToken };
+    };
+
     @Post("logout")
     @UseGuards(RequiredCustomerAuthGuard)
     @ApiOperation({ summary: "Cierra sesión de un usuario" })
@@ -87,5 +115,82 @@ export class CustomerAuthController {
         @AuthenticatedCustomer() user: CustomerPayload
     ): Promise<AuthCustomer> {
         return await this.customerAuthService.getProfile({ uuid: user.uuid });
+    };
+
+    @Post("send/verification-token")
+    @ApiOperation({ summary: "Envia un token de verificación al correo del usuario" })
+    @ApiResponse({ status: 200, description: "Token enviado exitosamente" })
+    @ApiResponse({ status: 500, description: "Error al enviar el token" })
+    async sendTokenToEmail(
+        @Body() dto: { sessionId: string, email: string }
+    ): Promise<string> {
+        await this.customerAuthService.sendTokenToEmail({ sessionId: dto.sessionId, email: dto.email, type: "verification" });
+        return "Código de verificación enviado a tu correo";
+    };
+
+    @Post("resend/verification-token")
+    @ApiOperation({ summary: "Reenvia un token de verificación al correo del usuario" })
+    @ApiResponse({ status: 200, description: "Token reenviado exitosamente" })
+    @ApiResponse({ status: 500, description: "Error al reenviar el token" })
+    async resendTokenToEmail(
+        @Body() dto: { sessionId: string, email: string }
+    ): Promise<string> {
+        await this.customerAuthService.resendTokenToEmail({ sessionId: dto.sessionId, email: dto.email, type: "verification" });
+        return "Código de verificación reenviado a tu correo";
+    };
+
+    @Post("validate/restore-password-token")
+    @UseGuards(OptionalCustomerAuthGuard)
+    @ApiOperation({ summary: "Valida un token de restablecimiento de contraseña" })
+    @ApiResponse({ status: 200, description: "Token validado exitosamente" })
+    @ApiResponse({ status: 500, description: "Error al validar el token" })
+    async validateRestorePasswordToken(
+        @Body() dto: { sessionId: string, email: string, restorePasswordToken: string }
+    ): Promise<boolean> {
+        return await this.customerAuthService.validateRestorePasswordToken({ sessionId: dto.sessionId, email: dto.email, token: dto.restorePasswordToken });
+    };
+
+    @Post("send/restore-password-token")
+    @ApiOperation({ summary: "Envia un token de restablecimiento de contraseña al correo del usuario" })
+    @ApiResponse({ status: 200, description: "Token enviado exitosamente" })
+    @ApiResponse({ status: 500, description: "Error al enviar el token" })
+    async sendRestorePasswordToken(
+        @Body() dto: { sessionId: string, email: string },
+    ): Promise<string> {
+        await this.customerAuthService.sendRestorePasswordTokenToEmail({ sessionId: dto.sessionId, email: dto.email });
+        return "Código de restablecimiento de contraseña enviado a tu correo";
+    };
+
+    @Post("resend/restore-password-token")
+    @ApiOperation({ summary: "Reenvia un token de restablecimiento de contraseña al correo del usuario" })
+    @ApiResponse({ status: 200, description: "Token reenviado exitosamente" })
+    @ApiResponse({ status: 500, description: "Error al reenviar el token" })
+    async resendRestorePasswordToken(
+        @Body() dto: { sessionId: string, email: string }
+    ): Promise<string> {
+        await this.customerAuthService.resendTokenToEmail({ sessionId: dto.sessionId, email: dto.email, type: "restore-password" });
+        return "Código de restablecimiento de contraseña reenviado a tu correo";
+    };
+
+    @Post("restore-password/public")
+    @ApiOperation({ summary: "Restablece la contraseña del usuario" })
+    @ApiResponse({ status: 200, description: "Contraseña restablecida exitosamente" })
+    @ApiResponse({ status: 500, description: "Error al restablecer la contraseña" })
+    async restorePasswordPublic(
+        @Body() dto: RestorePasswordPublicDTO,
+    ): Promise<string> {
+        return await this.customerAuthService.restorePasswordPublic({ dto });
+    };
+
+    @Post("restore-password/auth")
+    @UseGuards(RequiredCustomerAuthGuard)
+    @ApiOperation({ summary: "Restablece la contraseña del usuario" })
+    @ApiResponse({ status: 200, description: "Contraseña restablecida exitosamente" })
+    @ApiResponse({ status: 500, description: "Error al restablecer la contraseña" })
+    async restorePasswordAuth(
+        @Body() dto: RestorePasswordAuthDTO,
+        @OptionalCustomer() customer: CustomerPayload
+    ): Promise<string> {
+        return await this.customerAuthService.restorePasswordAuth({ dto, customerUUID: customer.uuid });
     };
 };

@@ -59,8 +59,8 @@ export class CategoriesService {
             where: { uuid: data.uuid }, data
         }).catch((error) => {
             if (this.nodeEnv === "DEV") this.logger.error(error);
-            this.logger.error("Error al actualizar la oferta");
-            throw new BadRequestException("Error al actualizar la oferta");
+            this.logger.error("Error al actualizar la categoría");
+            throw new BadRequestException("Error al actualizar la categoría");
         });
         await this.cacheService.invalidateMultipleEntities([
             { entity: "categories" },

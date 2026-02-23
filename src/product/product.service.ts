@@ -129,7 +129,7 @@ export class ProductService {
         });
         await this.cacheService.invalidateMultipleEntities([
             { entity: "products" },
-            { entity: "product:detail" }
+            { entity: "product:detail" },
         ]);
 
         this.eventEmmiter.emit("user.log", new UserLogEvent(

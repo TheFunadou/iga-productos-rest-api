@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { CustomerJwtStrategy } from './customer.auth.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { CacheModule } from 'src/cache/cache.module';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   providers: [CustomerAuthService, CustomerJwtStrategy],
@@ -17,6 +18,9 @@ import { CacheModule } from 'src/cache/cache.module';
       signOptions: { expiresIn: '24h' }
     }),
     PrismaModule,
-    CacheModule]
+    CacheModule,
+    NotificationsModule
+  ],
+  exports: [CustomerAuthService]
 })
 export class CustomerAuthModule { }

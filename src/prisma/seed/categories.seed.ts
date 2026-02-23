@@ -28,7 +28,7 @@ main()
         })
     .catch(
         async (err) => {
-            console.error("❌ Error al crear las categorías:", err);
+            console.error("Error al crear las categorías:", err);
             await prisma.$disconnect();
             process.exit();
         })

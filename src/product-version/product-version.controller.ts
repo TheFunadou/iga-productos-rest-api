@@ -48,7 +48,7 @@ export class ProductVersionController {
         return await this.productVersionService.patch({ data: dto, userUUID: user.uuid });
     };
 
-    @Delete()
+    @Delete(":sku")
     @UseGuards(RequiredUserAuthGuard, UserCsrfAuthGuard, UserModulePermissionsGuard)
     @RequirePermissions({ PRODUCTS: ["DELETE"] })
     @ApiOperation({ description: "Eliminar version de producto" })
@@ -57,7 +57,7 @@ export class ProductVersionController {
     @ApiResponse({ status: 404, description: "No se encontro el producto padre relacionado a la version" })
     @ApiResponse({ status: 500, description: "Error al eliminar version de producto" })
     @ApiHeader({ name: "x-csrf-token", description: "Token CSRF", required: true })
-    async delete(@Query() sku: string, @AuthenticatedUser() user: UserPayload) {
+    async delete(@Param("sku") sku: string, @AuthenticatedUser() user: UserPayload) {
         return await this.productVersionService.delete({ sku, userUUID: user.uuid });
     };
 

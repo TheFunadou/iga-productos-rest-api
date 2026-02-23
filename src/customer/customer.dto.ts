@@ -140,6 +140,7 @@ export class CustomerSession {
 export class SafeCustomer extends OmitType(Customer, ["id", "created_at", "updated_at"] as const) { };
 // 
 export class CustomerAttributes extends PickType(Customer, ["name", "last_name", "email"] as const) { };
+
 export class CreateCustomerDTO extends CustomerAttributes {
     @ApiProperty({ description: "Contraseña del cliente" })
     @IsString()
@@ -150,6 +151,16 @@ export class CreateCustomerDTO extends CustomerAttributes {
     @IsString()
     @IsNotEmpty({ message: "La confirmacion de la contraseña no puede estar vacia" })
     confirm_password: string;
+
+    @ApiProperty({ description: "Token de validacion" })
+    @IsString()
+    @IsNotEmpty({ message: "El token de validacion no puede estar vacio" })
+    token: string;
+
+    @ApiProperty({ description: "Token de sesion" })
+    @IsString()
+    @IsNotEmpty({ message: "El token de sesion no puede estar vacio" })
+    session_id: string;
 };
 
 
