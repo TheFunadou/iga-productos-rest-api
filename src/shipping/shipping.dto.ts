@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
 import { Decimal } from "@prisma/client/runtime/client";
-import { IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import { ShippingStatus } from "generated/prisma/enums";
 
 
@@ -53,7 +53,12 @@ export class Shipping {
 };
 
 export class CreateShippingDTO extends OmitType(Shipping, ["id", "order_id", "created_at", "updated_at", "boxes_count", "shipping_amount" as const]) { };
-export class UpdateShippingDTO extends PartialType(CreateShippingDTO) { };
+export class UpdateShippingDTO extends PartialType(CreateShippingDTO) {
+    @ApiProperty({ description: "UUID de la orden de envio" })
+    @IsString()
+    @IsNotEmpty({ message: "El UUID de la orden de envio no puede estar vacia" })
+    uuid: string;
+};
 export class SafeShipping extends OmitType(Shipping, ["id", "order_id"] as const) { };
 export class CustomerOrderShippingDetails extends OmitType(SafeShipping, ["uuid", "concept", "insurance_amount"] as const) { };
 

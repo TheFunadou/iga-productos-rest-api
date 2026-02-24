@@ -1,18 +1,22 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateShippingDTO, GetShippingDashboard } from './shipping.dto';
+import { CreateShippingDTO, GetShippingDashboard, UpdateShippingDTO } from './shipping.dto';
 import { Decimal } from '@prisma/client/runtime/client';
 import { OrdersDashboardParams } from 'src/orders/order.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ShippingService {
     private readonly logger = new Logger(ShippingService.name);
-
+    private readonly nodeEnv: string;
     constructor(
         private readonly prisma: PrismaService,
         private readonly cache: CacheService,
-    ) { };
+        private readonly config: ConfigService
+    ) {
+        this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
+    };
 
     async createShippingByApprovedOrder(args: { tx?: any, orderId: string, dto: CreateShippingDTO }) {
         const shippingCost = 264.00; //Mexican pesos
@@ -106,6 +110,22 @@ export class ShippingService {
                 return response;
             }
         })
+    };
+
+    async updateShipping({ dto }: { dto: UpdateShippingDTO }) {
+        const { uuid, ...data } = dto;
+        const shippingOrder = this.prisma.shipping.findUnique({ where: { uuid } });
+        if (!shippingOrder) throw new NotFoundException("Orden de envio no encontrada");
+
+        await this.prisma.shipping.update({
+            where: { uuid: dto.uuid }, data
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al actualizar la orden de envio");
+            throw new BadRequestException("Error al actualizar la orden de envio");
+        });
+
+        return `Orden de envio ${uuid} actualizada satisfactoriamente`;
     };
 
 };

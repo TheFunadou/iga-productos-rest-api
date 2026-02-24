@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsIn, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsEnum, IsIn, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
 import { OrderItems, OrderResume, OrderShoppingCartDTO } from "./payment/payment.dto";
 import { GetCustomerAddressPayment, CreateCustomerAddressDTO as GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
 import { CustomerAttributes } from "src/customer/customer.dto";
@@ -276,4 +276,14 @@ export class GetOrdersDashboard {
     totalPages: number;
     @ApiProperty({ description: "Total de registros", type: Number })
     totalRecords: number;
+};
+
+export class UpdateOrderStatusDTO {
+    @ApiProperty({ description: "UUID de la orden", type: String })
+    @IsString()
+    orderUUID: string;
+
+    @ApiProperty({ description: "Estado de la orden", enum: OrderAndPaymentStatus })
+    @IsEnum(OrderAndPaymentStatus)
+    status: OrderAndPaymentStatus;
 };

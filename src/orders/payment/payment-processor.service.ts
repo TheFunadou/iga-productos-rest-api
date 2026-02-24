@@ -9,6 +9,7 @@ import { Decimal } from "@prisma/client/runtime/index-browser";
 import { OrderPaymentDetails } from "generated/prisma/client";
 import { ShippingService } from "src/shipping/shipping.service";
 import { ShoppingCartService } from "src/customer/shopping-cart/shopping-cart.service";
+import { NotificationsService } from "src/notifications/notifications.service";
 
 
 @Injectable()
@@ -19,9 +20,10 @@ export class PaymentProcessorService {
 
     constructor(
         private readonly prisma: PrismaService,
-        private readonly cacheService: CacheService,
-        private readonly shippingService: ShippingService,
-        private readonly shoppingCartService: ShoppingCartService
+        private readonly cache: CacheService,
+        private readonly shipping: ShippingService,
+        private readonly shoppingCart: ShoppingCartService,
+        private readonly notifications: NotificationsService
     ) {
         const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN ?? process.env.MERCADO_PAGO_ACCESS_TOKEN_TEST;
         this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: accessToken! });
@@ -117,7 +119,7 @@ export class PaymentProcessorService {
     };
 
     private async updateProcessingStatus(args: { externalOrderId: string, status: OrderProcessingStatus }) {
-        await this.cacheService.setData<OrderProcessingStatus>({
+        await this.cache.setData<OrderProcessingStatus>({
             entity: "payment:status",
             query: { externalOrderId: args.externalOrderId },
             data: args.status,
@@ -187,16 +189,72 @@ export class PaymentProcessorService {
                 };
 
                 if (orderStatus === "APPROVED" || orderStatus === "PENDING") {
-                    await this.shippingService.createShippingByApprovedOrder({
+                    await this.shipping.createShippingByApprovedOrder({
                         tx, orderId, dto: {
                             concept: "Envio de productos",
                             shipping_status: orderStatus === "APPROVED" ? "IN_PREPARATION" : "STAND_BY",
                         }
                     });
 
-                    await this.shoppingCartService.updateShoppingCartByApprovedOrder({ customerUUID, orderId });
+                    if (orderStatus === "APPROVED") {
+                        try {
+                            // Obtener la orden con los datos adicionales estrictos que pide la plantilla de email
+                            const orderForEmail = await tx.order.findUnique({
+                                where: { id: orderId },
+                                include: {
+                                    customer: { select: { email: true } },
+                                    order_items: {
+                                        include: {
+                                            product_version: {
+                                                include: {
+                                                    product: { select: { product_name: true } },
+                                                    product_version_images: { where: { main_image: true }, select: { image_url: true } }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            });
 
-                    await this.cacheService.invalidateQuery({ entity: "order:paid:details", query: customerUUID ? { orderUUID, customerUUID } : { orderUUID } });
+                            if (orderForEmail) {
+                                // Si es guest el correo vendrá del payload de MercadoPago
+                                const emailTo = orderForEmail.customer?.email || payment.payer?.email;
+
+                                if (emailTo) {
+                                    const itemsForEmail = orderForEmail.order_items.map(item => {
+                                        const mainImage = item.product_version.product_version_images[0]?.image_url || "";
+                                        return {
+                                            name: item.product_version.product.product_name,
+                                            qty: item.quantity,
+                                            image_url: mainImage,
+                                            price: Number(item.unit_price) * item.quantity,
+                                            discount: item.discount,
+                                            finalPrice: Number(item.subtotal)
+                                        };
+                                    });
+
+                                    const totalStr = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(Number(orderForEmail.total_amount));
+
+                                    // Ejecutar de forma "fire-and-forget" sin await, para NO alentar la respuesta de transacción
+                                    this.notifications.sendOrderApproved({
+                                        orderUUID: orderForEmail.uuid,
+                                        items: itemsForEmail,
+                                        total: totalStr,
+                                        to: emailTo as string,
+                                    }).catch((err: any) => {
+                                        this.logger.error(`Error asíncrono enviando email de compra aprobada a la orden ${orderForEmail.uuid}: ${err}`);
+                                    });
+                                }
+                            }
+                        } catch (err) {
+                            this.logger.error(`Error de DB recolectando datos para email de la orden ${orderId}: ${err}`);
+                        }
+                    }
+
+
+                    await this.shoppingCart.updateShoppingCartByApprovedOrder({ customerUUID, orderId });
+
+                    await this.cache.invalidateQuery({ entity: "order:paid:details", query: customerUUID ? { orderUUID, customerUUID } : { orderUUID } });
                 };
 
                 return { customerUUID, orderStatus, orderId, skipped: false };
@@ -212,7 +270,7 @@ export class PaymentProcessorService {
             });
 
             if (result.customerUUID) {
-                await this.cacheService.invalidateMultipleQueries([
+                await this.cache.invalidateMultipleQueries([
                     {
                         entity: "customer:orders",
                         query: { orderUUID: orderUUID, customerUUID: result.customerUUID }

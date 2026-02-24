@@ -7,6 +7,7 @@ import {
     CacheLockingFind,
     StaleWhileRevalidateWithLockFind
 } from "./cache.strategy";
+import Redis from "ioredis";
 
 @Injectable()
 export class CacheFactoryService {
@@ -45,7 +46,7 @@ export class CacheFactoryService {
     async findData<T>(
         options: {
             type: "simpleFind" | "staleWhileRevalidate" | "cacheLocking" | "staleWhileRevalidateWithLock",
-            keyvInstance: Keyv,
+            redis: Redis,
             key: string,
             ttl?: number,
             staleTime?: number
@@ -58,7 +59,7 @@ export class CacheFactoryService {
             options.ttl,
             options.staleTime,
             fallback,
-            options.keyvInstance
+            options.redis
         );
     }
 }

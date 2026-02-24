@@ -8,6 +8,8 @@ import { AuthenticatedCustomer } from './customer_auth.current.decorator';
 import { ConfigService } from '@nestjs/config';
 import { OptionalCustomerAuthGuard } from './customer_auth.optional.guard';
 import { OptionalCustomer } from './customer_auth.optional.decorator';
+import { UpdateCustomerDTO } from 'src/customer/customer.dto';
+import { CustomerCsrfAuthGuard } from './customer_auth.csrf';
 
 @Controller('customer-auth')
 export class CustomerAuthController {
@@ -117,7 +119,7 @@ export class CustomerAuthController {
         return await this.customerAuthService.getProfile({ uuid: user.uuid });
     };
 
-    @Post("send/verification-token")
+    @Post("verification/token/send")
     @ApiOperation({ summary: "Envia un token de verificación al correo del usuario" })
     @ApiResponse({ status: 200, description: "Token enviado exitosamente" })
     @ApiResponse({ status: 500, description: "Error al enviar el token" })
@@ -128,7 +130,7 @@ export class CustomerAuthController {
         return "Código de verificación enviado a tu correo";
     };
 
-    @Post("resend/verification-token")
+    @Post("verification/token/resend")
     @ApiOperation({ summary: "Reenvia un token de verificación al correo del usuario" })
     @ApiResponse({ status: 200, description: "Token reenviado exitosamente" })
     @ApiResponse({ status: 500, description: "Error al reenviar el token" })
@@ -139,7 +141,29 @@ export class CustomerAuthController {
         return "Código de verificación reenviado a tu correo";
     };
 
-    @Post("validate/restore-password-token")
+    @Post("password")
+    @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
+    @ApiOperation({ summary: "Restablece la contraseña del usuario" })
+    @ApiResponse({ status: 200, description: "Contraseña restablecida exitosamente" })
+    @ApiResponse({ status: 500, description: "Error al restablecer la contraseña" })
+    async restorePasswordAuth(
+        @Body() dto: UpdateCustomerDTO,
+        @OptionalCustomer() customer: CustomerPayload
+    ): Promise<string> {
+        return await this.customerAuthService.restorePasswordAuth({ dto, customerUUID: customer.uuid });
+    };
+
+    @Post("password/restore")
+    @ApiOperation({ summary: "Restablece la contraseña del usuario" })
+    @ApiResponse({ status: 200, description: "Contraseña restablecida exitosamente" })
+    @ApiResponse({ status: 500, description: "Error al restablecer la contraseña" })
+    async restorePasswordPublic(
+        @Body() dto: RestorePasswordPublicDTO,
+    ): Promise<string> {
+        return await this.customerAuthService.restorePasswordPublic({ dto });
+    };
+
+    @Post("password/restore/token/validate")
     @UseGuards(OptionalCustomerAuthGuard)
     @ApiOperation({ summary: "Valida un token de restablecimiento de contraseña" })
     @ApiResponse({ status: 200, description: "Token validado exitosamente" })
@@ -150,7 +174,7 @@ export class CustomerAuthController {
         return await this.customerAuthService.validateRestorePasswordToken({ sessionId: dto.sessionId, email: dto.email, token: dto.restorePasswordToken });
     };
 
-    @Post("send/restore-password-token")
+    @Post("password/restore/token/send")
     @ApiOperation({ summary: "Envia un token de restablecimiento de contraseña al correo del usuario" })
     @ApiResponse({ status: 200, description: "Token enviado exitosamente" })
     @ApiResponse({ status: 500, description: "Error al enviar el token" })
@@ -161,7 +185,7 @@ export class CustomerAuthController {
         return "Código de restablecimiento de contraseña enviado a tu correo";
     };
 
-    @Post("resend/restore-password-token")
+    @Post("password/restore/token/resend")
     @ApiOperation({ summary: "Reenvia un token de restablecimiento de contraseña al correo del usuario" })
     @ApiResponse({ status: 200, description: "Token reenviado exitosamente" })
     @ApiResponse({ status: 500, description: "Error al reenviar el token" })
@@ -172,25 +196,4 @@ export class CustomerAuthController {
         return "Código de restablecimiento de contraseña reenviado a tu correo";
     };
 
-    @Post("restore-password/public")
-    @ApiOperation({ summary: "Restablece la contraseña del usuario" })
-    @ApiResponse({ status: 200, description: "Contraseña restablecida exitosamente" })
-    @ApiResponse({ status: 500, description: "Error al restablecer la contraseña" })
-    async restorePasswordPublic(
-        @Body() dto: RestorePasswordPublicDTO,
-    ): Promise<string> {
-        return await this.customerAuthService.restorePasswordPublic({ dto });
-    };
-
-    @Post("restore-password/auth")
-    @UseGuards(RequiredCustomerAuthGuard)
-    @ApiOperation({ summary: "Restablece la contraseña del usuario" })
-    @ApiResponse({ status: 200, description: "Contraseña restablecida exitosamente" })
-    @ApiResponse({ status: 500, description: "Error al restablecer la contraseña" })
-    async restorePasswordAuth(
-        @Body() dto: RestorePasswordAuthDTO,
-        @OptionalCustomer() customer: CustomerPayload
-    ): Promise<string> {
-        return await this.customerAuthService.restorePasswordAuth({ dto, customerUUID: customer.uuid });
-    };
 };

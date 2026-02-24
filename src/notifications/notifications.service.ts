@@ -4,6 +4,8 @@ import { render } from '@react-email/components';
 import { Resend } from 'resend';
 import { ShippingService } from 'src/shipping/shipping.service';
 import VerificationTokenEmail from './emails/TokenVerificationEmial';
+import OrderConfirmationEmail from './emails/OrderConfirmationEmail';
+import { OrderItem } from './notifications.types';
 
 @Injectable()
 export class NotificationsService {
@@ -34,4 +36,19 @@ export class NotificationsService {
         }
     };
 
-}
+    async sendOrderApproved({ orderUUID, items, total, to }: { orderUUID: string, items: OrderItem[], total: string, to: string }) {
+        const emailHtml = await render(OrderConfirmationEmail({ orderUUID, items, total }))
+        const { data, error } = await this.resend.emails.send({
+            from: "Iga Productos <ventas@igaproductos.com>",
+            to: [to],
+            subject: "Gracias por tu compra",
+            html: emailHtml,
+        });
+
+        if (error) this.logger.error("Error al enviar el email");
+        if (error && this.nodeEnv === "DEV") {
+            this.logger.error(error);
+        }
+    };
+
+};

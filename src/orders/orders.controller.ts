@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { RequiredCustomerAuthGuard } from 'src/customer_auth/customer_auth.required.guard';
 import { CustomerCsrfAuthGuard } from 'src/customer_auth/customer_auth.csrf';
-import { GetOrdersQuery, OrderRequestDTO, OrderRequestGuestDTO, OrdersDashboardParams } from './order.dto';
+import { GetOrdersQuery, OrderRequestDTO, OrderRequestGuestDTO, OrdersDashboardParams, UpdateOrderStatusDTO } from './order.dto';
 import { AuthenticatedCustomer } from 'src/customer_auth/customer_auth.current.decorator';
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 import { ApiBody, ApiHeader, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -10,6 +10,8 @@ import { PaginationDTO } from 'src/common/DTO/pagination.dto';
 import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserModulePermissionsGuard } from 'src/user_auth/user_auth.module.permissions.guard';
 import { RequirePermissions } from 'src/user_auth/user_auth.module.permissions.decorator';
+import { OrderAndPaymentStatus } from 'generated/prisma/enums';
+import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
 
 @Controller('orders')
 export class OrdersController {
@@ -112,5 +114,20 @@ export class OrdersController {
     @ApiResponse({ status: 500, description: "Error inesperado al obtener los items de la orden" })
     async getDashboard(@Query() query: OrdersDashboardParams) {
         return await this.ordersService.dashboard({ query });
+    };
+
+    @Patch()
+    @UseGuards(RequiredUserAuthGuard, UserCsrfAuthGuard, UserModulePermissionsGuard)
+    @RequirePermissions({ ORDERS: ["UPDATE"] })
+    @ApiOperation({ summary: "Actualiza el estado de una orden" })
+    @ApiResponse({ status: 200, description: "Estado de la orden actualizado exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al actualizar el estado de la orden" })
+    @ApiResponse({ status: 401, description: "No se proporciono un token de autenticacion" })
+    @ApiResponse({ status: 403, description: "No se proporciono un token CSRF valido" })
+    @ApiResponse({ status: 404, description: "No se encontro la orden" })
+    @ApiResponse({ status: 500, description: "Error inesperado al actualizar el estado de la orden" })
+    @ApiBody({ type: UpdateOrderStatusDTO })
+    async updateOrderStatus(@Body() { orderUUID, status }: UpdateOrderStatusDTO) {
+        return await this.ordersService.updateOrderStatus({ orderUUID, status });
     };
 };

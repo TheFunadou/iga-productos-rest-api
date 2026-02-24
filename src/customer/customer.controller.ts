@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { CustomerService } from './customer.service';
-import { CreateCustomerDTO } from './customer.dto';
+import { CreateCustomerDTO, UpdateCustomerDTO } from './customer.dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiHeader } from '@nestjs/swagger';
 import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
@@ -57,5 +57,15 @@ export class CustomerController {
     @ApiResponse({ status: 500, description: "Error inesperado" })
     async findManyReviews(@AuthenticatedCustomer() customer: CustomerPayload) {
         return await this.customerService.findManyReviews({ customerUUID: customer.uuid });
+    };
+
+    @Patch()
+    @UseGuards(RequiredCustomerAuthGuard)
+    @ApiOperation({ summary: "Actualizar un cliente" })
+    @ApiResponse({ status: 200, description: "Cliente actualizado exitosamente" })
+    @ApiResponse({ status: 500, description: "Error inesperado" })
+    @ApiBody({ type: UpdateCustomerDTO })
+    async update(@Body() dto: UpdateCustomerDTO, @AuthenticatedCustomer() customer: CustomerPayload) {
+        return await this.customerService.update({ dto, customerUUID: customer.uuid });
     };
 };

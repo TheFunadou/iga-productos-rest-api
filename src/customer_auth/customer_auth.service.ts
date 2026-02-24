@@ -8,6 +8,7 @@ import { CacheService } from 'src/cache/cache.service';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { ConfigService } from '@nestjs/config';
 import { LoginTicket, OAuth2Client } from 'google-auth-library';
+import { UpdateCustomerDTO } from 'src/customer/customer.dto';
 
 @Injectable()
 export class CustomerAuthService {
@@ -328,14 +329,18 @@ export class CustomerAuthService {
         return "Contraseña restablecida exitosamente";
     };
 
-    async restorePasswordAuth({ dto, customerUUID }: { dto: RestorePasswordAuthDTO, customerUUID: string }) {
+    async restorePasswordAuth({ dto, customerUUID }: { dto: UpdateCustomerDTO, customerUUID: string }) {
         const customer = await this.prisma.customer.findUnique({ where: { uuid: customerUUID }, select: { accounts: { select: { id: true, password: true } } } });
         if (!customer) throw new BadRequestException("Este correo no se encuentra registrado en Iga Productos");
 
-        const passwordMatch: boolean = await bcrypt.compare(dto.oldPassword, customer.accounts[0].password);
+        const passwordMatch: boolean = await bcrypt.compare(dto.current_password, customer.accounts[0].password);
         if (!passwordMatch) throw new BadRequestException("Contraseña incorrecta");
-        if (dto.newPassword !== dto.confirmNewPassword) throw new BadRequestException("Las nueva contraseña no coincide con la confirmación");
-        const newHashedPassword = await bcrypt.hash(dto.newPassword, 12);
+
+        const isTheSamePassword = await bcrypt.compare(dto.new_password, customer.accounts[0].password);
+        if (isTheSamePassword) throw new BadRequestException("La contraseña no puede ser la misma que la anterior");
+        if (dto.new_password !== dto.confirm_password) throw new BadRequestException("Las nueva contraseña no coincide con la confirmación");
+
+        const newHashedPassword = await bcrypt.hash(dto.new_password, 12);
         await this.prisma.customerAccount.update({
             where: { id: customer.accounts[0].id },
             data: { password: newHashedPassword }

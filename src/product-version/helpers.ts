@@ -50,7 +50,6 @@ export const PRODUCT_VERSION_CARD_BASE_SELECT = {
         }
     }
 };
-
 export interface ProductVersionDetailSelect {
     id: number;
     sku: string;
@@ -66,6 +65,8 @@ export interface ProductVersionDetailSelect {
         image_url: string;
     }[];
     product: {
+        id: string;             // <-- NUEVO CAMPO AÑADIDO
+        category_id: string;    // <-- NUEVO CAMPO AÑADIDO
         uuid: string;
         product_name: string;
         specs: string;
@@ -116,6 +117,8 @@ export const PRODUCT_VERSION_DETAIL_BASE_SELECT = {
     },
     product: {
         select: {
+            id: true,            // <-- NUEVO CAMPO AÑADIDO
+            category_id: true,   // <-- NUEVO CAMPO AÑADIDO
             uuid: true,
             product_name: true,
             specs: true,

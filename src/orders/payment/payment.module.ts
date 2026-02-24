@@ -8,6 +8,7 @@ import { PaymentQueueConsumer } from './payment-queue.consumer';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { ShippingModule } from 'src/shipping/shipping.module';
 import { ShoppingCartModule } from 'src/customer/shopping-cart/shopping-cart.module';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   providers: [PaymentService, PaymentProcessorService, PaymentQueueConsumer],
@@ -33,7 +34,8 @@ import { ShoppingCartModule } from 'src/customer/shopping-cart/shopping-cart.mod
           age: 604800
         }
       }
-    })
+    }),
+    NotificationsModule
 
   ]
 })

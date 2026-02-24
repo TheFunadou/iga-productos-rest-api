@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderItems, OrderReadyToPay } from './payment/payment.dto';
@@ -7,38 +7,49 @@ import { ProductVersionFindService } from 'src/product-version/product-version.f
 import { OrderUtilsService } from './order.utils.service';
 import { MercadoPagoConfig, Preference as MercadoPagoPreference, Preference } from "mercadopago";
 import { ShoppingCartDTO } from 'src/customer/shopping-cart/shopping-cart.dto';
+import { OrderAndPaymentStatus } from 'generated/prisma/enums';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class OrdersService {
-    private readonly nodeEnv = process.env.NODE_ENV;
-    private readonly mercadoPagoAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN ?? process.env.MERCADO_PAGO_ACCESS_TOKEN_TEST;
+    private readonly nodeEnv: string;
+    private readonly logger = new Logger(OrdersService.name);
+    private readonly mercadoPagoAccessToken?: string;
     private readonly mercadoPagoClient: MercadoPagoConfig;
     private readonly mercadoPagoPreference: MercadoPagoPreference;
 
     constructor(
         private readonly prisma: PrismaService,
-        private readonly cacheService: CacheService,
-        private readonly productVersionFindService: ProductVersionFindService,
-        private readonly orderUtilsService: OrderUtilsService,
+        private readonly cache: CacheService,
+        private readonly productVersionFind: ProductVersionFindService,
+        private readonly orderUtils: OrderUtilsService,
+        private readonly config: ConfigService
     ) {
-        this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: this.mercadoPagoAccessToken! });
+        this.mercadoPagoAccessToken = this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN") ?? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
+        this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
+        if (!this.mercadoPagoAccessToken) {
+            if (this.nodeEnv === "DEV") this.logger.error("Variable de entorno MERCADO_PAGO_ACCESS_TOKEN / ..._TEST vacia o no configurada ");
+            this.logger.error("Error en OrdersService.ts");
+            throw new Error("Error al cargar modulo de Ordenes");
+        };
+        this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: this.mercadoPagoAccessToken });
         this.mercadoPagoPreference = new Preference(this.mercadoPagoClient);
     };
 
     async createMercadoPagoOrderAuthCustomer(args: { orderRequest: OrderRequestDTO, customerUUID: string }): Promise<OrderReadyToPay> {
-        return await this.prisma.$transaction(async (tx) => {
-            const customer = await tx.customer.findUnique({ where: { uuid: args.customerUUID } });
-            if (!customer) throw new NotFoundException("Error inesperado al crear la orden, no se encontro al cliente");
-            const customerAddress = await tx.customerAddresses.findUnique({ where: { uuid: args.orderRequest.address } });
-            if (!customerAddress) throw new NotFoundException("Error inesperado al crear la orden, no se encontro la dirección de envio");
-            const itemsSKUList = args.orderRequest.shopping_cart.map((item) => item.product);
-            const itemCards = await this.productVersionFindService.searchCardsBySKUList({ tx, skuList: itemsSKUList, customerUUID: args.customerUUID, couponCode: args.orderRequest.coupon_code }).catch((error) => {
-                throw new BadRequestException(`Error al obtener las tarjetas de prodcutos ${this.nodeEnv === "DEV" && `: ${error}`}`)
-            });
-            const items = this.orderUtilsService.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
-            const vigency = this.orderUtilsService.buildMercadoPagoPaymentVigency();
-            const shoppingCart = this.orderUtilsService.buildShoppingCart({ productVersionCards: itemCards, orderRequest: args.orderRequest });
+        const customer = await this.prisma.customer.findUnique({ where: { uuid: args.customerUUID } });
+        if (!customer) throw new NotFoundException("Error inesperado al crear la orden, no se encontro al cliente");
+        const customerAddress = await this.prisma.customerAddresses.findUnique({ where: { uuid: args.orderRequest.address } });
+        if (!customerAddress) throw new NotFoundException("Error inesperado al crear la orden, no se encontro la dirección de envio");
+        const itemsSKUList = args.orderRequest.shopping_cart.map((item) => item.product);
+        const itemCards = await this.productVersionFind.searchCardsBySKUList({ skuList: itemsSKUList, customerUUID: args.customerUUID, couponCode: args.orderRequest.coupon_code }).catch((error) => {
+            throw new BadRequestException(`Error al obtener las tarjetas de prodcutos ${this.nodeEnv === "DEV" && `: ${error}`}`)
+        });
+        const items = this.orderUtils.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
+        const vigency = this.orderUtils.buildMercadoPagoPaymentVigency();
+        const shoppingCart = this.orderUtils.buildShoppingCart({ productVersionCards: itemCards, orderRequest: args.orderRequest });
 
+        return await this.prisma.$transaction(async (tx) => {
             for (const item of shoppingCart) {
                 const product = await tx.productVersion.findUnique({
                     where: { sku: item.product_version.sku },
@@ -55,14 +66,12 @@ export class OrdersService {
                 })
             };
 
-            const orderResume = this.orderUtilsService.calcOrderResume({ shoppingCart });
+            const orderResume = this.orderUtils.calcOrderResume({ shoppingCart });
             const orderUUID = crypto.randomUUID().toString();
-            const body = this.orderUtilsService.buildMercadoPagoPreferenceBodyAuthCustomer({
+            const body = this.orderUtils.buildMercadoPagoPreferenceBodyAuthCustomer({
                 internalOrderId: orderUUID, items, shoppingCart, vigency, customer, customerAddress, shippingCost: orderResume.shippingCost,
             });
-            const preference = await this.mercadoPagoPreference.create(body).catch((error) => {
-                throw new BadRequestException(`Error al crear la orden de pago 1 ${this.nodeEnv === "DEV" && `: ${error.message}`}`)
-            });
+            const preference = await this.mercadoPagoPreference.create(body);
             if (!preference.id) throw new BadRequestException(`Error al crear la preferencia de pago`);
             const order = await tx.order.create({
                 data: {
@@ -75,7 +84,7 @@ export class OrdersService {
                     total_amount: orderResume.total,
                     exchange: "MXN",
                 },
-            }).catch((error) => { throw new BadRequestException(`Error al crear la orden de pago 2 ${this.nodeEnv === "DEV" && `: ${error.message}`}`) });
+            });
 
             for (const item of items) {
                 const productVersion = await tx.productVersion.findUnique({ where: { sku: item.id }, select: { id: true } });
@@ -93,25 +102,26 @@ export class OrdersService {
                     },
                 });
             };
-            return {
+            const response: OrderReadyToPay = {
                 folio: orderUUID,
-                // items: shoppingCart,
                 external_id: preference.id,
-                // receiver_address: customerAddress,
-                payment_method: "mercado_pago",
-                // resume: orderResume
-            };
-
+                payment_method: "mercado_pago"
+            }
+            return response;
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al crear orden de pago");
+            throw new BadRequestException("Error al crear orden de pago");
         });
     };
 
     async createMercadoPagoOrderGuest(args: { orderRequest: OrderRequestGuestDTO }): Promise<OrderReadyToPay> {
         return await this.prisma.$transaction(async (tx) => {
             const itemsSKUList = args.orderRequest.shopping_cart.map((item) => item.product);
-            const itemCards = await this.productVersionFindService.searchCardsBySKUList({ tx, skuList: itemsSKUList });
-            const items = this.orderUtilsService.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
-            const vigency = this.orderUtilsService.buildMercadoPagoPaymentVigency();
-            const shoppingCart = this.orderUtilsService.buildShoppingCart({ productVersionCards: itemCards, orderRequest: args.orderRequest });
+            const itemCards = await this.productVersionFind.searchCardsBySKUList({ tx, skuList: itemsSKUList });
+            const items = this.orderUtils.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
+            const vigency = this.orderUtils.buildMercadoPagoPaymentVigency();
+            const shoppingCart = this.orderUtils.buildShoppingCart({ productVersionCards: itemCards, orderRequest: args.orderRequest });
 
             for (const item of shoppingCart) {
                 const product = await tx.productVersion.findUnique({
@@ -130,8 +140,8 @@ export class OrdersService {
             };
 
             const orderUUID = crypto.randomUUID().toString();
-            const orderResume = this.orderUtilsService.calcOrderResume({ shoppingCart });
-            const body = this.orderUtilsService.buildMercadoPagoPreferenceBodyAuthCustomer({
+            const orderResume = this.orderUtils.calcOrderResume({ shoppingCart });
+            const body = this.orderUtils.buildMercadoPagoPreferenceBodyAuthCustomer({
                 internalOrderId: orderUUID, items, shoppingCart, vigency, customer: args.orderRequest.guest, customerAddress: args.orderRequest.address, shippingCost: orderResume.shippingCost
             });
             const preference = await this.mercadoPagoPreference.create(body);
@@ -148,7 +158,7 @@ export class OrdersService {
                 },
             }).catch((error) => { throw new BadRequestException("Error al crear la orden de pago") });
 
-            await this.cacheService.setData<GuestOrderData>({
+            await this.cache.setData<GuestOrderData>({
                 entity: "order:guest:customer:data",
                 query: { orderUUID },
                 data: {
@@ -183,7 +193,7 @@ export class OrdersService {
 
     async getOrders({ customerUUID, query: { limit, page, orderBy } }: { customerUUID: string, query: GetOrdersQuery }): Promise<GetOrders> {
         if (limit > 15) throw new BadRequestException("El limite máximo permitido es 15 registros")
-        return await this.cacheService.remember<GetOrders>({
+        return await this.cache.remember<GetOrders>({
             method: "staleWhileRevalidate",
             entity: "customer:orders",
             query: { customerUUID, limit, page, orderBy },
@@ -255,7 +265,7 @@ export class OrdersService {
     };
 
     async getOrderDetailsByOrderUUID({ orderUUID, customerUUID }: { orderUUID: string, customerUUID: string }) {
-        return await this.cacheService.remember<GetOrderDetails>({
+        return await this.cache.remember<GetOrderDetails>({
             method: "staleWhileRevalidate",
             entity: "customer:order:details",
             query: { orderUUID, customerUUID },
@@ -362,7 +372,7 @@ export class OrdersService {
                     isOffer: item.discount > 0
                 }));
 
-                const resume = this.orderUtilsService.calcOrderResume({ shoppingCart: orderItems });
+                const resume = this.orderUtils.calcOrderResume({ shoppingCart: orderItems });
 
                 const response: GetOrderDetails = {
                     status: order.status,
@@ -400,14 +410,13 @@ export class OrdersService {
                         }
                     }
                 }
-
                 return response;
             }
         })
     };
 
     async getCheckoutOrder({ orderUUID }: { orderUUID: string }): Promise<CheckoutOrder> {
-        return await this.cacheService.remember<CheckoutOrder>({
+        return await this.cache.remember<CheckoutOrder>({
             method: "staleWhileRevalidate",
             entity: "customer:order:checkout",
             query: { orderUUID },
@@ -487,7 +496,7 @@ export class OrdersService {
                     isOffer: item.discount > 0
                 }));
 
-                const resume = this.orderUtilsService.calcOrderResume({ shoppingCart: orderItems });
+                const resume = this.orderUtils.calcOrderResume({ shoppingCart: orderItems });
 
                 const checkoutOrder: CheckoutOrder = {
                     uuid: order.uuid,
@@ -504,7 +513,7 @@ export class OrdersService {
     };
 
     async getBuyNowItem({ sku }: { sku: string }): Promise<ShoppingCartDTO> {
-        return await this.cacheService.remember({
+        return await this.cache.remember({
             method: "staleWhileRevalidateWithLock",
             entity: "buy-now:item",
             query: { sku },
@@ -600,7 +609,7 @@ export class OrdersService {
         let where = {};
         if (uuid) where = { uuid };
 
-        return await this.cacheService.remember<GetOrdersDashboard>({
+        return await this.cache.remember<GetOrdersDashboard>({
             method: "staleWhileRevalidateWithLock",
             entity: "orders:dashboard",
             query: uuid ? { limit, page, orderby, uuid } : { limit, page, orderby },
@@ -641,7 +650,21 @@ export class OrdersService {
                 return response;
             }
         })
+    };
 
+    async updateOrderStatus({ orderUUID, status }: { orderUUID: string, status: OrderAndPaymentStatus }) {
+        const order = await this.prisma.order.findUnique({ where: { uuid: orderUUID }, select: { status: true } });
+        if (!order) throw new NotFoundException("Orden no encontrada");
+        if (order.status === status) throw new BadRequestException("Se esta actualizando al mismo status");
+
+        await this.prisma.order.update({
+            where: { uuid: orderUUID },
+            data: { status },
+        }).catch((error) => {
+            if (this.nodeEnv === "DEV") this.logger.error(error);
+            this.logger.error("Error al actualizar el status de la orden");
+            throw new BadRequestException("Error al actualizar el status de la orden");
+        });
     };
 
 };

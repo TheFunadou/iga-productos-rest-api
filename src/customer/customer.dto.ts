@@ -207,3 +207,40 @@ export class GetCustomerReviews extends ProductReviewsAttributes {
     product_version: ProductReviewsVersionAttributes;
 };
 
+export class UpdateCustomerDTO {
+    @ApiProperty({ description: "Nombre del cliente" })
+    @IsString()
+    @IsOptional()
+    name?: string;
+
+    @ApiProperty({ description: "Apellidos del cliente" })
+    @IsString()
+    @IsOptional()
+    last_name?: string;
+
+    @ApiProperty({ description: "Telefono del cliente" })
+    @IsString()
+    @IsOptional()
+    phone?: string;
+
+    @ApiProperty({ description: "Correo electronico del cliente" })
+    @IsString()
+    @IsEmail()
+    @IsOptional()
+    email?: string;
+
+    @ApiProperty({ description: "Contraseña actual" })
+    @IsString()
+    @IsNotEmpty({ message: "La contraseña actual no puede estar vacia" })
+    current_password: string;
+
+    @ApiProperty({ description: "Contraseña nueva" })
+    @IsString()
+    @IsOptional()
+    new_password?: string;
+
+    @ApiProperty({ description: "Confirmacion de la contraseña" })
+    @IsString()
+    @IsOptional()
+    confirm_password?: string;
+}

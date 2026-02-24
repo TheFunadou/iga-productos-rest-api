@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCustomerDTO, GetCustomerReviews } from './customer.dto';
+import { CreateCustomerDTO, GetCustomerReviews, UpdateCustomerDTO } from './customer.dto';
 import * as bcrypt from 'bcrypt';
 import { CustomerAuthService } from 'src/customer_auth/customer_auth.service';
 import { ConfigService } from '@nestjs/config';
@@ -136,6 +136,23 @@ export class CustomerService {
                 }))
             }
         });
+    };
+
+    async update({ customerUUID, dto }: { customerUUID: string, dto: UpdateCustomerDTO }) {
+        const customer = await this.prisma.customer.findUnique({ where: { uuid: customerUUID }, select: { email: true, accounts: { select: { password: true } } } });
+        if (!customer) throw new NotFoundException("Cliente no encontrado");
+        if (!customer.accounts.length) throw new BadRequestException("Cliente no tiene una cuenta");
+        const isPasswordValid = await bcrypt.compare(dto.current_password, customer.accounts[0].password);
+        if (!isPasswordValid) throw new BadRequestException("Contraseña actual incorrecta");
+
+        await this.prisma.customer.update({
+            where: { uuid: customerUUID },
+            data: {
+                name: dto.name,
+                last_name: dto.last_name,
+            }
+        });
+        return "Información actualizada exitosamente";
     };
 
 };
