@@ -12,10 +12,9 @@ import { createHmac, timingSafeEqual } from 'crypto';
 @Injectable()
 export class PaymentService {
     private readonly logger = new Logger(PaymentService.name);
-    private readonly mercadoPagoAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN ?? process.env.MERCADO_PAGO_ACCESS_TOKEN_TEST;
     private readonly mercadoPagoClient: MercadoPagoConfig;
     private readonly mercadoPagoPayment: Payment;
-    private readonly nodeEnv?: string;
+    private readonly nodeEnv: string;
     private readonly mercadoPagoWebhookSecret?: string;
 
     constructor(
@@ -24,9 +23,14 @@ export class PaymentService {
         private readonly prisma: PrismaService,
         private readonly config: ConfigService
     ) {
-        this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: this.mercadoPagoAccessToken! });
+        this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
+        const mercadoPagoAccessToken = this.nodeEnv === "production" ? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN") : this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
+        if (!mercadoPagoAccessToken) {
+            this.logger.error("Error al cargar modulo de Ordenes");
+            throw new Error("Error al cargar modulo de Ordenes");
+        };
+        this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: mercadoPagoAccessToken });
         this.mercadoPagoPayment = new Payment(this.mercadoPagoClient);
-        this.nodeEnv = this.config.get<string>("NODE_ENV");
         this.mercadoPagoWebhookSecret = this.config.get<string>("MERCADO_PAGO_WEBHOOK_SECRET");
     };
 

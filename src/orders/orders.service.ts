@@ -25,8 +25,11 @@ export class OrdersService {
         private readonly orderUtils: OrderUtilsService,
         private readonly config: ConfigService
     ) {
-        this.mercadoPagoAccessToken = this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN") ?? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
+        this.mercadoPagoAccessToken = this.nodeEnv === "production"
+            ? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN")
+            : this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
+
         if (!this.mercadoPagoAccessToken) {
             if (this.nodeEnv === "DEV") this.logger.error("Variable de entorno MERCADO_PAGO_ACCESS_TOKEN / ..._TEST vacia o no configurada ");
             this.logger.error("Error en OrdersService.ts");

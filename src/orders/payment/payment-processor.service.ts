@@ -10,6 +10,7 @@ import { OrderPaymentDetails } from "@prisma/client";
 import { ShippingService } from "src/shipping/shipping.service";
 import { ShoppingCartService } from "src/customer/shopping-cart/shopping-cart.service";
 import { NotificationsService } from "src/notifications/notifications.service";
+import { ConfigService } from "@nestjs/config";
 
 
 @Injectable()
@@ -17,15 +18,22 @@ export class PaymentProcessorService {
     private readonly logger = new Logger(PaymentProcessorService.name);
     private readonly mercadoPagoClient: MercadoPagoConfig;
     private readonly mercadoPagoPayment: Payment;
+    private readonly nodeEnv: string;
 
     constructor(
         private readonly prisma: PrismaService,
         private readonly cache: CacheService,
         private readonly shipping: ShippingService,
         private readonly shoppingCart: ShoppingCartService,
-        private readonly notifications: NotificationsService
+        private readonly notifications: NotificationsService,
+        private readonly config: ConfigService
     ) {
-        const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN ?? process.env.MERCADO_PAGO_ACCESS_TOKEN_TEST;
+        this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
+        const accessToken = this.nodeEnv === "production" ? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN") : this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
+        if (!accessToken) {
+            this.logger.error("Error al cargar modulo de Ordenes");
+            throw new Error("Error al cargar modulo de Ordenes");
+        };
         this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: accessToken! });
         this.mercadoPagoPayment = new Payment(this.mercadoPagoClient);
     };
