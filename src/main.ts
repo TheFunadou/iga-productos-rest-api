@@ -20,7 +20,7 @@ async function bootstrap() {
   // HELMET - Agregar DESPUÉS de crear la app, ANTES de cookieParser
   app.use(helmet({
     // Content Security Policy - Desactivar en desarrollo, activar en producción
-    contentSecurityPolicy: nodeEnv === "PROD" ? {
+    contentSecurityPolicy: nodeEnv === "production" ? {
       directives: {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],  // Para Swagger en dev
@@ -33,7 +33,7 @@ async function bootstrap() {
     crossOriginEmbedderPolicy: false,  // Desactivar si tienes problemas con recursos externos
     crossOriginResourcePolicy: { policy: "cross-origin" },  // Permitir recursos cross-origin
     // HSTS - Solo en producción con HTTPS
-    hsts: nodeEnv === "PROD" ? {
+    hsts: nodeEnv === "production" ? {
       maxAge: 31536000,  // 1 año
       includeSubDomains: true,
       preload: true
@@ -43,7 +43,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // --- CONFIGURACIÓN SWAGGER ---
-  if (nodeEnv !== "PROD") {
+  if (nodeEnv !== "production") {
     const config = new DocumentBuilder()
       .setTitle('IgaProductos API Docs')
       .setDescription('Documentación de la API con Swagger')
