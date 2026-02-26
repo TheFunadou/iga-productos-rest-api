@@ -72,7 +72,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ["http://localhost:3001", "https://qualify-routines-administrators-novel.trycloudflare.com", "http://localhost:5173", "http://192.168.0.27:5173"],
+    origin: ["http://localhost:3001", "https://confident-caring-hidden-refrigerator.trycloudflare.com", "http://localhost:5173", "https://igaproductos.com"],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
