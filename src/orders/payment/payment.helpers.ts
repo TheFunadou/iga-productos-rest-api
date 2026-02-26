@@ -1,4 +1,4 @@
-import { OrderAndPaymentStatus } from "generated/prisma/enums";
+import { OrderAndPaymentStatus } from "@prisma/client";
 import { MercadoPagoPaymentStatus } from "./payment.dto";
 
 

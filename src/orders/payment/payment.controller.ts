@@ -3,9 +3,8 @@ import { PaymentService } from './payment.service';
 import { Request as ExpressRequest } from 'express';
 import { CacheService } from 'src/cache/cache.service';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { promises as fs } from "fs";
 import { GetPaidOrderDetails } from './payment.dto';
-import { OrderAndPaymentStatus } from 'generated/prisma/enums';
+import { OrderAndPaymentStatus } from '@prisma/client';
 
 @Controller('payment')
 export class PaymentController {

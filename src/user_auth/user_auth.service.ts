@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthUser, AuthUserPermissions, UserCredentialsDTO, UserPayload } from './user_auth.dto';
 import * as bcrypt from 'bcrypt';
-import { Permission, UserModules } from 'generated/prisma/enums';
+import { Permission, UserModules } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { CacheService } from 'src/cache/cache.service';
 import { ConfigService } from '@nestjs/config';

@@ -5,7 +5,7 @@ import { Queue } from 'bullmq';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GetPaidOrderDetails, OrderItems } from './payment.dto';
-import { OrderAndPaymentStatus } from 'generated/prisma/enums';
+import { OrderAndPaymentStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'crypto';
 

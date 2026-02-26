@@ -6,7 +6,7 @@ import { MercadoPagoPaymentStatus } from "./payment.dto";
 import { formatMercadoPagoOrderStatus, isMercadoPagoStatus } from "./payment.helpers";
 import { PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { Decimal } from "@prisma/client/runtime/index-browser";
-import { OrderPaymentDetails } from "generated/prisma/client";
+import { OrderPaymentDetails } from "@prisma/client";
 import { ShippingService } from "src/shipping/shipping.service";
 import { ShoppingCartService } from "src/customer/shopping-cart/shopping-cart.service";
 import { NotificationsService } from "src/notifications/notifications.service";

@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateIf, ValidateNested } from "class-validator";
-import { OfferStatus, OfferTargetType, OfferType } from "generated/prisma/enums";
+import { OfferStatus, OfferTargetType, OfferType } from "@prisma/client";
 import { PaginationDTO } from "src/common/DTO/pagination.dto";
 
 export class Offer {

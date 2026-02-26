@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, IsString } from "class-validator";
-import { OrderAndPaymentStatus } from "generated/prisma/enums";
+import { OrderAndPaymentStatus } from "@prisma/client";
 import { Order } from "mercadopago";
 import { GetCustomerAddressPayment } from "src/customer/customer-addresses/customer-addresses.dto";
 import { CustomerAttributes } from "src/customer/customer.dto";

@@ -4,7 +4,7 @@ import { CreateUserDTO, GetUserDashboard, UpdateUserDTO, UserDashboardParams } f
 import * as bcrypt from 'bcrypt';
 import { CacheService } from 'src/cache/cache.service';
 import { ConfigService } from '@nestjs/config';
-import { Permission, UserModules } from 'generated/prisma/enums';
+import { Permission, UserModules } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserLogEvent } from 'src/audit/user-log.event';
 

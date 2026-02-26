@@ -7,7 +7,7 @@ import { ProductVersionFindService } from 'src/product-version/product-version.f
 import { OrderUtilsService } from './order.utils.service';
 import { MercadoPagoConfig, Preference as MercadoPagoPreference, Preference } from "mercadopago";
 import { ShoppingCartDTO } from 'src/customer/shopping-cart/shopping-cart.dto';
-import { OrderAndPaymentStatus } from 'generated/prisma/enums';
+import { OrderAndPaymentStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

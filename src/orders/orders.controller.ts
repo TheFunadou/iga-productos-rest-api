@@ -10,7 +10,7 @@ import { PaginationDTO } from 'src/common/DTO/pagination.dto';
 import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserModulePermissionsGuard } from 'src/user_auth/user_auth.module.permissions.guard';
 import { RequirePermissions } from 'src/user_auth/user_auth.module.permissions.decorator';
-import { OrderAndPaymentStatus } from 'generated/prisma/enums';
+import { OrderAndPaymentStatus } from '@prisma/client';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
 
 @Controller('orders')

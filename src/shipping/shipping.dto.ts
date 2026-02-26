@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
 import { Decimal } from "@prisma/client/runtime/client";
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
-import { ShippingStatus } from "generated/prisma/enums";
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { ShippingStatus } from "@prisma/client";
 
 
 export class Shipping {

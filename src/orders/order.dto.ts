@@ -4,7 +4,7 @@ import { IsArray, IsEnum, IsIn, IsNumber, IsObject, IsOptional, IsString, Valida
 import { OrderItems, OrderResume, OrderShoppingCartDTO } from "./payment/payment.dto";
 import { GetCustomerAddressPayment, CreateCustomerAddressDTO as GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
 import { CustomerAttributes } from "src/customer/customer.dto";
-import { OrderAndPaymentStatus, ShippingStatus } from "generated/prisma/enums";
+import { OrderAndPaymentStatus, ShippingStatus } from "@prisma/client";
 import { PaginationDTO } from "src/common/DTO/pagination.dto";
 import { CustomerOrderShippingDetails } from "src/shipping/shipping.dto";
 
