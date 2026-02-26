@@ -28,7 +28,6 @@
     "update:prices": "ts-node src/prisma/seed/updatePrices.ts"
   },
   "dependencies": {
-    "@keyv/redis": "^5.1.5",
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -44,7 +43,6 @@
     "@react-email/components": "^1.0.6",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.66.1",
-    "cacheable": "^2.3.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "cookie-parser": "^1.4.7",
@@ -52,7 +50,6 @@
     "google-auth-library": "^10.5.0",
     "helmet": "^8.1.0",
     "ioredis": "^5.8.2",
-    "keyv": "^5.5.5",
     "mercadopago": "^2.11.0",
     "passport-jwt": "^4.0.1",
     "react-email": "^5.2.5",
