@@ -17,28 +17,37 @@ async function bootstrap() {
   const port = configService.get("PORT") || 3000;
   const nodeEnv = configService.get("NODE_ENV") || "DEV";
 
-  // HELMET - Agregar DESPUÉS de crear la app, ANTES de cookieParser
-  app.use(helmet({
-    // Content Security Policy - Desactivar en desarrollo, activar en producción
-    contentSecurityPolicy: nodeEnv === "production" ? {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],  // Para Swagger en dev
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],  // Permitir imágenes de CDN
-        connectSrc: ["'self'"],  // APIs externas si usas
-      },
-    } : false,
-    // Cross-Origin - Configurar para permitir tu frontend
-    crossOriginEmbedderPolicy: false,  // Desactivar si tienes problemas con recursos externos
-    crossOriginResourcePolicy: { policy: "cross-origin" },  // Permitir recursos cross-origin
-    // HSTS - Solo en producción con HTTPS
-    hsts: nodeEnv === "production" ? {
-      maxAge: 31536000,  // 1 año
-      includeSubDomains: true,
-      preload: true
-    } : false,
-  }));
+  app.use(
+    helmet({
+      contentSecurityPolicy:
+        nodeEnv === "production"
+          ? {
+            directives: {
+              defaultSrc: ["'self'"],
+              styleSrc: ["'self'", "'unsafe-inline'"],
+              scriptSrc: ["'self'"],
+              imgSrc: ["'self'", "data:", "https:"],
+              connectSrc: [
+                "'self'",
+                "https://*.igaproductos.com",
+              ],
+            },
+          }
+          : false,
+
+      crossOriginEmbedderPolicy: false,
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+
+      hsts:
+        nodeEnv === "production"
+          ? {
+            maxAge: 31536000,
+            includeSubDomains: true,
+            preload: true,
+          }
+          : false,
+    }),
+  );
 
   app.use(cookieParser());
 
@@ -72,18 +81,22 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ["http://localhost:3001", "https://confident-caring-hidden-refrigerator.trycloudflare.com", "http://localhost:5173", "https://igaproductos.com"],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Accept',
-      'Authorization',
-      'X-CSRF-Token',
-      'X-Requested-With',
-    ],
-  });
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        "http://localhost:3001",
+        "http://localhost:5173",
+        "https://igaproductos.com",
+        "https://www.igaproductos.com"
+      ];
 
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  });
   await app.listen(port);
   console.log("Servidor activo en:", port);
 }
