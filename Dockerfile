@@ -13,13 +13,13 @@ WORKDIR /app
 COPY --from=base /app/node_modules ./node_modules
 COPY . .
 
-# Generar cliente de Prisma
+# Generar cliente Prisma
 RUN npx prisma generate
 
 # Compilar NestJS
 RUN npm run build
 
-# Instalar solo dependencias de producción
+# Instalar solo dependencias producción
 ENV NODE_ENV=production
 RUN npm ci --omit=dev && npm cache clean --force
 
@@ -29,17 +29,20 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copiar artefactos necesarios
+# 🔥 Instalar OpenSSL (FALTABA ESTO)
+RUN apt-get update -y && apt-get install -y openssl
+
+# Copiar artefactos
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY package*.json ./
 
-# Exponer puerto (Nest default)
+# 🔥 Dar permisos al usuario node
+RUN chown -R node:node /app
+
 EXPOSE 3000
 
-# Usuario no root
 USER node
 
-# Comando de inicio
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
