@@ -15,7 +15,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse();
 
-        const isDev = process.env.NODE_ENV !== 'PROD';
+        const isDev = process.env.NODE_ENV !== 'production';
 
         let status = HttpStatus.BAD_REQUEST;
         let message = 'Error en base de datos';

@@ -1,26 +1,45 @@
-# Dockerfile
+# ---------- Base ----------
 ARG NODE_VERSION=20.20.0
-
 FROM node:${NODE_VERSION}-bookworm AS base
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm ci
 
+# ---------- Builder ----------
 FROM node:${NODE_VERSION}-bookworm AS builder
 WORKDIR /app
+
 COPY --from=base /app/node_modules ./node_modules
 COPY . .
-# PASO CLAVE: Generar el cliente de Prisma
+
+# Generar cliente de Prisma
 RUN npx prisma generate
+
+# Compilar NestJS
 RUN npm run build
-ENV NODE_ENV=PROD
+
+# Instalar solo dependencias de producción
+ENV NODE_ENV=production
 RUN npm ci --omit=dev && npm cache clean --force
 
-FROM node:${NODE_VERSION}-bookworm AS runner
+# ---------- Runner ----------
+FROM node:${NODE_VERSION}-bookworm-slim AS runner
 WORKDIR /app
-COPY --from=builder --chown=node:node /app/dist ./dist
-COPY --from=builder --chown=node:node /app/node_modules ./node_modules
-# También necesitas la carpeta generated en tiempo de ejecución
-COPY --from=builder --chown=node:node /app/generated ./generated
+
+ENV NODE_ENV=production
+
+# Copiar artefactos necesarios
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY package*.json ./
+
+# Exponer puerto (Nest default)
+EXPOSE 3000
+
+# Usuario no root
 USER node
-CMD ["node", "dist/main.js"]
+
+# Comando de inicio
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]

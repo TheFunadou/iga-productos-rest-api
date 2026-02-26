@@ -30,15 +30,15 @@ export class UserAuthController {
         const login = await this.userAuthService.login(dto);
         response.cookie("iga_user_access_token", login.access_token, {
             httpOnly: true,
-            secure: this.nodeEnv === "PROD",
-            sameSite: this.nodeEnv === "PROD" ? "strict" : "lax",
+            secure: this.nodeEnv === "production",
+            sameSite: this.nodeEnv === "production" ? "strict" : "lax",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
         response.cookie("iga_user_csrf_token", login.csrfToken, {
             httpOnly: false,
-            secure: this.nodeEnv === "PROD",
-            sameSite: this.nodeEnv === "PROD" ? "strict" : "lax",
+            secure: this.nodeEnv === "production",
+            sameSite: this.nodeEnv === "production" ? "strict" : "lax",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
