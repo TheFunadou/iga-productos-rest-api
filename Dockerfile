@@ -11,7 +11,7 @@ WORKDIR /app
 COPY --from=base /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
-ENV NODE_ENV=production
+ENV NODE_ENV=PROD
 RUN npm ci --omit=dev && npm cache clean --force
 
 FROM node:${NODE_VERSION}-bookworm AS runner
