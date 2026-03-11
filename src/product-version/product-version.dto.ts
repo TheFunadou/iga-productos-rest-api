@@ -296,7 +296,8 @@ export class ProductVersionCardsFiltersDTO {
     @ApiProperty({ description: "limite" })
     @IsNumber()
     @Type(() => Number)
-    limit: number;//
+    @IsOptional()
+    limit?: number;
 
     @ApiProperty({ description: "Obtenter favoritos del cliente" })
     @IsBoolean()
@@ -308,7 +309,7 @@ export class ProductVersionCardsFiltersDTO {
     @IsString()
     @IsOptional()
     @Type(() => String)
-    category?: string; //
+    category?: string;
 
     @ApiProperty({ description: "Arreglo de ID de subcategorias" })
     @IsArray()
@@ -336,6 +337,32 @@ export class ProductVersionCardsFiltersDTO {
     @IsOptional()
     @Type(() => Boolean)
     moreExpensive?: boolean;
+
+    @ApiProperty({ description: "Buscar de manera aleatoria?" })
+    @IsBoolean()
+    @IsOptional()
+    @Type(() => Boolean)
+    random?: boolean;
+
+    @ApiProperty({ description: "Arreglo de SKU" })
+    @IsArray()
+    @Type(() => String)
+    @IsString({ each: true })
+    @IsOptional()
+    @Transform(({ value }) => {
+        if (Array.isArray(value)) {
+            return value.map(String);
+        }
+
+        return [String(value)];
+    })
+    skuList?: string[];
+
+    @ApiProperty({ description: "Código de cupon" })
+    @IsString()
+    @IsOptional()
+    @Type(() => String)
+    couponCode?: string;
 };
 
 export class GetProductVersionCardsRandomOptionsDTO {
@@ -384,4 +411,10 @@ export class GetStockDashboard {
     totalRecords: number;
     @ApiProperty({ description: "Total de paginas" })
     totalPages: number;
+};
+
+export interface SearchCardsCacheQuery {
+    filters: ProductVersionCardsFiltersDTO;
+    customerUUID?: string;
+    scope: "internal" | "external";
 };

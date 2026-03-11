@@ -1,14 +1,16 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { OrderItems, OrderReadyToPay } from './payment/payment.dto';
-import { GetOrders, GetOrdersQuery, GuestOrderData, CheckoutOrder, OrderRequestDTO, OrderRequestGuestDTO, GetOrderDetails, OrdersDashboardParams, GetOrdersDashboard, SafeOrder } from './order.dto';
+import { OrderItems } from './payment/payment.dto';
+import { GetOrders, GetOrdersQuery, CheckoutOrder, OrderRequestDTO, GetOrderDetails, OrdersDashboardParams, GetOrdersDashboard, SafeOrder } from './order.dto';
 import { ProductVersionFindService } from 'src/product-version/product-version.find.service';
 import { OrderUtilsService } from './order.utils.service';
 import { MercadoPagoConfig, Preference as MercadoPagoPreference, Preference } from "mercadopago";
 import { ShoppingCartDTO } from 'src/customer/shopping-cart/shopping-cart.dto';
 import { OrderAndPaymentStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateOrderCommand } from './domain/commands/create-order/create-order.command';
 
 @Injectable()
 export class OrdersService {
@@ -23,7 +25,8 @@ export class OrdersService {
         private readonly cache: CacheService,
         private readonly productVersionFind: ProductVersionFindService,
         private readonly orderUtils: OrderUtilsService,
-        private readonly config: ConfigService
+        private readonly config: ConfigService,
+        private readonly commandBus: CommandBus
     ) {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
         this.mercadoPagoAccessToken = this.nodeEnv === "production"
@@ -39,159 +42,116 @@ export class OrdersService {
         this.mercadoPagoPreference = new Preference(this.mercadoPagoClient);
     };
 
-    async createMercadoPagoOrderAuthCustomer(args: { orderRequest: OrderRequestDTO, customerUUID: string }): Promise<OrderReadyToPay> {
-        const customer = await this.prisma.customer.findUnique({ where: { uuid: args.customerUUID } });
-        if (!customer) throw new NotFoundException("Error inesperado al crear la orden, no se encontro al cliente");
-        const customerAddress = await this.prisma.customerAddresses.findUnique({ where: { uuid: args.orderRequest.address } });
-        if (!customerAddress) throw new NotFoundException("Error inesperado al crear la orden, no se encontro la dirección de envio");
-        const itemsSKUList = args.orderRequest.shopping_cart.map((item) => item.product);
-        const itemCards = await this.productVersionFind.searchCardsBySKUList({ skuList: itemsSKUList, customerUUID: args.customerUUID, couponCode: args.orderRequest.coupon_code }).catch((error) => {
-            throw new BadRequestException(`Error al obtener las tarjetas de prodcutos ${this.nodeEnv === "DEV" && `: ${error}`}`)
-        });
-        const items = this.orderUtils.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
-        const vigency = this.orderUtils.buildMercadoPagoPaymentVigency();
-        const shoppingCart = this.orderUtils.buildShoppingCart({ productVersionCards: itemCards, orderRequest: args.orderRequest });
+    // async createMercadoPagoOrderAuthCustomer(args: { orderRequest: OrderRequestDTO, customerUUID: string }): Promise<OrderReadyToPay> {
+    //     const customer = await this.prisma.customer.findUnique({ where: { uuid: args.customerUUID } });
+    //     if (!customer) throw new NotFoundException("Error inesperado al crear la orden, no se encontro al cliente");
+    //     const customerAddress = await this.prisma.customerAddresses.findUnique({ where: { uuid: args.orderRequest.address } });
+    //     if (!customerAddress) throw new NotFoundException("Error inesperado al crear la orden, no se encontro la dirección de envio");
 
-        return await this.prisma.$transaction(async (tx) => {
-            for (const item of shoppingCart) {
-                const product = await tx.productVersion.findUnique({
-                    where: { sku: item.product_version.sku },
-                    select: { stock: true }
-                });
+    //     const itemsSKUList = args.orderRequest.shopping_cart.map((item) => item.product);
+    //     const itemCards = await this.productVersionFind.searchCardsBySKUList({ skuList: itemsSKUList, customerUUID: args.customerUUID, couponCode: args.orderRequest.coupon_code }).catch((error) => {
+    //         throw new BadRequestException(`Error al obtener las tarjetas de prodcutos ${this.nodeEnv === "DEV" && `: ${error}`}`)
+    //     });
+    //     const shoppingCart = this.orderUtils.buildShoppingCart({ productVersionCards: itemCards, orderItems: args.orderRequest.shopping_cart });
 
-                if (!product || product.stock < item.quantity) throw new BadRequestException("Stock insuficente para realizar la operación");
-            };
+    //     //MERCADO PAGO- 
+    //     const items = this.orderUtils.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
+    //     const vigency = this.orderUtils.buildMercadoPagoPaymentVigency();
 
-            for (const item of shoppingCart) {
-                await tx.productVersion.update({
-                    where: { sku: item.product_version.sku },
-                    data: { stock: { decrement: item.quantity } }
-                })
-            };
+    //     return await this.prisma.$transaction(async (tx) => {
+    //         //VALIDAR STOCK
+    //         for (const item of shoppingCart) {
+    //             const product = await tx.productVersion.findUnique({
+    //                 where: { sku: item.product_version.sku },
+    //                 select: { stock: true }
+    //             });
 
-            const orderResume = this.orderUtils.calcOrderResume({ shoppingCart });
-            const orderUUID = crypto.randomUUID().toString();
-            const body = this.orderUtils.buildMercadoPagoPreferenceBodyAuthCustomer({
-                internalOrderId: orderUUID, items, shoppingCart, vigency, customer, customerAddress, shippingCost: orderResume.shippingCost,
-            });
-            const preference = await this.mercadoPagoPreference.create(body);
-            if (!preference.id) throw new BadRequestException(`Error al crear la preferencia de pago`);
-            const order = await tx.order.create({
-                data: {
-                    uuid: orderUUID,
-                    external_order_id: preference.id,
-                    customer_address_id: customerAddress.id,
-                    customer_id: customer.id,
-                    payment_provider: "mercado_pago",
-                    status: "IN_PROCESS",
-                    total_amount: orderResume.total,
-                    exchange: "MXN",
-                },
-            });
+    //             if (!product || product.stock < item.quantity) throw new BadRequestException("Stock insuficente para realizar la operación");
+    //         };
 
-            for (const item of items) {
-                const productVersion = await tx.productVersion.findUnique({ where: { sku: item.id }, select: { id: true } });
-                const shoppingCartItem = shoppingCart.find((cartItem) => cartItem.product_version.sku === item.id);
-                if (!shoppingCartItem) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEV" && `: No se encontro el item del carrito ${item.id}`}`);
-                if (!productVersion) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEV" && `: No se encontro la version del producto ${item.id}`}`);
-                await tx.orderItemsDetails.create({
-                    data: {
-                        order_id: order.id,
-                        product_version_id: productVersion.id,
-                        quantity: item.quantity,
-                        unit_price: shoppingCartItem.product_version.unit_price,
-                        subtotal: item.unit_price * item.quantity,
-                        discount: shoppingCartItem.discount,
-                    },
-                });
-            };
-            const response: OrderReadyToPay = {
-                folio: orderUUID,
-                external_id: preference.id,
-                payment_method: "mercado_pago"
-            }
-            return response;
-        }).catch((error) => {
-            if (this.nodeEnv === "DEV") this.logger.error(error);
-            this.logger.error("Error al crear orden de pago");
-            throw new BadRequestException("Error al crear orden de pago");
-        });
-    };
+    //         //RESERVAR STOCK
+    //         for (const item of shoppingCart) {
+    //             await tx.productVersion.update({
+    //                 where: { sku: item.product_version.sku },
+    //                 data: { stock: { decrement: item.quantity } }
+    //             })
+    //         };
 
-    async createMercadoPagoOrderGuest(args: { orderRequest: OrderRequestGuestDTO }): Promise<OrderReadyToPay> {
-        return await this.prisma.$transaction(async (tx) => {
-            const itemsSKUList = args.orderRequest.shopping_cart.map((item) => item.product);
-            const itemCards = await this.productVersionFind.searchCardsBySKUList({ tx, skuList: itemsSKUList });
-            const items = this.orderUtils.buildMercadoPagoOrderItems({ items: itemCards, shoppingCart: args.orderRequest.shopping_cart });
-            const vigency = this.orderUtils.buildMercadoPagoPaymentVigency();
-            const shoppingCart = this.orderUtils.buildShoppingCart({ productVersionCards: itemCards, orderRequest: args.orderRequest });
+    //         //CALCULAR RESUMEN DE ORDER (TOTAL,SUBTOTAL...)
+    //         const orderResume = this.orderUtils.calcOrderResume({ shoppingCart });
 
-            for (const item of shoppingCart) {
-                const product = await tx.productVersion.findUnique({
-                    where: { sku: item.product_version.sku },
-                    select: { stock: true }
-                });
+    //         //OBTENER EL UUID
+    //         const orderUUID = crypto.randomUUID().toString();
 
-                if (!product || product.stock < item.quantity) throw new BadRequestException("Stock insuficente para realizar la operación");
-            };
+    //         //MERCADO PAGO- CREAR EL BODY DE LA PREFERENCIA DE PAGO
+    //         const body = this.orderUtils.buildMercadoPagoPreferenceBodyAuthCustomer({
+    //             internalOrderId: orderUUID, items, vigency, customer, customerAddress, shippingCost: orderResume.shippingCost,
+    //         });
+    //         const preference = await this.mercadoPagoPreference.create(body);
+    //         if (!preference.id) throw new BadRequestException(`Error al crear la preferencia de pago`);
 
-            for (const item of shoppingCart) {
-                await tx.productVersion.update({
-                    where: { sku: item.product_version.sku },
-                    data: { stock: { decrement: item.quantity } }
-                })
-            };
+    //         //CREAR LA ORDEN
+    //         const order = await tx.order.create({
+    //             data: {
+    //                 uuid: orderUUID,
+    //                 external_order_id: preference.id,
+    //                 customer_address_id: customerAddress.id,
+    //                 customer_id: customer.id,
+    //                 payment_provider: "mercado_pago",
+    //                 status: "IN_PROCESS",
+    //                 total_amount: orderResume.total,
+    //                 exchange: "MXN",
+    //             },
+    //         });
 
-            const orderUUID = crypto.randomUUID().toString();
-            const orderResume = this.orderUtils.calcOrderResume({ shoppingCart });
-            const body = this.orderUtils.buildMercadoPagoPreferenceBodyAuthCustomer({
-                internalOrderId: orderUUID, items, shoppingCart, vigency, customer: args.orderRequest.guest, customerAddress: args.orderRequest.address, shippingCost: orderResume.shippingCost
-            });
-            const preference = await this.mercadoPagoPreference.create(body);
-            if (!preference.id) throw new BadRequestException("Error al crear la orden de pago");
-            const order = await tx.order.create({
-                data: {
-                    uuid: orderUUID,
-                    external_order_id: preference.id,
-                    payment_provider: "mercado_pago",
-                    is_guest_order: true,
-                    status: "IN_PROCESS",
-                    total_amount: orderResume.total,
-                    exchange: "MXN",
-                },
-            }).catch((error) => { throw new BadRequestException("Error al crear la orden de pago") });
+    //         //AÑADIR LOS ITEMS A LA ORDEN
+    //         for (const item of items) {
+    //             const productVersion = await tx.productVersion.findUnique({ where: { sku: item.id }, select: { id: true } });
+    //             const shoppingCartItem = shoppingCart.find((cartItem) => cartItem.product_version.sku === item.id);
+    //             if (!shoppingCartItem) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEV" && `: No se encontro el item del carrito ${item.id}`}`);
+    //             if (!productVersion) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEV" && `: No se encontro la version del producto ${item.id}`}`);
+    //             await tx.orderItemsDetails.create({
+    //                 data: {
+    //                     order_id: order.id,
+    //                     product_version_id: productVersion.id,
+    //                     quantity: item.quantity,
+    //                     unit_price: shoppingCartItem.product_version.unit_price,
+    //                     subtotal: item.unit_price * item.quantity,
+    //                     discount: shoppingCartItem.discount,
+    //                 },
+    //             });
+    //         };
 
-            await this.cache.setData<GuestOrderData>({
-                entity: "order:guest:customer:data",
-                query: { orderUUID },
-                data: {
-                    customer: args.orderRequest.guest,
-                    address: args.orderRequest.address,
-                    createdAt: new Date().toISOString(),
-                }
-            }).catch((error) => { throw new BadRequestException("Error al crear la orden de pago") });
+    //         //CREAR LA RESPUESTA
+    //         const response: OrderReadyToPay = {
+    //             folio: orderUUID,
+    //             external_id: preference.id,
+    //             payment_method: "mercado_pago"
+    //         }
+    //         return response;
+    //     }).catch((error) => {
+    //         if (this.nodeEnv === "DEV") this.logger.error(error);
+    //         this.logger.error("Error al crear orden de pago");
+    //         throw new BadRequestException("Error al crear orden de pago");
+    //     });
+    // };
 
-            for (const item of items) {
-                const productVersion = await tx.productVersion.findUnique({ where: { sku: item.id }, select: { id: true } });
-                if (!productVersion) throw new BadRequestException(`Error al crear la orden de pago 3 ${this.nodeEnv === "DEV" && `: No se encontro la version del producto ${item.id}`}`);
-                await tx.orderItemsDetails.create({
-                    data: {
-                        order_id: order.id,
-                        product_version_id: productVersion.id,
-                        quantity: item.quantity,
-                        unit_price: item.unit_price,
-                        subtotal: item.unit_price * item.quantity,
-                    },
-                }).catch((error) => { throw new BadRequestException("Error al crear la orden de pago") });
-            };
-            return {
-                folio: orderUUID,
-                external_id: preference.id,
-                receiver_address: args.orderRequest.address,
-                payment_method: "mercado_pago",
-                resume: orderResume,
-            };
-        });
+
+    async createProviderOrder(args: { orderRequest: OrderRequestDTO, customerUUID?: string }) {
+        const { orderRequest, customerUUID } = args;
+        const provider = orderRequest.paymentProvider.replaceAll("-", "");
+        return this.commandBus.execute(
+            new CreateOrderCommand(
+                orderRequest.orderItems,
+                "https://igaproductos.com",
+                `https://api.igaproductos.com/payments/${provider}/webhook`,
+                orderRequest.paymentProvider,
+                customerUUID,
+                orderRequest.addressUUID,
+                orderRequest.couponCode,
+                orderRequest.guestForm
+            )
+        )
     };
 
     async getOrders({ customerUUID, query: { limit, page, orderBy } }: { customerUUID: string, query: GetOrdersQuery }): Promise<GetOrders> {

@@ -59,6 +59,10 @@ export class CustomerService {
         return `Registro completado exitosamente`
     };
 
+    async findOne({ uuid }: { uuid: string }) {
+        return await this.prisma.customer.findUnique({ where: { uuid }, omit: { id: true, } });
+    };
+
     async findAll(args: { page: number, limit: number }) {
         return await this.cache.remember({
             method: "staleWhileRevalidateWithLock",

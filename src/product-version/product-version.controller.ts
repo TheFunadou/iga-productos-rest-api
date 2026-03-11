@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ProductVersionService } from './product-version.service';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { CreateProductVersionDTO, GetProductVersionCardsRandomOptionsDTO, PatchProductVersionDTO, ProductVersionCardsFiltersDTO, StockDashboardParams, UpdateStockBySKUDTO } from './product-version.dto';
+import { CreateProductVersionDTO, PatchProductVersionDTO, ProductVersionCardsFiltersDTO, StockDashboardParams, UpdateStockBySKUDTO } from './product-version.dto';
 import { ProductVersionFindService } from './product-version.find.service';
 import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
@@ -79,19 +79,7 @@ export class ProductVersionController {
     @ApiResponse({ status: 500, description: "Error al buscar versiones de producto" })
     @ApiBody({ type: ProductVersionCardsFiltersDTO })
     async search(@OptionalCustomer() customer: CustomerPayload, @Body() dto: ProductVersionCardsFiltersDTO) {
-        return await this.findProductVersionService.searchCards({ filters: dto, customerUUID: customer?.uuid });
-    };
-
-    @Get("random-cards")
-    @UseGuards(OptionalCustomerAuthGuard)
-    @ApiOperation({ description: "Buscar versiones de producto" })
-    @ApiResponse({ status: 200, description: "Versiones de producto buscadas exitosamente" })
-    @ApiResponse({ status: 400, description: "Error al buscar versiones de producto" })
-    @ApiResponse({ status: 500, description: "Error al buscar versiones de producto" })
-    @ApiQuery({ name: "limit", description: "Limite de registro a buscar", required: true })
-    @ApiQuery({ name: "entity", description: "Entidad", required: true })
-    async findRandomCards(@OptionalCustomer() customer: CustomerPayload, @Query() dto: GetProductVersionCardsRandomOptionsDTO) {
-        return await this.findProductVersionService.findRandomCards({ options: dto, customerUUID: customer?.uuid });
+        return await this.findProductVersionService.searchCards({ filters: dto, customerUUID: customer?.uuid, scope: "external" });
     };
 
     @Get("details/:sku")

@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 
 
@@ -65,7 +66,7 @@ export class OffersUtilsService {
             categoryId: string,
             subcategoryIds: string[]
         }>,
-        tx?: any
+        tx?: Prisma.TransactionClient
     ): Promise<Map<string, { discount: number, isOffer: boolean }>> {
         const prisma = tx || this.prisma;
         const now = new Date();

@@ -89,6 +89,10 @@ export class CustomerAddressesService {
         });
     };
 
+    async findOne({ uuid }: { uuid: string }) {
+        return await this.prisma.customerAddresses.findUnique({ where: { uuid }, omit: { id: true, customer_id: true } });
+    };
+
     async findAll(args: { pagination: { limit: number, page: number }, customerUUID: string }): Promise<GetCustomerAddresses> {
         return await this.prisma.$transaction(async (tx) => {
             const customer = await tx.customer.findUnique({ where: { uuid: args.customerUUID }, select: { id: true } });

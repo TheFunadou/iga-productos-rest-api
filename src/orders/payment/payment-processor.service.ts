@@ -3,14 +3,14 @@ import { MercadoPagoConfig, Payment } from "mercadopago";
 import { CacheService } from "src/cache/cache.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import { MercadoPagoPaymentStatus } from "./payment.dto";
-import { formatMercadoPagoOrderStatus, isMercadoPagoStatus } from "./payment.helpers";
 import { PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { Decimal } from "@prisma/client/runtime/index-browser";
-import { OrderPaymentDetails } from "@prisma/client";
+import { OrderPaymentDetails, Prisma } from "@prisma/client";
 import { ShippingService } from "src/shipping/shipping.service";
 import { ShoppingCartService } from "src/customer/shopping-cart/shopping-cart.service";
 import { NotificationsService } from "src/notifications/notifications.service";
 import { ConfigService } from "@nestjs/config";
+import { formatMercadoPagoOrderStatus, isMercadoPagoStatus } from "./payment.helpers";
 
 
 @Injectable()
@@ -49,12 +49,12 @@ export class PaymentProcessorService {
         };
     };
 
-    private async updateOrderStatus(args: { tx: any, orderUUID: string, paymentStatus: MercadoPagoPaymentStatus, payment: PaymentResponse }) {
+    private async updateOrderStatus(args: { tx: Prisma.TransactionClient, orderUUID: string, paymentStatus: MercadoPagoPaymentStatus, payment: PaymentResponse }) {
         const order = await args.tx.order.findUnique({
             where: { uuid: args.orderUUID },
             include: { customer: { select: { uuid: true } }, order_items: true }
         });
-        if (!order) throw new NotFoundException("No se encontro la orden que se intena actualizar");
+        if (!order) throw new NotFoundException("No se encontro la orden que se intenta actualizar");
         if (!isMercadoPagoStatus(args.payment.status!)) throw new BadRequestException("Estatus de pago no soportado");
         if (!args.payment.id) throw new BadRequestException("No se encontro el id del pago");
 
@@ -260,7 +260,7 @@ export class PaymentProcessorService {
                     }
 
 
-                    await this.shoppingCart.updateShoppingCartByApprovedOrder({ customerUUID, orderId });
+                    if (customerUUID) await this.shoppingCart.updateShoppingCartByApprovedOrder({ customerUUID, orderId });
 
                     await this.cache.invalidateQuery({ entity: "order:paid:details", query: customerUUID ? { orderUUID, customerUUID } : { orderUUID } });
                 };

@@ -7,11 +7,32 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { OrderUtilsService } from './order.utils.service';
 import { ProductVersionModule } from 'src/product-version/product-version.module';
 import { OffersModule } from 'src/offers/offers.module';
+import { CreateOrderService } from './domain/services/create-order.service';
+import { CreateOrderStrategyFactory } from './domain/factories/create-order.factory';
+import { MercadoPagoProvider } from './providers/mercado-pago.provider';
+import { CqrsModule } from '@nestjs/cqrs';
+import { MercadoPagoStrategy } from './domain/strategies/create-order.strategy';
+import { CreateOrderHandler } from './domain/commands/create-order/create-order.handler';
 
 @Module({
-  providers: [OrdersService, OrderUtilsService],
+  providers: [
+    OrdersService,
+    OrderUtilsService,
+    CreateOrderService,
+    CreateOrderStrategyFactory,
+    MercadoPagoProvider,
+    MercadoPagoStrategy,
+    CreateOrderHandler
+  ],
   controllers: [OrdersController],
-  imports: [PaymentModule, CacheModule, PrismaModule, ProductVersionModule, OffersModule],
-  exports: [OrdersService]
+  imports: [
+    PaymentModule,
+    CacheModule,
+    PrismaModule,
+    ProductVersionModule,
+    OffersModule,
+    CqrsModule
+  ],
+  exports: [OrdersService, MercadoPagoProvider]
 })
 export class OrdersModule { }

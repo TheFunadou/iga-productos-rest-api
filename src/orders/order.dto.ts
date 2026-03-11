@@ -1,12 +1,16 @@
-import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
+import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsIn, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
-import { OrderItems, OrderResume, OrderShoppingCartDTO } from "./payment/payment.dto";
+import { IsArray, IsBoolean, IsEnum, IsIn, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
+import { OrderItems, OrderResume, OrderShoppingCartDTO, PaymentProviders } from "./payment/payment.dto";
 import { GetCustomerAddressPayment, CreateCustomerAddressDTO as GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
 import { CustomerAttributes } from "src/customer/customer.dto";
-import { OrderAndPaymentStatus, ShippingStatus } from "@prisma/client";
+import { OrderAndPaymentStatus, Prisma, ShippingStatus } from "@prisma/client";
 import { PaginationDTO } from "src/common/DTO/pagination.dto";
 import { CustomerOrderShippingDetails } from "src/shipping/shipping.dto";
+import { Items as MercadoPagoItems } from "mercadopago/dist/clients/commonTypes";
+import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
+import { ProductVersionCard } from "src/product-version/product-version.dto";
+
 
 export class Order {
     @ApiProperty({ description: "ID de la orden", type: String })
@@ -120,42 +124,6 @@ export class OrderPaymentDetails {
     updated_at: Date;
 };
 
-export class OrderRequestDTO {
-    @ApiProperty({ description: "Array de objetos de los productos/items que se van a comprar", type: OrderShoppingCartDTO, isArray: true })
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => OrderShoppingCartDTO)
-    shopping_cart: OrderShoppingCartDTO[];
-
-    @ApiProperty({ description: "Domicilio de envio del producto", type: String })
-    @IsString()
-    address: string;
-
-    @ApiProperty({ description: "Código de cupón", type: String })
-    @IsString()
-    @IsOptional()
-    coupon_code?: string;
-};
-
-export class OrderRequestGuestDTO {
-    @ApiProperty({ description: "Array de objetos de los productos/items que se van a comprar", type: OrderShoppingCartDTO, isArray: true })
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => OrderShoppingCartDTO)
-    shopping_cart: OrderShoppingCartDTO[];
-
-    @ApiProperty({ description: "Datos del invitado" })
-    @IsObject()
-    @ValidateNested()
-    @Type(() => CustomerAttributes)
-    guest: CustomerAttributes;
-
-    @ApiProperty({ description: "Domicilio de envio del producto", type: GuestAddressDTO })
-    @ValidateNested()
-    @Type(() => GuestAddressDTO)
-    address: GuestAddressDTO;
-};
-
 export class GuestOrderData {
     @ApiProperty({ description: "Datos del invitado", type: CustomerAttributes })
     customer: CustomerAttributes;
@@ -168,6 +136,82 @@ export class GuestOrderData {
 export class SafeOrder extends OmitType(Order, ["id", "external_order_id", "customer_id", "customer_address_id"] as const) { };
 export class LightGetOrders extends OmitType(SafeOrder, ["is_guest_order", "exchange", "payment_provider", "coupon_code" as const]) { };
 export class SafePaymentDetails extends OmitType(OrderPaymentDetails, ["id", "order_id", "payment_id", "fee_amount", "received_amount"] as const) { };
+
+
+export class OrderRequestFormGuestDTO extends GuestAddressDTO {
+    @ApiProperty({ description: "Nombre del invitado", type: String })
+    @IsString()
+    @IsNotEmpty({ message: "El campo first_name (nombre del invitado) no puede estar vacio" })
+    first_name: string;
+
+    @ApiProperty({ description: "Apellido del invitado", type: String })
+    @IsString()
+    @IsNotEmpty({ message: "El campo last_name (apellido del invitado) no puede estar vacio" })
+    last_name: string;
+
+    @ApiProperty({ description: "Correo electronico del invitado", type: String })
+    @IsString()
+    @IsNotEmpty({ message: "El campo email (correo electronico) no puede estar vacio" })
+    email: string;
+
+    @ApiProperty({ description: "Consentimiento del invitado", type: Boolean })
+    @IsBoolean()
+    @IsNotEmpty({ message: "El campo consent (consentimiento) no puede estar vacio" })
+    consent: boolean;
+};
+
+// export class OrderRequestGuestDTO {
+//     @ApiProperty({ description: "ID de la sesión del invitado", type: String })
+//     @IsString()
+//     @IsNotEmpty({ message: "El campo session_id (ID de la sesión) no puede estar vacio" })
+//     session_id: string;
+
+//     @ApiProperty({ description: "Array de objetos de los productos/items que se van a comprar", type: OrderShoppingCartDTO, isArray: true })
+//     @IsArray()
+//     @ValidateNested({ each: true })
+//     @Type(() => OrderShoppingCartDTO)
+//     shopping_cart: OrderShoppingCartDTO[];
+
+//     @ApiProperty({ description: "Datos del invitado", type: OrderRequestFormGuestDTO })
+//     @ValidateNested()
+//     @Type(() => OrderRequestFormGuestDTO)
+//     form: OrderRequestFormGuestDTO;
+
+//     @ApiProperty({ description: "Código de cupón", type: String })
+//     @IsString()
+//     @IsOptional()
+//     coupon_code?: string;
+// };
+
+export class OrderRequestDTO {
+    @ApiProperty({ description: "Array de objetos de los productos/items que se van a comprar", type: OrderShoppingCartDTO, isArray: true })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => OrderShoppingCartDTO)
+    orderItems: OrderShoppingCartDTO[];
+
+    @ApiProperty({ description: "UUID del domicilio de envio del producto", type: String })
+    @IsString()
+    @IsOptional()
+    addressUUID?: string;
+
+    @ApiProperty({ description: "Código de cupón", type: String })
+    @IsString()
+    @IsOptional()
+    couponCode?: string;
+
+    @ApiProperty({ description: "Proveedor de pago", type: String })
+    @IsString()
+    paymentProvider: PaymentProviders;
+
+    @ApiProperty({ description: "Datos del invitado", type: OrderRequestFormGuestDTO })
+    @ValidateNested()
+    @Type(() => OrderRequestFormGuestDTO)
+    @IsOptional()
+    guestForm?: OrderRequestFormGuestDTO;
+};
+
+
 
 
 export class CheckoutOrder {
@@ -287,3 +331,88 @@ export class UpdateOrderStatusDTO {
     @IsEnum(OrderAndPaymentStatus)
     status: OrderAndPaymentStatus;
 };
+
+export interface MercadoPagoPreferenceBody {
+    internalOrderId: string,
+    items: MercadoPagoItems[],
+    vigency: { expirationFrom: string, expirationTo: string },
+    customer: { email?: string, name?: string, last_name?: string },
+    customerAddress: { zip_code?: string, street_name?: string, city?: string, state?: string, number?: string, country?: string },
+    shippingCost: number,
+    frontendUrl: string,
+    notificationUrl: string,
+};
+
+export interface ValidateCustomer {
+    customer: {
+        customerUUID?: string,
+        addressUUID?: string
+    },
+    guestForm?: OrderRequestFormGuestDTO
+};
+
+export interface OrderValidatedCustomerData {
+    customer: {
+        id?: string,
+        name: string,
+        last_name: string,
+        email: string
+    },
+    customerAddress: {
+        id?: string,
+        zip_code: string,
+        street_name: string,
+        city: string,
+        state: string,
+        number: string,
+        country: string
+    }
+};
+
+export interface CreateProviderOrderStrategyArgs {
+    pvCards: ProductVersionCard[],
+    orderItems: OrderShoppingCartDTO[],
+    customer: {
+        email?: string;
+        name?: string;
+        last_name?: string;
+    },
+    customerAddress: {
+        zip_code?: string;
+        street_name?: string;
+        city?: string;
+        state?: string;
+        number?: string;
+        country?: string;
+    },
+    shippingCost: number;
+    frontendUrl: string;
+    notificationUrl: string;
+};
+
+export interface CreateOrder {
+    tx: Prisma.TransactionClient,
+    uuid: string,
+    externalId: string,
+    customerAddressId?: string,
+    customerId?: string,
+    paymentProvider: PaymentProviders,
+    totalAmount: number,
+    exchange: "MXN" | "USD"
+};
+
+export interface AddItemsToOrderOrderItems {
+    order_id: string,
+    product_version_id: string,
+    quantity: number,
+    unit_price: number,
+    subtotal: number,
+    discount?: number
+}
+
+export interface AddItemsToOrder {
+    tx: Prisma.TransactionClient,
+    orderId: string,
+    pvCards: ProductVersionCard[],
+    shoppingCart: ShoppingCartDTO[]
+}

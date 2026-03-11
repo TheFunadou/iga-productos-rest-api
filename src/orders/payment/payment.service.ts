@@ -1,67 +1,74 @@
-import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { MercadoPagoConfig, Payment } from "mercadopago";
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GetPaidOrderDetails, OrderItems } from './payment.dto';
+import { GetPaidOrderDetails, OrderItems, MercadoPagoWebhook } from './payment.dto';
 import { OrderAndPaymentStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
-import { createHmac, timingSafeEqual } from 'crypto';
+import { MercadoPagoProvider } from '../providers/mercado-pago.provider';
 
 @Injectable()
 export class PaymentService {
     private readonly logger = new Logger(PaymentService.name);
-    private readonly mercadoPagoClient: MercadoPagoConfig;
-    private readonly mercadoPagoPayment: Payment;
+    // private readonly mercadoPagoClient: MercadoPagoConfig;
+    // private readonly mercadoPagoPayment: Payment;
     private readonly nodeEnv: string;
-    private readonly mercadoPagoWebhookSecret?: string;
+    // private readonly mercadoPagoWebhookSecret?: string;
 
     constructor(
         private readonly cacheService: CacheService,
-        @InjectQueue("payment-processing") private readonly paymentQueue: Queue,
+        // @InjectQueue("payment-processing") private readonly paymentQueue: Queue,
         private readonly prisma: PrismaService,
-        private readonly config: ConfigService
+        private readonly config: ConfigService,
+        private readonly mercadopago: MercadoPagoProvider
     ) {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
-        const mercadoPagoAccessToken = this.nodeEnv === "production" ? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN") : this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
-        if (!mercadoPagoAccessToken) {
-            this.logger.error("Error al cargar modulo de Ordenes");
-            throw new Error("Error al cargar modulo de Ordenes");
-        };
-        this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: mercadoPagoAccessToken });
-        this.mercadoPagoPayment = new Payment(this.mercadoPagoClient);
-        this.mercadoPagoWebhookSecret = this.config.get<string>("MERCADO_PAGO_WEBHOOK_SECRET");
+        // const mercadoPagoAccessToken = this.nodeEnv === "production" ? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN") : this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
+        // if (!mercadoPagoAccessToken) {
+        //     this.logger.error("Error al cargar modulo de Ordenes");
+        //     throw new Error("Error al cargar modulo de Ordenes");
+        // };
+        // this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: mercadoPagoAccessToken });
+        // this.mercadoPagoPayment = new Payment(this.mercadoPagoClient);
+        // this.mercadoPagoWebhookSecret = this.config.get<string>("MERCADO_PAGO_WEBHOOK_SECRET");
     };
 
-    async getMercadoPagoPaymentInfo(args: { orderId: string }) {
-        return await this.mercadoPagoPayment.get({ id: args.orderId }).catch((error) => {
-            if (this.nodeEnv === "DEV") {
-                this.logger.error(`Error al obtener la información de la orden de pago: ${args.orderId}, ${error}`);
-            };
-            this.logger.error("Error al obtener la información de la orden de pago");
-            throw new BadRequestException("Error al obtener la información de la orden de pago");
-        });
-    };
+    // async getMercadoPagoPaymentInfo(args: { orderId: string }) {
+    //     return await this.mercadoPagoPayment.get({ id: args.orderId }).catch((error) => {
+    //         if (this.nodeEnv === "DEV") {
+    //             this.logger.error(`Error al obtener la información de la orden de pago: ${args.orderId}, ${error}`);
+    //         };
+    //         this.logger.error("Error al obtener la información de la orden de pago");
+    //         throw new BadRequestException("Error al obtener la información de la orden de pago");
+    //     });
+    // };
 
-    /**
-     * Agrega un trabajo a la cola de procesamiento de pagos
-     * @param args { paymentId: string }
-     */
-    async queuePaymentProcessing(args: { paymentId: string }): Promise<void> {
-        const jobData: ProcessPaymentJob = {
-            paymentId: args.paymentId,
-            externalOrderId: args.paymentId,
-            timestamp: new Date().toISOString(),
-        };
+    async processMercadoPagoPayment(args: MercadoPagoWebhook) {
+        const { xSignature, xRequestId, dataId, type } = args;
+        if (xSignature && xRequestId && dataId) this.mercadopago.verifyWebhookSignature({ xSignature, xRequestId, dataId });
 
-        await this.paymentQueue.add("process-payment", jobData, {
-            attempts: 3,
-            backoff: { type: "exponential", delay: 2000 }
-        });
+    }
 
-        this.logger.log(`Payment processing job queued for paymentId: ${args.paymentId}`);
-    };
+
+    // /**
+    //  * Agrega un trabajo a la cola de procesamiento de pagos
+    //  * @param args { paymentId: string }
+    //  */
+    // async queuePaymentProcessing(args: { paymentId: string }): Promise<void> {
+    //     const jobData: ProcessPaymentJob = {
+    //         paymentId: args.paymentId,
+    //         externalOrderId: args.paymentId,
+    //         timestamp: new Date().toISOString(),
+    //     };
+
+    //     await this.paymentQueue.add("process-payment", jobData, {
+    //         attempts: 3,
+    //         backoff: { type: "exponential", delay: 2000 }
+    //     });
+
+    //     this.logger.log(`Payment processing job queued for paymentId: ${args.paymentId}`);
+    // };
 
     /**
      * Obtiene el estado de la orden de pago
@@ -239,68 +246,68 @@ export class PaymentService {
     }
 
     async getOrderStatusWithDetails(args: { orderUUID: string, customerUUID?: string, requiredStatus: OrderAndPaymentStatus[] }): Promise<GetPaidOrderDetails> {
-        const { orderUUID } = args;
-        const queryKey = args.customerUUID ? { orderUUID: args.orderUUID, customerUUID: args.customerUUID } : { orderUUID: args.orderUUID };
-        const order = await this.prisma.order.findUnique({ where: { uuid: args.orderUUID }, select: { status: true } });
+        const { orderUUID, customerUUID, requiredStatus } = args;
+        const queryKey = args.customerUUID ? { orderUUID, customerUUID } : { orderUUID };
+        const order = await this.prisma.order.findUnique({ where: { uuid: orderUUID }, select: { status: true } });
         if (!order) throw new NotFoundException("Orden no encontrada");
-        if (!args.requiredStatus.includes(order.status)) return { status: order.status };
+        if (!requiredStatus.includes(order.status)) return { status: order.status };
         return await this.getDetails({ orderUUID, queryKey, orderStatus: order.status })
     };
 
 
-    /**
-     * Verify the signature of the MercadoPago webhook using HMAC-SHA256.
-     * Throws UnauthorizedException if the signature is invalid.
-     * @see https://www.mercadopago.com.mx/developers/es/docs/checkout-pro/payment-notifications
-    */
-    verifyWebhookSignature(args: {
-        xSignature: string;
-        xRequestId: string;
-        dataId: string;
-    }): void {
-        const { xSignature, xRequestId, dataId } = args;
+    // /**
+    //  * Verify the signature of the MercadoPago webhook using HMAC-SHA256.
+    //  * Throws UnauthorizedException if the signature is invalid.
+    //  * @see https://www.mercadopago.com.mx/developers/es/docs/checkout-pro/payment-notifications
+    // */
+    // verifyWebhookSignature(args: {
+    //     xSignature: string;
+    //     xRequestId: string;
+    //     dataId: string;
+    // }): void {
+    //     const { xSignature, xRequestId, dataId } = args;
 
-        if (!this.mercadoPagoWebhookSecret) {
-            this.logger.error('MERCADO_PAGO_WEBHOOK_SECRET no está configurado');
-            throw new UnauthorizedException('Webhook secret no configurado');
-        }
+    //     if (!this.mercadoPagoWebhookSecret) {
+    //         this.logger.error('MERCADO_PAGO_WEBHOOK_SECRET no está configurado');
+    //         throw new UnauthorizedException('Webhook secret no configurado');
+    //     }
 
-        // Extraer ts y v1 del header x-signature
-        // Formato: "ts=<timestamp>,v1=<hash>"
-        const parts = xSignature.split(',');
-        let ts: string | undefined;
-        let v1: string | undefined;
+    //     // Extraer ts y v1 del header x-signature
+    //     // Formato: "ts=<timestamp>,v1=<hash>"
+    //     const parts = xSignature.split(',');
+    //     let ts: string | undefined;
+    //     let v1: string | undefined;
 
-        for (const part of parts) {
-            const [key, value] = part.split('=');
-            if (key?.trim() === 'ts') ts = value?.trim();
-            if (key?.trim() === 'v1') v1 = value?.trim();
-        }
+    //     for (const part of parts) {
+    //         const [key, value] = part.split('=');
+    //         if (key?.trim() === 'ts') ts = value?.trim();
+    //         if (key?.trim() === 'v1') v1 = value?.trim();
+    //     }
 
-        if (!ts || !v1) {
-            throw new UnauthorizedException('Formato de x-signature inválido');
-        }
+    //     if (!ts || !v1) {
+    //         throw new UnauthorizedException('Formato de x-signature inválido');
+    //     }
 
-        // Construir el template según la documentación oficial de MercadoPago
-        const signedTemplate = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+    //     // Construir el template según la documentación oficial de MercadoPago
+    //     const signedTemplate = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
 
-        // Generar HMAC-SHA256
-        const generatedHash = createHmac('sha256', this.mercadoPagoWebhookSecret)
-            .update(signedTemplate)
-            .digest('hex');
+    //     // Generar HMAC-SHA256
+    //     const generatedHash = createHmac('sha256', this.mercadoPagoWebhookSecret)
+    //         .update(signedTemplate)
+    //         .digest('hex');
 
-        // Comparación segura en tiempo constante para evitar timing attacks
-        const hashBuffer = Buffer.from(generatedHash, 'hex');
-        const v1Buffer = Buffer.from(v1, 'hex');
+    //     // Comparación segura en tiempo constante para evitar timing attacks
+    //     const hashBuffer = Buffer.from(generatedHash, 'hex');
+    //     const v1Buffer = Buffer.from(v1, 'hex');
 
-        if (
-            hashBuffer.length !== v1Buffer.length ||
-            !timingSafeEqual(hashBuffer, v1Buffer)
-        ) {
-            this.logger.warn(`Firma de webhook inválida para dataId: ${dataId}`);
-            throw new UnauthorizedException('Firma del webhook inválida');
-        }
+    //     if (
+    //         hashBuffer.length !== v1Buffer.length ||
+    //         !timingSafeEqual(hashBuffer, v1Buffer)
+    //     ) {
+    //         this.logger.warn(`Firma de webhook inválida para dataId: ${dataId}`);
+    //         throw new UnauthorizedException('Firma del webhook inválida');
+    //     }
 
-        this.logger.log(`Webhook verificado correctamente para dataId: ${dataId}`);
-    };
+    //     this.logger.log(`Webhook verificado correctamente para dataId: ${dataId}`);
+    // };
 };

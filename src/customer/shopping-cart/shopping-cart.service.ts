@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { AddItemDTO, ShoppingCartDTO, UpdateItemQtyDTO } from './shopping-cart.dto';
 import { ShoppingCartUtilsService } from './shopping-cart.utils.service';
 import { OffersUtilsService } from 'src/offers/offers.utils.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ShoppingCartService {
@@ -283,7 +284,7 @@ export class ShoppingCartService {
     };
 
 
-    async updateShoppingCartByApprovedOrder(args: { customerUUID: string, orderId: string, tx?: any }) {
+    async updateShoppingCartByApprovedOrder(args: { customerUUID: string, orderId: string, tx?: Prisma.TransactionClient }) {
         const { customerUUID, orderId, tx } = args;
         const prisma = tx || this.prisma;
 

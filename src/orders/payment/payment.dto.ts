@@ -103,3 +103,10 @@ export class GetPaidOrderDetails {
     @ApiProperty({ description: "Detalle de la orden", type: PaymentProcessed })
     order?: PaymentProcessed;
 };
+
+export interface MercadoPagoWebhook {
+    xSignature: string;
+    xRequestId: string;
+    dataId: string;
+    type: string;
+};

@@ -1,6 +1,5 @@
 interface ProcessPaymentJob {
     paymentId: string;
-    externalOrderId: string;
     timestamp: string;
 }
 interface OrderProcessingStatus {

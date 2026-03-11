@@ -49,15 +49,16 @@ export class FavoritesService {
         });
     }
 
-    async find(args: { pagination: { page: number, limit: number }, customerUUID: string }) {
+    async find({ pagination: { page, limit }, customerUUID }: { pagination: { page: number, limit: number }, customerUUID: string }) {
         return await this.productVersionFindService.searchCards({
             filters: {
-                limit: args.pagination.limit,
-                page: args.pagination.page,
+                limit,
+                page,
                 onlyFavorites: true
             },
-            customerUUID: args.customerUUID,
-            entity: `customer:favorites:${args.customerUUID}`
+            customerUUID,
+            entity: `customer:favorites:${customerUUID}`,
+            scope: "internal"
         })
     };
 };
