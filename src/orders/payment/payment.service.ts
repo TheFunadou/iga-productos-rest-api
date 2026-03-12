@@ -7,6 +7,8 @@ import { GetPaidOrderDetails, OrderItems, MercadoPagoWebhook } from './payment.d
 import { OrderAndPaymentStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { MercadoPagoProvider } from '../providers/mercado-pago.provider';
+import { CommandBus } from '@nestjs/cqrs';
+import { MercadoPagoProcessWebhookCommand } from './domain/commands/mercadopago-proccess-webhook/process-webhook.command';
 
 @Injectable()
 export class PaymentService {
@@ -15,20 +17,26 @@ export class PaymentService {
     // private readonly mercadoPagoPayment: Payment;
     private readonly nodeEnv: string;
     // private readonly mercadoPagoWebhookSecret?: string;
+    private readonly mercadoPagoAccessToken?: string;
 
     constructor(
         private readonly cacheService: CacheService,
         // @InjectQueue("payment-processing") private readonly paymentQueue: Queue,
         private readonly prisma: PrismaService,
         private readonly config: ConfigService,
-        private readonly mercadopago: MercadoPagoProvider
+        private readonly mercadopago: MercadoPagoProvider,
+        private readonly commandBus: CommandBus
+
     ) {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
-        // const mercadoPagoAccessToken = this.nodeEnv === "production" ? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN") : this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
-        // if (!mercadoPagoAccessToken) {
-        //     this.logger.error("Error al cargar modulo de Ordenes");
-        //     throw new Error("Error al cargar modulo de Ordenes");
-        // };
+        this.mercadoPagoAccessToken = this.nodeEnv === "production"
+            ? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN")
+            : this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
+
+        if (!this.mercadoPagoAccessToken) {
+            this.logger.error("Error en OrdersService, no se encontro el access_token de mercado pago");
+            throw new Error("Error al procesar la orden");
+        };
         // this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: mercadoPagoAccessToken });
         // this.mercadoPagoPayment = new Payment(this.mercadoPagoClient);
         // this.mercadoPagoWebhookSecret = this.config.get<string>("MERCADO_PAGO_WEBHOOK_SECRET");
@@ -48,7 +56,20 @@ export class PaymentService {
         const { xSignature, xRequestId, dataId, type } = args;
         if (xSignature && xRequestId && dataId) this.mercadopago.verifyWebhookSignature({ xSignature, xRequestId, dataId });
 
-    }
+    };
+
+    async processMercadoPagoWebhook(args: MercadoPagoWebhook) {
+        const { xSignature, xRequestId, dataId, type } = args;
+        await this.commandBus.execute(
+            new MercadoPagoProcessWebhookCommand(
+                xSignature,
+                xRequestId,
+                dataId,
+                type,
+                this.nodeEnv
+            )
+        );
+    };
 
 
     // /**

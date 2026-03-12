@@ -1,5 +1,4 @@
 import { CacheInterface } from "./cache.interfaces";
-import { Inject, Logger } from "@nestjs/common";
 import Redis from "ioredis";
 import { randomUUID } from "crypto";
 
@@ -253,7 +252,7 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
         if (staleTime !== undefined && staleTime <= 0) {
             throw new Error("StaleTime must be a positive number");
         }
-        if (staleTime !== undefined && ttl !== undefined && staleTime >= ttl) {
+        if (staleTime !== undefined && ttl !== undefined && staleTime >= ttl * 1000) {
             throw new Error("StaleTime must be less than TTL");
         }
 
@@ -431,6 +430,8 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
         redis: Redis
     ): Promise<void> {
         const now = Date.now();
+        const ttlMs = ttl !== undefined ? ttl * 1000 : undefined;
+
         const cacheData: CacheInterface<T> = {
             data,
             metadata: {
@@ -438,7 +439,7 @@ export class StaleWhileRevalidateWithLockFind implements CacheStrategy {
                 staleTime: staleTime?.toString(),
                 staleAt: staleTime ? new Date(now + staleTime).toISOString() : undefined,
                 createdAt: new Date(now).toISOString(),
-                expiresAt: ttl ? new Date(now + ttl).toISOString() : undefined,
+                expiresAt: ttlMs ? new Date(now + ttlMs).toISOString() : undefined,
                 strategy: this.name,
                 hitCount
             }

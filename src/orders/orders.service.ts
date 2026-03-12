@@ -34,9 +34,8 @@ export class OrdersService {
             : this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
 
         if (!this.mercadoPagoAccessToken) {
-            if (this.nodeEnv === "DEV") this.logger.error("Variable de entorno MERCADO_PAGO_ACCESS_TOKEN / ..._TEST vacia o no configurada ");
-            this.logger.error("Error en OrdersService.ts");
-            throw new Error("Error al cargar modulo de Ordenes");
+            this.logger.error("Error en OrdersService, no se encontro el access_token de mercado pago");
+            throw new Error("Error al procesar la orden");
         };
         this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: this.mercadoPagoAccessToken });
         this.mercadoPagoPreference = new Preference(this.mercadoPagoClient);

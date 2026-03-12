@@ -5,6 +5,7 @@ export class MercadoPagoProcessWebhookCommand {
         public readonly xSignature: string,
         public readonly xRequestId: string,
         public readonly dataId: string,
-        public readonly type: string
+        public readonly type: string,
+        public readonly nodeEnv: string
     ) { }
 }

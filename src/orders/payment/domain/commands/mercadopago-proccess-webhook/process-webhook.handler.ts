@@ -22,7 +22,7 @@ export class MercadoPagoProcessWebhookHandler implements ICommandHandler<Mercado
     async execute(command: MercadoPagoProcessWebhookCommand): Promise<any> {
         const context = new MercadoPagoWebhookContext(command);
         await new MercadoPagoPipeline<MercadoPagoWebhookContext>()
-            .pipe(new VerifySignatureStep(this.mercadopago))
+            .pipe(new VerifySignatureStep(this.mercadopago, command.nodeEnv))
             .pipe(new FilterEventTypeStep())
             .pipe(new InitProcessingStatusStep(this.cache))
             .run(context);

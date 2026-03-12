@@ -5,14 +5,14 @@ import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { GetPaidOrderDetails } from './payment.dto';
 import { OrderAndPaymentStatus } from '@prisma/client';
 import { CommandBus } from '@nestjs/cqrs';
-import { MercadoPagoProcessWebhookCommand } from './domain/commands/mercadopago-proccess-webhook/process-webhook.command';
+// import { MercadoPagoProcessWebhookCommand } from './domain/commands/mercadopago-proccess-webhook/process-webhook.command';
 
 @Controller('payment')
 export class PaymentController {
     constructor(
         private readonly paymentService: PaymentService,
-        private readonly cacheService: CacheService,
-        private readonly commandBus: CommandBus
+        // private readonly cacheService: CacheService,
+        // private readonly commandBus: CommandBus
     ) { };
 
 
@@ -53,14 +53,21 @@ export class PaymentController {
         @Headers('x-request-id') xRequestId: string,
     ) {
 
-        await this.commandBus.execute(
-            new MercadoPagoProcessWebhookCommand(
-                xSignature,
-                xRequestId,
-                dataId,
-                type
-            )
-        );
+        // await this.commandBus.execute(
+        //     new MercadoPagoProcessWebhookCommand(
+        //         xSignature,
+        //         xRequestId,
+        //         dataId,
+        //         type
+        //     )
+        // );
+
+        await this.paymentService.processMercadoPagoWebhook({
+            xSignature,
+            xRequestId,
+            dataId,
+            type
+        });
 
         return { success: true };
     };
