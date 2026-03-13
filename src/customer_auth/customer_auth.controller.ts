@@ -34,11 +34,12 @@ export class CustomerAuthController {
         const secure = this.nodeEnv === "production" || this.nodeEnv === "testing" ? true : false;
         const sameSite = this.nodeEnv === "production" || this.nodeEnv === "testing" ? "strict" : "lax";
         // const tunnelSameSite = "none";
+        const domain = this.nodeEnv === "production" || this.nodeEnv === "testing" ? ".igaproductos.com" : undefined;
         response.cookie("iga_customer_access_token", login.access_token, {
             httpOnly: true,
             secure,
             sameSite,
-            domain: ".igaproductos.com",
+            domain,
             maxAge: 1000 * 60 * 60 * 24,
         });
 
@@ -46,7 +47,7 @@ export class CustomerAuthController {
             httpOnly: false,
             secure,
             sameSite,
-            domain: ".igaproductos.com",
+            domain,
             maxAge: 1000 * 60 * 60 * 24,
         });
 
@@ -68,11 +69,12 @@ export class CustomerAuthController {
         const secure = this.nodeEnv === "production" || this.nodeEnv === "testing" ? true : false;
         const sameSite = this.nodeEnv === "production" || this.nodeEnv === "testing" ? "strict" : "lax";
         // const tunnelSameSite = "none";
+        const domain = this.nodeEnv === "production" || this.nodeEnv === "testing" ? ".igaproductos.com" : undefined;
         response.cookie("iga_customer_access_token", login.access_token, {
             httpOnly: true,
             secure,
             sameSite,
-            domain: ".igaproductos.com",
+            domain,
             maxAge: 1000 * 60 * 60 * 24,
         });
 
@@ -80,7 +82,7 @@ export class CustomerAuthController {
             httpOnly: false,
             secure,
             sameSite,
-            domain: ".igaproductos.com",
+            domain,
             maxAge: 1000 * 60 * 60 * 24,
         });
         return { payload: login.payload, csrfToken: login.csrfToken };

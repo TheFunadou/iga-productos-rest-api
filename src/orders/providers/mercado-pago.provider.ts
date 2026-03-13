@@ -14,12 +14,13 @@ export class MercadoPagoProvider {
     private readonly preference: Preference;
     private readonly payment: Payment;
     private readonly mercadoPagoWebhookSecret?: string;
+    private readonly mercadoPagoAccessToken: string;
 
     constructor(private readonly config: ConfigService) {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
-        const accessToken = this.nodeEnv === "production" ? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN") : this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
+        const accessToken = this.nodeEnv === "production" || this.nodeEnv === "testing" ? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN") : this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
         if (!accessToken) throw new Error("MERCADO_PAGO_ACCESS_TOKEN no configurado");
-
+        this.mercadoPagoAccessToken = accessToken;
         this.mercadoPagoWebhookSecret = this.config.get<string>("MERCADO_PAGO_WEBHOOK_SECRET");
         if (!this.mercadoPagoWebhookSecret) throw new Error("MERCADO_PAGO_WEBHOOK_SECRET no configurado");
         this.client = new MercadoPagoConfig({ accessToken });
@@ -28,7 +29,16 @@ export class MercadoPagoProvider {
     }
 
     async create(body: PreferenceCreateData): Promise<PreferenceResponse> {
-        return this.preference.create(body);
+        return this.preference.create(body).then((response) => {
+            if (this.nodeEnv !== "production") {
+                this.logger.log("Firmado con AccessToken: ", this.mercadoPagoAccessToken)
+                this.logger.log("Preferencia creada: ", response);
+            }
+            return response;
+        }).catch((error) => {
+            this.logger.error(`Error al crear la preferencia: ${error}`);
+            throw new BadRequestException("Ocurrio un error al crear la preferencia");
+        });
     };
 
     async getPaymentDetails({ paymentId }: { paymentId: string }): Promise<PaymentResponse> {
