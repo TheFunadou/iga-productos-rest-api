@@ -108,6 +108,7 @@ export class CustomerAuthController {
             httpOnly: true,
             secure: true,
             sameSite: "strict",
+            domain: ".igaproductos.com",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
@@ -115,6 +116,7 @@ export class CustomerAuthController {
             httpOnly: false,
             secure: true,
             sameSite: "strict",
+            domain: ".igaproductos.com",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
