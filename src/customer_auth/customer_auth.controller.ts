@@ -107,14 +107,14 @@ export class CustomerAuthController {
         response.cookie("iga_customer_access_token", login.access_token, {
             httpOnly: true,
             secure: true,
-            sameSite: true,
+            sameSite: "strict",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
         response.cookie("iga_customer_csrf_token", login.csrfToken, {
             httpOnly: false,
             secure: true,
-            sameSite: true,
+            sameSite: "strict",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
