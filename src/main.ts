@@ -20,7 +20,8 @@ async function bootstrap() {
   app.use(
     helmet({
       contentSecurityPolicy:
-        nodeEnv === "production"
+        nodeEnv === "DEV"
+          // nodeEnv === "production"
           ? {
             directives: {
               defaultSrc: ["'self'"],
@@ -39,7 +40,8 @@ async function bootstrap() {
       crossOriginResourcePolicy: { policy: "cross-origin" },
 
       hsts:
-        nodeEnv === "production"
+        // nodeEnv === "production"
+        nodeEnv === "DEV"
           ? {
             maxAge: 31536000,
             includeSubDomains: true,
