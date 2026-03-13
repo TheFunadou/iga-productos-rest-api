@@ -29,24 +29,25 @@ export class CustomerAuthController {
     async login(
         @Body() dto: CustomerCredentialsDTO,
         @Res({ passthrough: true }) response: ExpressResponse,
-        @Req() request: ExpressRequest
     ): Promise<AuthCustomer> {
         const login = await this.customerAuthService.login(dto);
-        response.cookie("iga_customer_access_token", login.access_token, {
-            httpOnly: true,
-            secure: this.nodeEnv === "prodcution",
-            sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
-            maxAge: 1000 * 60 * 60 * 24,
-        });
 
-        response.cookie("iga_customer_csrf_token", login.csrfToken, {
-            httpOnly: false,
-            secure: this.nodeEnv === "prodcution",
-            sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
-            maxAge: 1000 * 60 * 60 * 24,
-        });
+        // for production
+        // response.cookie("iga_customer_access_token", login.access_token, {
+        //     httpOnly: true,
+        //     secure: this.nodeEnv === "prodcution",
+        //     sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
+        //     maxAge: 1000 * 60 * 60 * 24,
+        // });
 
-        //For tunnels
+        // response.cookie("iga_customer_csrf_token", login.csrfToken, {
+        //     httpOnly: false,
+        //     secure: this.nodeEnv === "prodcution",
+        //     sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
+        //     maxAge: 1000 * 60 * 60 * 24,
+        // });
+
+        // For tunnels
         // response.cookie("iga_customer_access_token", login.access_token, {
         //     httpOnly: true,
         //     secure: true,
@@ -60,6 +61,20 @@ export class CustomerAuthController {
         //     sameSite: "none",
         //     maxAge: 1000 * 60 * 60 * 24,
         // });
+
+        response.cookie("iga_customer_access_token", login.access_token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: true,
+            maxAge: 1000 * 60 * 60 * 24,
+        });
+
+        response.cookie("iga_customer_csrf_token", login.csrfToken, {
+            httpOnly: false,
+            secure: true,
+            sameSite: true,
+            maxAge: 1000 * 60 * 60 * 24,
+        });
 
 
         return { payload: login.payload, csrfToken: login.csrfToken };
