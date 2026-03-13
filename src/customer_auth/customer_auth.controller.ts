@@ -31,48 +31,22 @@ export class CustomerAuthController {
         @Res({ passthrough: true }) response: ExpressResponse,
     ): Promise<AuthCustomer> {
         const login = await this.customerAuthService.login(dto);
-
-        // for production
-        // response.cookie("iga_customer_access_token", login.access_token, {
-        //     httpOnly: true,
-        //     secure: this.nodeEnv === "prodcution",
-        //     sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
-        //     maxAge: 1000 * 60 * 60 * 24,
-        // });
-
-        // response.cookie("iga_customer_csrf_token", login.csrfToken, {
-        //     httpOnly: false,
-        //     secure: this.nodeEnv === "prodcution",
-        //     sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
-        //     maxAge: 1000 * 60 * 60 * 24,
-        // });
-
-        // For tunnels
-        // response.cookie("iga_customer_access_token", login.access_token, {
-        //     httpOnly: true,
-        //     secure: true,
-        //     sameSite: "none",
-        //     maxAge: 1000 * 60 * 60 * 24,
-        // });
-
-        // response.cookie("iga_customer_csrf_token", login.csrfToken, {
-        //     httpOnly: false,
-        //     secure: true,
-        //     sameSite: "none",
-        //     maxAge: 1000 * 60 * 60 * 24,
-        // });
-
+        const secure = this.nodeEnv === "production" || this.nodeEnv === "testing" ? true : false;
+        const sameSite = this.nodeEnv === "production" || this.nodeEnv === "testing" ? "strict" : "lax";
+        // const tunnelSameSite = "none";
         response.cookie("iga_customer_access_token", login.access_token, {
             httpOnly: true,
-            secure: true,
-            sameSite: true,
+            secure,
+            sameSite,
+            domain: ".igaproductos.com",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
         response.cookie("iga_customer_csrf_token", login.csrfToken, {
             httpOnly: false,
-            secure: true,
-            sameSite: true,
+            secure,
+            sameSite,
+            domain: ".igaproductos.com",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
@@ -91,35 +65,24 @@ export class CustomerAuthController {
         @Res({ passthrough: true }) response: ExpressResponse,
     ): Promise<AuthCustomer> {
         const login = await this.customerAuthService.loginWithGoogle(dto);
-        // response.cookie("iga_customer_access_token", login.access_token, {
-        //     httpOnly: true,
-        //     secure: this.nodeEnv === "prodcution",
-        //     sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
-        //     maxAge: 1000 * 60 * 60 * 24,
-        // });
-        // response.cookie("iga_customer_csrf_token", login.csrfToken, {
-        //     httpOnly: false,
-        //     secure: this.nodeEnv === "prodcution",
-        //     sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
-        //     maxAge: 1000 * 60 * 60 * 24,
-        // });
-
+        const secure = this.nodeEnv === "production" || this.nodeEnv === "testing" ? true : false;
+        const sameSite = this.nodeEnv === "production" || this.nodeEnv === "testing" ? "strict" : "lax";
+        // const tunnelSameSite = "none";
         response.cookie("iga_customer_access_token", login.access_token, {
             httpOnly: true,
-            secure: true,
-            sameSite: "strict",
+            secure,
+            sameSite,
             domain: ".igaproductos.com",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
         response.cookie("iga_customer_csrf_token", login.csrfToken, {
             httpOnly: false,
-            secure: true,
-            sameSite: "strict",
+            secure,
+            sameSite,
             domain: ".igaproductos.com",
             maxAge: 1000 * 60 * 60 * 24,
         });
-
         return { payload: login.payload, csrfToken: login.csrfToken };
     };
 
@@ -130,8 +93,6 @@ export class CustomerAuthController {
     @ApiResponse({ status: 500, description: "Error al cerrar sesión" })
     async logout(
         @Res({ passthrough: true }) response: ExpressResponse,
-        @Req() request: ExpressRequest,
-        @AuthenticatedCustomer() user: CustomerPayload
     ): Promise<string> {
         response.clearCookie("iga_customer_access_token");
         response.clearCookie("iga_customer_csrf_token");
