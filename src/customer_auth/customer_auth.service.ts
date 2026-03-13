@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException, Unauthorize
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomInt, randomUUID } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
-import { AuthCustomer, CustomerCredentialsDTO, CustomerPayload, GoogleAuthDTO, RestorePasswordAuthDTO, RestorePasswordPublicDTO } from './customer_auth.dto';
+import { AuthCustomer, CustomerCredentialsDTO, CustomerPayload, GoogleAuthDTO, RestorePasswordPublicDTO } from './customer_auth.dto';
 import * as bcrypt from 'bcrypt';
 import { CacheService } from 'src/cache/cache.service';
 import { NotificationsService } from 'src/notifications/notifications.service';

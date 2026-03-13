@@ -91,18 +91,33 @@ export class CustomerAuthController {
         @Res({ passthrough: true }) response: ExpressResponse,
     ): Promise<AuthCustomer> {
         const login = await this.customerAuthService.loginWithGoogle(dto);
+        // response.cookie("iga_customer_access_token", login.access_token, {
+        //     httpOnly: true,
+        //     secure: this.nodeEnv === "prodcution",
+        //     sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
+        //     maxAge: 1000 * 60 * 60 * 24,
+        // });
+        // response.cookie("iga_customer_csrf_token", login.csrfToken, {
+        //     httpOnly: false,
+        //     secure: this.nodeEnv === "prodcution",
+        //     sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
+        //     maxAge: 1000 * 60 * 60 * 24,
+        // });
+
         response.cookie("iga_customer_access_token", login.access_token, {
             httpOnly: true,
-            secure: this.nodeEnv === "prodcution",
-            sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
+            secure: true,
+            sameSite: true,
             maxAge: 1000 * 60 * 60 * 24,
         });
+
         response.cookie("iga_customer_csrf_token", login.csrfToken, {
             httpOnly: false,
-            secure: this.nodeEnv === "prodcution",
-            sameSite: this.nodeEnv === "prodcution" ? "strict" : "lax",
+            secure: true,
+            sameSite: true,
             maxAge: 1000 * 60 * 60 * 24,
         });
+
         return { payload: login.payload, csrfToken: login.csrfToken };
     };
 
