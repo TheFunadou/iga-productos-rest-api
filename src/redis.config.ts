@@ -16,7 +16,8 @@ export const RedisProvider = {
         return new Redis({
             host: process.env.REDIS_HOST,
             port: Number(process.env.REDIS_PORT),
-            password: nodeEnv === "DEV" ? undefined : redisPassword
+            // password: nodeEnv === "DEV" ? undefined : redisPassword
+            password: redisPassword
         });
     },
 };
