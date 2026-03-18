@@ -1,8 +1,11 @@
+import { Logger } from "@nestjs/common";
 import { OrderAndPaymentStatus } from "@prisma/client";
 import { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
 
 export class MercadoPagoPaymentContext {
+    private readonly logger = new Logger("MercadoPagoWebhookQueue")
     public readonly paymentId: string;
+    public readonly nodeEnv: string;
     public payment: PaymentResponse | null = null;
     public orderUUID: string | null = null;
     public orderStatus: OrderAndPaymentStatus | null = null;
@@ -10,7 +13,20 @@ export class MercadoPagoPaymentContext {
     public customerUUID: string | null = null;
     public skipped: boolean = false; // true si el pago ya estaba procesado (idempotencia)
 
-    constructor(args: { paymentId: string }) {
+    constructor(args: { paymentId: string, nodeEnv: string }) {
         this.paymentId = args.paymentId;
+        this.nodeEnv = args.nodeEnv;
     }
+
+    conditionalLog(message: string) {
+        if (this.nodeEnv === "DEV" || this.nodeEnv === "testing") {
+            this.logger.log(`[PAYMENT QUEUE - ${this.paymentId}] ${message}`);
+        }
+    };
+
+    conditionalError(message: string, error?: any) {
+        if (this.nodeEnv === "DEV" || this.nodeEnv === "testing") {
+            this.logger.error(`[PAYMENT QUEUE - ${this.paymentId}] ${message}`, error);
+        }
+    };
 }

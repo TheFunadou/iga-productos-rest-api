@@ -6,6 +6,7 @@ import { GetCustomerAddressPayment } from "src/customer/customer-addresses/custo
 import { CustomerAttributes } from "src/customer/customer.dto";
 import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
 import { SafeOrder, SafePaymentDetails } from "../order.dto";
+import { Decimal } from "@prisma/client/runtime/library";
 
 export type PaymentProviders = "mercado_pago" | "paypal";
 export type MercadoPagoPaymentStatus = "approved" | "rejected" | "in_process" | "cancelled" | "authorized" | "pending" | "in_mediation" | "refunded" | "charged_back"
@@ -77,6 +78,9 @@ export class OrderPaymentDetails {
 
     @ApiProperty({ description: "Detalle de envio", type: PaidOrderShipping })
     shipping?: PaidOrderShipping;
+
+    @ApiProperty({ description: "Resumen de la orden", type: OrderResume })
+    resume: OrderResume;
 };
 
 
@@ -89,7 +93,7 @@ export class PaymentProcessed {
     items: OrderItems[];
 
     @ApiProperty({ description: "Cliente", type: CustomerAttributes })
-    customer?: CustomerAttributes;
+    customer: CustomerAttributes;
 
     @ApiProperty({ description: "Detalle de la orden", type: OrderPaymentDetails })
     details: OrderPaymentDetails;
@@ -104,9 +108,75 @@ export class GetPaidOrderDetails {
     order?: PaymentProcessed;
 };
 
+export class CustomerPaymentData extends CustomerAttributes {
+    @ApiProperty({ description: "Dirección de envio del destinatario", type: GetCustomerAddressPayment })
+    customer_addresses: GetCustomerAddressPayment[];
+};
+
+export interface PaymentDetails {
+    uuid: string;
+    customer_address_id: string | null;
+    is_guest_order: boolean;
+    payment_provider: string;
+    total_amount: Decimal;
+    exchange: string;
+    aditional_resource_url: string | null;
+    coupon_code: string | null;
+    created_at: Date;
+    updated_at: Date;
+    payment_details: {
+        created_at: Date;
+        updated_at: Date;
+        last_four_digits: string;
+        payment_class: string;
+        payment_method: string;
+        customer_paid_amount: Decimal;
+        customer_installment_amount: Decimal;
+        installments: number;
+        payment_status: OrderAndPaymentStatus;
+    }[];
+    order_items: {
+        quantity: number;
+        unit_price: Decimal;
+        subtotal: Decimal,
+        discount: number,
+        product_version: {
+            unit_price: Decimal,
+            sku: string,
+            color_line: string,
+            color_name: string,
+            color_code: string,
+            stock: number,
+            product_version_images: {
+                main_image: boolean,
+                image_url: string
+            }[],
+            product: {
+                id: string,
+                category_id: string,
+                product_name: string,
+                category: {
+                    name: string
+                },
+                subcategories: {
+                    subcategories: {
+                        uuid: string,
+                        description: string
+                    }
+                }[]
+            }
+        }
+    }[],
+    shipping: {
+        boxes_count: number,
+        shipping_amount: Decimal
+    } | null
+}
+
 export interface MercadoPagoWebhook {
     xSignature: string;
     xRequestId: string;
     dataId: string;
     type: string;
 };
+

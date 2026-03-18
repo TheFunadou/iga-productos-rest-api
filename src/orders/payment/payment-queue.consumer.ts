@@ -2,6 +2,7 @@ import { Processor, WorkerHost, OnWorkerEvent } from "@nestjs/bullmq";
 import { Logger } from "@nestjs/common";
 import { PaymentProcessorService } from "./payment-processor.service";
 import { Job } from "bullmq";
+import { ProcessPaymentJob } from "./payment.interfaces";
 
 @Processor("payment-processing", {
     concurrency: 5

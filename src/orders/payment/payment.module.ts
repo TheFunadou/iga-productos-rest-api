@@ -13,13 +13,15 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { MercadoPagoPaymentQueueConsumer } from './domain/queues/mercadopago/payment-queue.consumer';
 import { MercadoPagoProcessWebhookHandler } from './domain/commands/mercadopago-proccess-webhook/process-webhook.handler';
 import { MercadoPagoProvider } from '../providers/mercado-pago.provider';
+import { GetPaymentDetails } from './services/get-payment-details.service';
 
 @Module({
   providers: [
     PaymentService,
     MercadoPagoProcessWebhookHandler,
     MercadoPagoPaymentQueueConsumer,
-    MercadoPagoProvider
+    MercadoPagoProvider,
+    GetPaymentDetails
   ],
   controllers: [PaymentController],
   imports: [

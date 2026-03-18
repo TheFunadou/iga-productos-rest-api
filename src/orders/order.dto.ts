@@ -2,7 +2,7 @@ import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsEnum, IsIn, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
 import { OrderItems, OrderResume, OrderShoppingCartDTO, PaymentProviders } from "./payment/payment.dto";
-import { GetCustomerAddressPayment, CreateCustomerAddressDTO as GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
+import { GetCustomerAddressOrder, CreateCustomerAddressDTO as GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
 import { CustomerAttributes } from "src/customer/customer.dto";
 import { OrderAndPaymentStatus, Prisma, ShippingStatus } from "@prisma/client";
 import { PaginationDTO } from "src/common/DTO/pagination.dto";
@@ -223,8 +223,8 @@ export class CheckoutOrder {
     resume: OrderResume;
     @ApiProperty({ description: "ID externo de la orden", type: String })
     external_id: string;
-    @ApiProperty({ description: "Dirección de envio del destinatario", type: GetCustomerAddressPayment })
-    address: GetCustomerAddressPayment;
+    @ApiProperty({ description: "Dirección de envio del destinatario", type: GetCustomerAddressOrder })
+    address: GetCustomerAddressOrder;
 };
 
 
@@ -266,8 +266,8 @@ export class OrderMoreDetails {
 
 
 export class OrderDetails {
-    @ApiProperty({ description: "Dirección de envio del destinatario", type: GetCustomerAddressPayment })
-    address: GetCustomerAddressPayment;
+    @ApiProperty({ description: "Dirección de envio del destinatario", type: GetCustomerAddressOrder })
+    address: GetCustomerAddressOrder;
 
     @ApiProperty({ description: "Items de la orden", type: [OrderItems] as const })
     items: OrderItems[];
@@ -348,7 +348,9 @@ export interface ValidateCustomer {
         customerUUID?: string,
         addressUUID?: string
     },
-    guestForm?: OrderRequestFormGuestDTO
+    guestForm?: OrderRequestFormGuestDTO,
+    isGuest: boolean,
+    orderUUID: string
 };
 
 export interface OrderValidatedCustomerData {
@@ -370,6 +372,7 @@ export interface OrderValidatedCustomerData {
 };
 
 export interface CreateProviderOrderStrategyArgs {
+    orderUUID: string;
     pvCards: ProductVersionCard[],
     orderItems: OrderShoppingCartDTO[],
     customer: {

@@ -20,17 +20,26 @@ export class MercadoPagoProcessWebhookHandler implements ICommandHandler<Mercado
     ) { };
 
     async execute(command: MercadoPagoProcessWebhookCommand): Promise<any> {
-        const context = new MercadoPagoWebhookContext(command);
+        const context = new MercadoPagoWebhookContext({
+            ...command, nodeEnv: command.nodeEnv
+        });
+        context.conditionalLog(`Iniciando procesamiento de webhook para el pago ${context.dataId}`);
         await new MercadoPagoPipeline<MercadoPagoWebhookContext>()
             .pipe(new VerifySignatureStep(this.mercadopago, command.nodeEnv))
             .pipe(new FilterEventTypeStep())
             .pipe(new InitProcessingStatusStep(this.cache))
             .run(context);
 
-        if (context.shouldStop) return;
+        if (context.shouldStop) {
+            context.conditionalLog("Webhook filtrado o no requiere accion");
+            return;
+        };
+
+        context.conditionalLog(`Agregando pago ${context.dataId} a la cola de procesamiento`);
 
         await this.queue.add("mercadopago-process-payment", {
             paymentId: context.dataId,
+            nodeEnv: command.nodeEnv,
             timestamp: new Date().toISOString(),
         }, {
             attempts: 3,

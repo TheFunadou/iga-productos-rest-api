@@ -11,6 +11,7 @@ import { ShoppingCartService } from "src/customer/shopping-cart/shopping-cart.se
 import { NotificationsService } from "src/notifications/notifications.service";
 import { ConfigService } from "@nestjs/config";
 import { formatMercadoPagoOrderStatus, isMercadoPagoStatus } from "./payment.helpers";
+import { OrderProcessingStatus } from "./payment.interfaces";
 
 
 @Injectable()

@@ -11,4 +11,10 @@ export interface OrderConfirmationEmailProps {
     orderUUID: string;
     items: OrderItem[];
     total: string;
+    orderResume?: {
+        subtotal: number;
+        discount: number;
+        shippingCost: number;
+        total: number;
+    }
 }

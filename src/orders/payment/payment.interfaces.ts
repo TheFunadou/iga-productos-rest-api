@@ -1,8 +1,9 @@
-interface ProcessPaymentJob {
+export interface ProcessPaymentJob {
     paymentId: string;
     timestamp: string;
+    nodeEnv: string;
 }
-interface OrderProcessingStatus {
+export interface OrderProcessingStatus {
     status: 'pending' | 'processing' | 'completed' | 'failed';
     orderUUID?: string;
     updatedAt: string;

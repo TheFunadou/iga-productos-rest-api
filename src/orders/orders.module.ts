@@ -4,7 +4,6 @@ import { OrdersController } from './orders.controller';
 import { PaymentModule } from './payment/payment.module';
 import { CacheModule } from 'src/cache/cache.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { OrderUtilsService } from './order.utils.service';
 import { ProductVersionModule } from 'src/product-version/product-version.module';
 import { OffersModule } from 'src/offers/offers.module';
 import { CreateOrderService } from './domain/services/create-order.service';
@@ -17,7 +16,6 @@ import { CreateOrderHandler } from './domain/commands/create-order/create-order.
 @Module({
   providers: [
     OrdersService,
-    OrderUtilsService,
     CreateOrderService,
     CreateOrderStrategyFactory,
     MercadoPagoProvider,

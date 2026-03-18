@@ -1,61 +1,27 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GetPaidOrderDetails, OrderItems, MercadoPagoWebhook } from './payment.dto';
 import { OrderAndPaymentStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
-import { MercadoPagoProvider } from '../providers/mercado-pago.provider';
 import { CommandBus } from '@nestjs/cqrs';
 import { MercadoPagoProcessWebhookCommand } from './domain/commands/mercadopago-proccess-webhook/process-webhook.command';
+import { OrderProcessingStatus } from './payment.interfaces';
+import { calcOrderItemsResume } from './payment.helpers';
 
 @Injectable()
 export class PaymentService {
     private readonly logger = new Logger(PaymentService.name);
-    // private readonly mercadoPagoClient: MercadoPagoConfig;
-    // private readonly mercadoPagoPayment: Payment;
     private readonly nodeEnv: string;
-    // private readonly mercadoPagoWebhookSecret?: string;
-    private readonly mercadoPagoAccessToken?: string;
 
     constructor(
         private readonly cacheService: CacheService,
-        // @InjectQueue("payment-processing") private readonly paymentQueue: Queue,
         private readonly prisma: PrismaService,
         private readonly config: ConfigService,
-        private readonly mercadopago: MercadoPagoProvider,
         private readonly commandBus: CommandBus
 
     ) {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
-        this.mercadoPagoAccessToken = this.nodeEnv === "production"
-            ? this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN")
-            : this.config.get<string>("MERCADO_PAGO_ACCESS_TOKEN_TEST");
-
-        if (!this.mercadoPagoAccessToken) {
-            this.logger.error("Error en OrdersService, no se encontro el access_token de mercado pago");
-            throw new Error("Error al procesar la orden");
-        };
-        // this.mercadoPagoClient = new MercadoPagoConfig({ accessToken: mercadoPagoAccessToken });
-        // this.mercadoPagoPayment = new Payment(this.mercadoPagoClient);
-        // this.mercadoPagoWebhookSecret = this.config.get<string>("MERCADO_PAGO_WEBHOOK_SECRET");
-    };
-
-    // async getMercadoPagoPaymentInfo(args: { orderId: string }) {
-    //     return await this.mercadoPagoPayment.get({ id: args.orderId }).catch((error) => {
-    //         if (this.nodeEnv === "DEV") {
-    //             this.logger.error(`Error al obtener la información de la orden de pago: ${args.orderId}, ${error}`);
-    //         };
-    //         this.logger.error("Error al obtener la información de la orden de pago");
-    //         throw new BadRequestException("Error al obtener la información de la orden de pago");
-    //     });
-    // };
-
-    async processMercadoPagoPayment(args: MercadoPagoWebhook) {
-        const { xSignature, xRequestId, dataId, type } = args;
-        if (xSignature && xRequestId && dataId) this.mercadopago.verifyWebhookSignature({ xSignature, xRequestId, dataId });
-
     };
 
     async processMercadoPagoWebhook(args: MercadoPagoWebhook) {
@@ -235,7 +201,11 @@ export class PaymentService {
                     order: {
                         address: orderDetail.customer_address,
                         items: shoppingCart,
-                        customer: undefined,
+                        customer: {
+                            name: "",
+                            last_name: "",
+                            email: ""
+                        },
                         details: {
                             order: {
                                 uuid: orderDetail.uuid,
@@ -257,78 +227,24 @@ export class PaymentService {
                             shipping: {
                                 boxesQty: orderDetail.shipping?.boxes_count,
                                 shippingCost: orderDetail.shipping?.shipping_amount.toString()
-                            }
+                            },
+                            resume: calcOrderItemsResume({ orderItems: shoppingCart })
                         }
                     }
                 };
                 return response;
             }
         });
-    }
+    };
 
     async getOrderStatusWithDetails(args: { orderUUID: string, customerUUID?: string, requiredStatus: OrderAndPaymentStatus[] }): Promise<GetPaidOrderDetails> {
         const { orderUUID, customerUUID, requiredStatus } = args;
         const queryKey = args.customerUUID ? { orderUUID, customerUUID } : { orderUUID };
-        const order = await this.prisma.order.findUnique({ where: { uuid: orderUUID }, select: { status: true } });
+        const order = await this.prisma.order.findUnique({ where: { uuid: orderUUID }, select: { status: true, is_guest_order: true } });
         if (!order) throw new NotFoundException("Orden no encontrada");
         if (!requiredStatus.includes(order.status)) return { status: order.status };
         return await this.getDetails({ orderUUID, queryKey, orderStatus: order.status })
     };
 
 
-    // /**
-    //  * Verify the signature of the MercadoPago webhook using HMAC-SHA256.
-    //  * Throws UnauthorizedException if the signature is invalid.
-    //  * @see https://www.mercadopago.com.mx/developers/es/docs/checkout-pro/payment-notifications
-    // */
-    // verifyWebhookSignature(args: {
-    //     xSignature: string;
-    //     xRequestId: string;
-    //     dataId: string;
-    // }): void {
-    //     const { xSignature, xRequestId, dataId } = args;
-
-    //     if (!this.mercadoPagoWebhookSecret) {
-    //         this.logger.error('MERCADO_PAGO_WEBHOOK_SECRET no está configurado');
-    //         throw new UnauthorizedException('Webhook secret no configurado');
-    //     }
-
-    //     // Extraer ts y v1 del header x-signature
-    //     // Formato: "ts=<timestamp>,v1=<hash>"
-    //     const parts = xSignature.split(',');
-    //     let ts: string | undefined;
-    //     let v1: string | undefined;
-
-    //     for (const part of parts) {
-    //         const [key, value] = part.split('=');
-    //         if (key?.trim() === 'ts') ts = value?.trim();
-    //         if (key?.trim() === 'v1') v1 = value?.trim();
-    //     }
-
-    //     if (!ts || !v1) {
-    //         throw new UnauthorizedException('Formato de x-signature inválido');
-    //     }
-
-    //     // Construir el template según la documentación oficial de MercadoPago
-    //     const signedTemplate = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
-
-    //     // Generar HMAC-SHA256
-    //     const generatedHash = createHmac('sha256', this.mercadoPagoWebhookSecret)
-    //         .update(signedTemplate)
-    //         .digest('hex');
-
-    //     // Comparación segura en tiempo constante para evitar timing attacks
-    //     const hashBuffer = Buffer.from(generatedHash, 'hex');
-    //     const v1Buffer = Buffer.from(v1, 'hex');
-
-    //     if (
-    //         hashBuffer.length !== v1Buffer.length ||
-    //         !timingSafeEqual(hashBuffer, v1Buffer)
-    //     ) {
-    //         this.logger.warn(`Firma de webhook inválida para dataId: ${dataId}`);
-    //         throw new UnauthorizedException('Firma del webhook inválida');
-    //     }
-
-    //     this.logger.log(`Webhook verificado correctamente para dataId: ${dataId}`);
-    // };
 };

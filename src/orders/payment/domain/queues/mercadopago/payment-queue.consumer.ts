@@ -15,6 +15,7 @@ import { CreateShippingStep } from "../../pipeline/mercadopago-pipelines/post-qu
 import { SendNotificationStep } from "../../pipeline/mercadopago-pipelines/post-queue/send-notification.step";
 import { InvalidateCacheStep } from "../../pipeline/mercadopago-pipelines/post-queue/invalidate-cache.step";
 import { MercadoPagoProvider } from "src/orders/providers/mercado-pago.provider";
+import { OrderProcessingStatus, ProcessPaymentJob } from "src/orders/payment/payment.interfaces";
 
 @Processor("mercadopago-payment-processing", { concurrency: 5 })
 export class MercadoPagoPaymentQueueConsumer extends WorkerHost {
@@ -31,8 +32,8 @@ export class MercadoPagoPaymentQueueConsumer extends WorkerHost {
 
     async process(job: Job<ProcessPaymentJob>): Promise<void> {
         this.logger.log(`Iniciando procesamiento del job ${job.id} para pago ${job.data.paymentId}`);
-        const context = new MercadoPagoPaymentContext({ paymentId: job.data.paymentId });
-
+        const context = new MercadoPagoPaymentContext({ paymentId: job.data.paymentId, nodeEnv: job.data.nodeEnv });
+        context.conditionalLog(`Iniciando worker para el job ${job.id} para pago ${job.data.paymentId}`);
         try {
             await new MercadoPagoPipeline<MercadoPagoPaymentContext>()
                 .pipe(new FetchPaymentDetailsStep(this.mercadopago))
@@ -42,7 +43,10 @@ export class MercadoPagoPaymentQueueConsumer extends WorkerHost {
                 .pipe(new SendNotificationStep(this.prisma, this.notifications))
                 .pipe(new InvalidateCacheStep(this.cache, this.shoppingCart))
                 .run(context);
+
+            context.conditionalLog("Proceso de pago completado con éxito");
         } catch (error) {
+            this.logger.error(`Error critico procesando job ${job.id}:`, error);
             // Solo marcar como "failed" en el último intento para no confundir con reintentos normales
             const isLastAttempt = job.attemptsMade >= (job.opts.attempts ?? 1) - 1;
             if (isLastAttempt) {

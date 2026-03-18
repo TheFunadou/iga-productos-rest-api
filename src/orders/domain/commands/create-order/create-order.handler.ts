@@ -17,11 +17,14 @@ export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
 
     async execute(command: CreateOrderCommand) {
         const { orderItems, paymentProvider, customerUUID, addressUUID, couponCode, guestForm, frontendUrl, notificationUrl } = command;
-        const { customer, customerAddress } = await this.createOrder.validateCustomer({ customer: { customerUUID, addressUUID }, guestForm });
+        const orderUUID = crypto.randomUUID().toString();
+        const isGuest = !customerUUID ? true : false;
+        const { customer, customerAddress } = await this.createOrder.validateCustomer({ customer: { customerUUID, addressUUID }, guestForm, isGuest, orderUUID });
         const { shoppingCart, pvCards } = await this.createOrder.buildShoppingCart({ orderItems, couponCode });
         const orderResume = await this.createOrder.calcOrderResume({ shoppingCart });
         const createOrderStrategy = this.createOrderFactory.create(paymentProvider);
-        const { externalID, orderUUID } = await createOrderStrategy.createOrder({
+        const { externalID } = await createOrderStrategy.createOrder({
+            orderUUID,
             customer: {
                 email: customer.email,
                 name: customer.name,
@@ -37,7 +40,6 @@ export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
         const created: OrderReadyToPay = await this.prisma.$transaction(async (tx) => {
             await this.createOrder.validateShoppingCartStock({ tx, shoppingCart });
             await this.createOrder.reserveStock({ tx, shoppingCart });
-            const isGuest = !customerUUID ? true : false;
             const orderId = await this.createOrder.create({
                 tx,
                 uuid: orderUUID,

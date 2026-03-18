@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
-import { AddItemsToOrder, CreateOrder, OrderValidatedCustomerData, ValidateCustomer } from "src/orders/order.dto";
-import { buildValidatedCustomerData } from "src/orders/helpers/mercadopago.helpers";
-import { OrderUtilsService } from "src/orders/order.utils.service";
+import { AddItemsToOrder, AddItemsToOrderOrderItems, CreateOrder, OrderRequestFormGuestDTO, OrderValidatedCustomerData, ValidateCustomer } from "src/orders/order.dto";
 import { OrderShoppingCartDTO } from "src/orders/payment/payment.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { ProductVersionFindService } from "src/product-version/product-version.find.service";
+import { CacheService } from "src/cache/cache.service";
+import { buildShoppingCart, buildValidatedAuthCustomerData, buildValidatedGuestCustomerData, calcShoppingCartOrderResume } from "src/orders/orders.helpers";
 import { ProductVersionCard } from "src/product-version/product-version.dto";
 
 @Injectable()
@@ -15,12 +15,25 @@ export class CreateOrderService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly productVersionFind: ProductVersionFindService,
-        private readonly orderUtils: OrderUtilsService
+        private readonly cache: CacheService
     ) { };
 
 
     async validateCustomer(args: ValidateCustomer): Promise<OrderValidatedCustomerData> {
-        const { customer: { addressUUID, customerUUID }, guestForm } = args;
+        const { customer: { addressUUID, customerUUID }, guestForm, isGuest, orderUUID } = args;
+        if (isGuest) {
+            if (!guestForm) throw new BadRequestException("Error al crear orden de pago, no se encontro el formulario del invitado.")
+            await this.cache.setData<OrderRequestFormGuestDTO>({
+                entity: "order:guest:data",
+                query: { orderUUID },
+                data: guestForm,
+                aditionalOptions: {
+                    ttlMilliseconds: 1000 * 60 * 15
+                },
+            });
+            return buildValidatedGuestCustomerData({ guestForm });;
+        };
+        if (!customerUUID || !addressUUID) throw new BadRequestException("Error al crear orden de pago, no se encotraron los datos del cliente");
         const customerData = await this.prisma.customer.findUnique({
             where: { uuid: customerUUID },
             select: {
@@ -37,10 +50,8 @@ export class CreateOrderService {
                 country: true
             }
         });
-
-        const validatedCustomer = buildValidatedCustomerData({ customerAddressData, customerData, guestForm });
-        if (!validatedCustomer) throw new BadRequestException("Ocurrio un error al crear al orden de pago");
-        return validatedCustomer;
+        if (!customerData || !customerAddressData) throw new BadRequestException("Error al crear orden de pago, no se encotraron los datos del cliente");
+        return buildValidatedAuthCustomerData({ customerAddressData, customerData });
     };
 
     async buildShoppingCart({ orderItems, couponCode }: { orderItems: OrderShoppingCartDTO[], couponCode?: string }) {
@@ -51,7 +62,7 @@ export class CreateOrderService {
         });
         if (!pvCards) throw new BadRequestException("Error al obtener las tarjetas de producto")
         const { data } = pvCards;
-        const shoppingCart = this.orderUtils.buildShoppingCart({ productVersionCards: data, orderItems });
+        const shoppingCart = buildShoppingCart({ productVersionCards: data, orderItems });
         return { pvCards: data, shoppingCart };
     };
 
@@ -76,9 +87,35 @@ export class CreateOrderService {
     };
 
     async calcOrderResume({ shoppingCart }: { shoppingCart: ShoppingCartDTO[] }) {
-        const orderResume = this.orderUtils.calcOrderResume({ shoppingCart });
+        const orderResume = calcShoppingCartOrderResume({ shoppingCart });
         return orderResume;
     };
+
+    private async buildAddItemsToOrder(args: {
+        pvCards: ProductVersionCard[],
+        shoppingCart: ShoppingCartDTO[],
+        orderId: string,
+    }): Promise<AddItemsToOrderOrderItems[]> {
+        const { pvCards, shoppingCart, orderId } = args;
+        const orderItems: AddItemsToOrderOrderItems[] = [];
+        for (const item of pvCards) {
+            const shoppingCartItem = shoppingCart.find((cart) => cart.product_version.sku === item.product_version.sku);
+            if (shoppingCartItem) {
+                const findItem = await this.prisma.productVersion.findUnique({ where: { sku: shoppingCartItem.product_version.sku }, select: { id: true } });
+                if (!findItem) throw new NotFoundException("Ocurrio un error al procesar la orden de pago");
+                orderItems.push({
+                    order_id: orderId,
+                    product_version_id: findItem.id,
+                    quantity: shoppingCartItem.quantity,
+                    unit_price: item.isOffer ? parseFloat(item.product_version.unit_price_with_discount!.toString()) : parseFloat(item.product_version.unit_price!.toString()),
+                    discount: shoppingCartItem.discount,
+                    subtotal: item.isOffer ? parseFloat(item.product_version.unit_price_with_discount!.toString()) * shoppingCartItem.quantity : parseFloat(item.product_version.unit_price!.toString()) * shoppingCartItem.quantity,
+                });
+            }
+        }
+        return orderItems;
+    };
+
 
     async create(args: CreateOrder, isGuestOrder: boolean) {
         const { tx, uuid, externalId, customerAddressId, customerId, paymentProvider, totalAmount, exchange } = args;
@@ -101,7 +138,7 @@ export class CreateOrderService {
 
     async addItemsToOrder(args: AddItemsToOrder) {
         const { tx, pvCards, shoppingCart, orderId } = args;
-        const orderItems = await this.orderUtils.buildAddItemsToOrder({ pvCards, shoppingCart, orderId });
+        const orderItems = await this.buildAddItemsToOrder({ pvCards, shoppingCart, orderId });
         for (const data of orderItems) {
             await tx.orderItemsDetails.create({ data })
         };

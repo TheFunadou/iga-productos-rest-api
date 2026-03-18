@@ -14,8 +14,7 @@ export class MercadoPagoStrategy implements CreateProviderOrderStrategy {
         private readonly mercadoPago: MercadoPagoProvider,
     ) { };
     async createOrder(args: CreateProviderOrderStrategyArgs): Promise<{ externalID: string, orderUUID: string }> {
-        const { pvCards, orderItems, customer, customerAddress, shippingCost, frontendUrl, notificationUrl } = args;
-        const orderUUID = crypto.randomUUID().toString();
+        const { orderUUID, pvCards, orderItems, customer, customerAddress, shippingCost, frontendUrl, notificationUrl } = args;
         const items = buildMercadoPagoOrderItems({
             pvCards, currency: "MXN", orderItems
         });

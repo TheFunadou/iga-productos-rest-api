@@ -3,6 +3,7 @@ import { CacheService } from "src/cache/cache.service";
 import { ShoppingCartService } from "src/customer/shopping-cart/shopping-cart.service";
 import { MercadoPagoPaymentContext } from "../payment-context";
 import { IStep } from "../pipeline.interface";
+import { OrderProcessingStatus } from "src/orders/payment/payment.interfaces";
 
 export class InvalidateCacheStep implements IStep<MercadoPagoPaymentContext> {
     private readonly logger = new Logger(InvalidateCacheStep.name);

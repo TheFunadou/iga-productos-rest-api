@@ -1,6 +1,7 @@
 import { CacheService } from "src/cache/cache.service";
 import { IStep } from "../pipeline.interface";
 import { MercadoPagoWebhookContext } from "../webhook-context";
+import { OrderProcessingStatus } from "src/orders/payment/payment.interfaces";
 
 export class InitProcessingStatusStep implements IStep<MercadoPagoWebhookContext> {
     constructor(private readonly cache: CacheService) { };

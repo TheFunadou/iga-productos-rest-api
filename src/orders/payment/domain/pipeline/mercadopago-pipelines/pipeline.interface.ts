@@ -13,7 +13,20 @@ export class MercadoPagoPipeline<TContext> {
 
     async run(context: TContext): Promise<void> {
         for (const step of this.steps) {
-            await step.execute(context);
+            const stepName = step.constructor.name;
+
+            if ("conditionalLog" in (context as any)) {
+                (context as any).conditionalLog(`Ejecutando paso: ${stepName}`);
+            };
+
+            try {
+                await step.execute(context);
+            } catch (error) {
+                if ("conditionalError" in (context as any)) {
+                    (context as any).conditionalError(`Error en paso ${stepName}:`, error);
+                }
+                throw error;
+            }
         }
     }
 };

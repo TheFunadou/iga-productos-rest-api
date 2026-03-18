@@ -5,46 +5,14 @@ import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { GetPaidOrderDetails } from './payment.dto';
 import { OrderAndPaymentStatus } from '@prisma/client';
 import { CommandBus } from '@nestjs/cqrs';
+import { OrderProcessingStatus } from './payment.interfaces';
 // import { MercadoPagoProcessWebhookCommand } from './domain/commands/mercadopago-proccess-webhook/process-webhook.command';
 
 @Controller('payment')
 export class PaymentController {
     constructor(
         private readonly paymentService: PaymentService,
-        // private readonly cacheService: CacheService,
-        // private readonly commandBus: CommandBus
     ) { };
-
-
-    // @Post("mercadopago/webhook")
-    // async handleMercadoPagoWebhook(
-    //     @Req() request: ExpressRequest,
-    //     @Query("data.id") dataId: string,
-    //     @Query('type') type: string,
-    //     @Headers('x-signature') xSignature: string,
-    //     @Headers('x-request-id') xRequestId: string,
-    // ) {
-    // // Verify signature before processing anything
-    // if (xSignature && xRequestId) this.paymentService.verifyWebhookSignature({ xSignature, xRequestId, dataId });
-
-    // if (type !== "payment") return { success: true, message: "Ignored non-payment notification" };
-
-    // await this.cacheService.setData<OrderProcessingStatus>({
-    //     entity: "payment:status",
-    //     query: { externalOrderId: dataId },
-    //     data: {
-    //         status: "processing",
-    //         updatedAt: new Date().toISOString(),
-    //     },
-    //     aditionalOptions: { ttlMilliseconds: 1000 * 60 * 60 }
-    // });
-
-    //     await this.paymentService.queuePaymentProcessing({ paymentId: dataId });
-
-    //     return { success: true };
-    // };
-
-
     @Post("mercadopago/webhook")
     async handleMercadoPagoWebhookV2(
         @Query("data.id") dataId: string,
@@ -52,16 +20,6 @@ export class PaymentController {
         @Headers('x-signature') xSignature: string,
         @Headers('x-request-id') xRequestId: string,
     ) {
-
-        // await this.commandBus.execute(
-        //     new MercadoPagoProcessWebhookCommand(
-        //         xSignature,
-        //         xRequestId,
-        //         dataId,
-        //         type
-        //     )
-        // );
-
         await this.paymentService.processMercadoPagoWebhook({
             xSignature,
             xRequestId,
