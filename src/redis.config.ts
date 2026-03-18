@@ -1,13 +1,12 @@
 import "dotenv/config";
 import Redis from 'ioredis';
+const redisPassword = process.env.REDIS_PASSWORD;
 
 export const redisConfig = {
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
+    password: redisPassword || undefined
 };
-
-const redisPassword = process.env.REDIS_PASSWORD;
-const nodeEnv = process.env.NODE_ENV;
 
 
 export const RedisProvider = {
@@ -16,7 +15,7 @@ export const RedisProvider = {
         return new Redis({
             host: process.env.REDIS_HOST,
             port: Number(process.env.REDIS_PORT),
-            password: nodeEnv === "production" || nodeEnv === "testing" ? redisPassword : undefined
+            password: redisPassword || undefined
         });
     },
 };
