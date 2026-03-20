@@ -1,7 +1,7 @@
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, CookieOptions } from 'express';
 import { CacheService } from 'src/cache/cache.service';
 
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
@@ -68,13 +68,13 @@ export class SessionMiddleware implements NestMiddleware {
 
     await this.saveInCache(sessionId, csrfToken);
 
-    const base = {
+    const base: CookieOptions = {
       httpOnly: true,
       secure: this.secure,
       sameSite: this.sameSite,
       maxAge: SESSION_TTL_MS,
       path: '/',
-    } satisfies Parameters<Response['cookie']>[2];
+    };
 
     res.cookie(SESSION_COOKIE, sessionId, base);
     res.cookie(CSRF_COOKIE, csrfToken, { ...base, httpOnly: false });
