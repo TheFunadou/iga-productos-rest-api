@@ -218,7 +218,6 @@ export class CustomerAuthService {
                 verified: customer.email_verified,
             };
             this.createCustomerSession({ res, authUser: payload });
-            console.log("payload", payload, "cliente autenticado con google exitosamente");
             return { payload };
         }
 

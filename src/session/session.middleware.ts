@@ -68,16 +68,24 @@ export class SessionMiddleware implements NestMiddleware {
 
     await this.saveInCache(sessionId, csrfToken);
 
-    const base: CookieOptions = {
+    const cookieDomain = this.secure ? '.igaproductos.com' : undefined;
+    res.cookie(SESSION_COOKIE, sessionId, {
       httpOnly: true,
       secure: this.secure,
       sameSite: this.sameSite,
       maxAge: SESSION_TTL_MS,
       path: '/',
-    };
+      domain: cookieDomain,
+    });
+    res.cookie(CSRF_COOKIE, csrfToken, {
+      httpOnly: false,
+      secure: this.secure,
+      sameSite: this.sameSite,
+      maxAge: SESSION_TTL_MS,
+      path: '/',
+      domain: cookieDomain,
+    });
 
-    res.cookie(SESSION_COOKIE, sessionId, base);
-    res.cookie(CSRF_COOKIE, csrfToken, { ...base, httpOnly: false });
   }
 
   private generateToken(): string {
