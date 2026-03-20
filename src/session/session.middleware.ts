@@ -18,9 +18,9 @@ export class SessionMiddleware implements NestMiddleware {
     private readonly cache: CacheService,
     private readonly configService: ConfigService,
   ) {
-    const nodeEnv = this.configService.get<string>('NODE_ENV') ?? 'development';
+    const nodeEnv = this.configService.get<string>('NODE_ENV', "DEV");
     this.secure = nodeEnv === 'production';
-    this.sameSite = this.secure ? 'strict' : 'lax';
+    this.sameSite = "lax";
   }
 
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
