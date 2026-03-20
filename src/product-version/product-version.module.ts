@@ -14,6 +14,6 @@ import { SearchPVCardsHandler } from './domain/command/search-cards.handler';
   controllers: [ProductVersionController],
   providers: [ProductVersionService, ProductVersionUtilsService, ProductVersionFindService, SearchCardsService, SearchPVCardsHandler],
   imports: [PrismaModule, CacheModule, OffersModule, CqrsModule],
-  exports: [ProductVersionFindService, ProductVersionService]
+  exports: [ProductVersionFindService, ProductVersionService, SearchCardsService]
 })
 export class ProductVersionModule { }

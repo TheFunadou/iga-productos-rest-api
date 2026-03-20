@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
+import { HasPercentageDiscountArgs } from "./offers.dto";
 
 
 @Injectable()
@@ -204,6 +205,6 @@ export class OffersUtilsService {
             }
         }
         return discountMap;
-    }
+    };
 
 };

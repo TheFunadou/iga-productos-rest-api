@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { CommandBus } from '@nestjs/cqrs';
 import { MercadoPagoProcessWebhookCommand } from './domain/commands/mercadopago-proccess-webhook/process-webhook.command';
 import { OrderProcessingStatus } from './payment.interfaces';
-import { calcOrderItemsResume } from './payment.helpers';
+import { GetPaymentDetailsService } from './services/get-payment-details.service';
 
 @Injectable()
 export class PaymentService {
@@ -16,9 +16,9 @@ export class PaymentService {
 
     constructor(
         private readonly cacheService: CacheService,
-        private readonly prisma: PrismaService,
         private readonly config: ConfigService,
-        private readonly commandBus: CommandBus
+        private readonly commandBus: CommandBus,
+        private readonly getPaymentDetails: GetPaymentDetailsService
 
     ) {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
@@ -36,26 +36,6 @@ export class PaymentService {
             )
         );
     };
-
-
-    // /**
-    //  * Agrega un trabajo a la cola de procesamiento de pagos
-    //  * @param args { paymentId: string }
-    //  */
-    // async queuePaymentProcessing(args: { paymentId: string }): Promise<void> {
-    //     const jobData: ProcessPaymentJob = {
-    //         paymentId: args.paymentId,
-    //         externalOrderId: args.paymentId,
-    //         timestamp: new Date().toISOString(),
-    //     };
-
-    //     await this.paymentQueue.add("process-payment", jobData, {
-    //         attempts: 3,
-    //         backoff: { type: "exponential", delay: 2000 }
-    //     });
-
-    //     this.logger.log(`Payment processing job queued for paymentId: ${args.paymentId}`);
-    // };
 
     /**
      * Obtiene el estado de la orden de pago
@@ -88,162 +68,9 @@ export class PaymentService {
     };
 
 
-    private async getDetails(args: { orderUUID: string, queryKey: any, orderStatus: OrderAndPaymentStatus }): Promise<GetPaidOrderDetails> {
-        const { orderUUID, queryKey, orderStatus } = args;
-        return await this.cacheService.remember<GetPaidOrderDetails>({
-            method: "staleWhileRevalidate",
-            entity: "order:paid:details",
-            query: queryKey,
-            aditionalOptions: {
-                ttlMilliseconds: 1000 * 60 * 15,
-                staleTimeMilliseconds: 1000 * 60 * 12
-            },
-            fallback: async () => {
-                const orderDetail = await this.prisma.order.findUnique({
-                    where: { uuid: orderUUID },
-                    select: {
-                        uuid: true,
-                        is_guest_order: true,
-                        payment_provider: true,
-                        total_amount: true,
-                        exchange: true,
-                        aditional_resource_url: true,
-                        coupon_code: true,
-                        created_at: true,
-                        updated_at: true,
-                        customer_address: {
-                            omit: {
-                                id: true,
-                                customer_id: true,
-                                created_at: true,
-                                updated_at: true
-                            }
-                        },
-                        payment_details: {
-                            omit: {
-                                id: true,
-                                order_id: true,
-                                payment_id: true,
-                                fee_amount: true,
-                                received_amount: true
-                            }
-                        },
-                        order_items: {
-                            select: {
-                                quantity: true,
-                                unit_price: true,
-                                subtotal: true,
-                                discount: true,
-                                product_version: {
-                                    select: {
-                                        unit_price: true,
-                                        sku: true,
-                                        color_line: true,
-                                        color_name: true,
-                                        color_code: true,
-                                        stock: true,
-                                        product_version_images: {
-                                            where: { main_image: true },
-                                            select: { main_image: true, image_url: true },
-                                            orderBy: { main_image: "desc" as const }
-                                        },
-                                        product: {
-                                            select: {
-                                                id: true,
-                                                category_id: true,
-                                                product_name: true,
-                                                category: { select: { name: true } },
-                                                subcategories: { select: { subcategories: { select: { uuid: true, description: true } }, }, }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        shipping: {
-                            select: {
-                                boxes_count: true,
-                                shipping_amount: true
-                            }
-                        }
-                    }
-                });
-
-                if (!orderDetail) throw new NotFoundException("Orden no encontrada");
-                if (!orderDetail.customer_address) throw new NotFoundException("Dirección de la orden no encontrada");
-
-                const shoppingCart: OrderItems[] = orderDetail.order_items.map((item) => ({
-                    category: item.product_version.product.category.name,
-                    subcategories: item.product_version.product.subcategories.map((sub) => sub.subcategories.description),
-                    isChecked: true,
-                    product_images: item.product_version.product_version_images,
-                    product_name: item.product_version.product.product_name,
-                    product_version: {
-                        color_code: item.product_version.color_code,
-                        color_name: item.product_version.color_name,
-                        color_line: item.product_version.color_line,
-                        sku: item.product_version.sku,
-                        unit_price: item.product_version.unit_price,
-                        stock: item.product_version.stock,
-                        unit_price_with_discount: item.discount > 0 ?
-                            (item.discount * (parseFloat(item.product_version.unit_price.toString()) / 100)).toString()
-                            : item.product_version.unit_price.toString(),
-                    },
-                    quantity: item.quantity,
-                    discount: item.discount > 0 ? item.discount : undefined,
-                    isFavorite: false,
-                    subtotal: item.subtotal.toString(),
-                    isOffer: item.discount > 0
-                }));
-
-                const response = {
-                    status: orderStatus,
-                    order: {
-                        address: orderDetail.customer_address,
-                        items: shoppingCart,
-                        customer: {
-                            name: "",
-                            last_name: "",
-                            email: ""
-                        },
-                        details: {
-                            order: {
-                                uuid: orderDetail.uuid,
-                                total_amount: orderDetail.total_amount.toString(),
-                                aditional_resource_url: orderDetail.aditional_resource_url,
-                                coupon_code: orderDetail.coupon_code,
-                                created_at: orderDetail.created_at,
-                                updated_at: orderDetail.updated_at,
-                                exchange: orderDetail.exchange,
-                                is_guest_order: orderDetail.is_guest_order,
-                                payment_provider: orderDetail.payment_provider,
-                                status: orderStatus,
-                            },
-                            payments_details: orderDetail.payment_details.map((details) => ({
-                                ...details,
-                                customer_paid_amount: details.customer_paid_amount.toString(),
-                                customer_installment_amount: details.customer_installment_amount.toString()
-                            })),
-                            shipping: {
-                                boxesQty: orderDetail.shipping?.boxes_count,
-                                shippingCost: orderDetail.shipping?.shipping_amount.toString()
-                            },
-                            resume: calcOrderItemsResume({ orderItems: shoppingCart })
-                        }
-                    }
-                };
-                return response;
-            }
-        });
-    };
-
     async getOrderStatusWithDetails(args: { orderUUID: string, customerUUID?: string, requiredStatus: OrderAndPaymentStatus[] }): Promise<GetPaidOrderDetails> {
         const { orderUUID, customerUUID, requiredStatus } = args;
-        const queryKey = args.customerUUID ? { orderUUID, customerUUID } : { orderUUID };
-        const order = await this.prisma.order.findUnique({ where: { uuid: orderUUID }, select: { status: true, is_guest_order: true } });
-        if (!order) throw new NotFoundException("Orden no encontrada");
-        if (!requiredStatus.includes(order.status)) return { status: order.status };
-        return await this.getDetails({ orderUUID, queryKey, orderStatus: order.status })
+        return await this.getPaymentDetails.execute({ orderUUID, requiredStatus, customerUUID });
     };
 
 

@@ -7,7 +7,7 @@ import { CustomerPaymentData, GetPaidOrderDetails, PaymentDetails } from "../pay
 import { buildAuthCustomerGetPaymentDetailsResponse, buildGuestGetPaymentDetailsResponse, buildPaymentOrderItems } from "../payment.helpers";
 
 @Injectable()
-export class GetPaymentDetails {
+export class GetPaymentDetailsService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cache: CacheService

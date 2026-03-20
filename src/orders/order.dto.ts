@@ -2,7 +2,7 @@ import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsEnum, IsIn, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
 import { OrderItems, OrderResume, OrderShoppingCartDTO, PaymentProviders } from "./payment/payment.dto";
-import { GetCustomerAddressOrder, CreateCustomerAddressDTO as GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
+import { GetCustomerAddressOrder, GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
 import { CustomerAttributes } from "src/customer/customer.dto";
 import { OrderAndPaymentStatus, Prisma, ShippingStatus } from "@prisma/client";
 import { PaginationDTO } from "src/common/DTO/pagination.dto";

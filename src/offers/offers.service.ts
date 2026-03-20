@@ -191,4 +191,5 @@ export class OffersService {
             throw new BadRequestException("Error al obtener el dashboard de ofertas");
         });
     };
+
 };

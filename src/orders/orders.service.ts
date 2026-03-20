@@ -2,14 +2,14 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderItems } from './payment/payment.dto';
-import { GetOrders, GetOrdersQuery, CheckoutOrder, OrderRequestDTO, GetOrderDetails, OrdersDashboardParams, GetOrdersDashboard } from './order.dto';
-import { MercadoPagoConfig, Preference as MercadoPagoPreference, Preference } from "mercadopago";
+import { GetOrders, GetOrdersQuery, CheckoutOrder, OrderRequestDTO, GetOrderDetails, OrdersDashboardParams, GetOrdersDashboard, OrderRequestFormGuestDTO } from './order.dto';
 import { ShoppingCartDTO } from 'src/customer/shopping-cart/shopping-cart.dto';
 import { OrderAndPaymentStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateOrderCommand } from './domain/commands/create-order/create-order.command';
 import { calcShoppingCartOrderResume } from './orders.helpers';
+import { GetCustomerAddressOrder } from 'src/customer/customer-addresses/customer-addresses.dto';
 
 @Injectable()
 export class OrdersService {
@@ -266,7 +266,7 @@ export class OrdersService {
         })
     };
 
-    async getCheckoutOrder({ orderUUID }: { orderUUID: string }): Promise<CheckoutOrder> {
+    async getCheckoutOrder({ orderUUID, customerUUID }: { orderUUID: string, customerUUID?: string }): Promise<CheckoutOrder> {
         return await this.cache.remember<CheckoutOrder>({
             method: "staleWhileRevalidate",
             entity: "customer:order:checkout",
@@ -277,6 +277,7 @@ export class OrdersService {
                     select: {
                         uuid: true,
                         external_order_id: true,
+                        is_guest_order: true,
                         order_items: {
                             select: {
                                 quantity: true,
@@ -308,20 +309,61 @@ export class OrdersService {
                                     }
                                 }
                             }
-                        },
-                        customer_address: {
-                            omit: {
-                                id: true,
-                                customer_id: true,
-                                created_at: true,
-                                updated_at: true
-                            }
-                        },
+                        }
                     }
                 });
 
                 if (!order) throw new NotFoundException("No se encontro la orden");
-                if (!order.customer_address) throw new NotFoundException("No se encontro la direccion del destinatario");
+                let shippingAddress: GetCustomerAddressOrder | undefined;
+
+                if (!customerUUID && order.is_guest_order) {
+                    const guestForm = await this.cache.getData<OrderRequestFormGuestDTO>({
+                        entity: "order:guest:data",
+                        query: { orderUUID },
+                    });
+                    if (!guestForm) throw new NotFoundException("No se encontro la información del cliente invitado");
+
+                    shippingAddress = {
+                        address_type: guestForm.address_type,
+                        city: guestForm.city,
+                        state: guestForm.state,
+                        street_name: guestForm.street_name,
+                        number: guestForm.number,
+                        zip_code: guestForm.zip_code,
+                        country: guestForm.country,
+                        default_address: true,
+                        contact_number: guestForm.contact_number,
+                        country_phone_code: guestForm.country_phone_code,
+                        recipient_name: guestForm.recipient_name,
+                        recipient_last_name: guestForm.recipient_last_name,
+                        locality: guestForm.locality,
+                        neighborhood: guestForm.neighborhood,
+                        aditional_number: guestForm.aditional_number,
+                        floor: guestForm.floor,
+                        references_or_comments: guestForm.references_or_comments,
+                    }
+                }
+                if (!customerUUID && !order.is_guest_order) throw new NotFoundException("No se encontro al cliente asociado a esta orden");
+                if (customerUUID && !order.is_guest_order) {
+                    const shippingData = await this.prisma.order.findUnique({
+                        where: { uuid: orderUUID },
+                        select: {
+                            customer_address: {
+                                omit: {
+                                    id: true,
+                                    customer_id: true,
+                                    created_at: true,
+                                    updated_at: true
+                                }
+                            },
+                        }
+                    })
+
+                    if (!shippingData?.customer_address) throw new NotFoundException("No se encontro una dirección de envio de este cliente para esta orden");
+                    shippingAddress = { ...shippingData.customer_address }
+                };
+
+                if (!shippingAddress) throw new BadRequestException("No se encontro una dirección de envio para esta orden");
 
                 const orderItems: OrderItems[] = order.order_items.map((item) => ({
                     category: item.product_version.product.category.name,
@@ -351,7 +393,7 @@ export class OrdersService {
 
                 const checkoutOrder: CheckoutOrder = {
                     uuid: order.uuid,
-                    address: order.customer_address,
+                    address: shippingAddress,
                     items: orderItems,
                     external_id: order.external_order_id,
                     resume

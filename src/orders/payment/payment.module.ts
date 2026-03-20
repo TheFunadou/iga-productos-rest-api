@@ -13,7 +13,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { MercadoPagoPaymentQueueConsumer } from './domain/queues/mercadopago/payment-queue.consumer';
 import { MercadoPagoProcessWebhookHandler } from './domain/commands/mercadopago-proccess-webhook/process-webhook.handler';
 import { MercadoPagoProvider } from '../providers/mercado-pago.provider';
-import { GetPaymentDetails } from './services/get-payment-details.service';
+import { GetPaymentDetailsService } from './services/get-payment-details.service';
+import { OrdersModule } from '../orders.module';
 
 @Module({
   providers: [
@@ -21,7 +22,7 @@ import { GetPaymentDetails } from './services/get-payment-details.service';
     MercadoPagoProcessWebhookHandler,
     MercadoPagoPaymentQueueConsumer,
     MercadoPagoProvider,
-    GetPaymentDetails
+    GetPaymentDetailsService
   ],
   controllers: [PaymentController],
   imports: [
@@ -32,7 +33,7 @@ import { GetPaymentDetails } from './services/get-payment-details.service';
     ShoppingCartModule,
     NotificationsModule,
     BullModule.registerQueue({
-      name: "mercadopago-payment-processing",
+      name: "payment-processor",
       defaultJobOptions: {
         attempts: 3,
         backoff: { type: "exponential", delay: 2000 },

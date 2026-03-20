@@ -1,12 +1,12 @@
-import { Controller, Post, Query, Headers, Get, Param } from '@nestjs/common';
+import { Controller, Post, Query, Headers, Get, Param, UseGuards } from '@nestjs/common';
 import { PaymentService } from './payment.service';
-import { CacheService } from 'src/cache/cache.service';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { GetPaidOrderDetails } from './payment.dto';
 import { OrderAndPaymentStatus } from '@prisma/client';
-import { CommandBus } from '@nestjs/cqrs';
 import { OrderProcessingStatus } from './payment.interfaces';
-// import { MercadoPagoProcessWebhookCommand } from './domain/commands/mercadopago-proccess-webhook/process-webhook.command';
+import { OptionalCustomerAuthGuard } from 'src/customer_auth/customer_auth.optional.guard';
+import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
+import { OptionalCustomer } from 'src/customer_auth/customer_auth.optional.decorator';
 
 @Controller('payment')
 export class PaymentController {
@@ -46,14 +46,16 @@ export class PaymentController {
     };
 
     @Get("order/status/:uuid")
+    @UseGuards(OptionalCustomerAuthGuard)
     @ApiOperation({ summary: "Obtiene el estado de una orden por UUID" })
     @ApiParam({ name: 'uuid', description: 'UUID de la orden' })
     @ApiResponse({ status: 200, description: "Estado de la orden", type: Object })
     async getOrderStatusWithDetails(
+        @OptionalCustomer() customer: CustomerPayload,
         @Param('uuid') uuid: string,
         @Query("status") requiredStatus: OrderAndPaymentStatus[]
     ): Promise<GetPaidOrderDetails> {
-        const status = await this.paymentService.getOrderStatusWithDetails({ orderUUID: uuid, requiredStatus: Array.isArray(requiredStatus) ? requiredStatus : [requiredStatus] });
+        const status = await this.paymentService.getOrderStatusWithDetails({ orderUUID: uuid, requiredStatus: Array.isArray(requiredStatus) ? requiredStatus : [requiredStatus], customerUUID: customer?.uuid });
         return status;
     };
 

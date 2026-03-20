@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { CustomerAuthService } from './customer_auth.service';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { AuthCustomer, CustomerCredentialsDTO, CustomerPayload, GoogleAuthDTO, RestorePasswordAuthDTO, RestorePasswordPublicDTO } from './customer_auth.dto';
+import { AuthCustomer, CustomerCredentialsDTO, CustomerPayload, GoogleAuthDTO, RestorePasswordPublicDTO } from './customer_auth.dto';
 import { Response as ExpressResponse, Request as ExpressRequest } from 'express';
 import { RequiredCustomerAuthGuard } from './customer_auth.required.guard';
 import { AuthenticatedCustomer } from './customer_auth.current.decorator';
@@ -22,6 +22,7 @@ export class CustomerAuthController {
     };
 
     @Post("login")
+    @UseGuards(CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Inicia sesión de un usuario" })
     @ApiResponse({ status: 20, description: "Sesión iniciada exitosamente", type: AuthCustomer })
     @ApiResponse({ status: 500, description: "Error al iniciar sesión" })
@@ -30,32 +31,11 @@ export class CustomerAuthController {
         @Body() dto: CustomerCredentialsDTO,
         @Res({ passthrough: true }) response: ExpressResponse,
     ): Promise<AuthCustomer> {
-        const login = await this.customerAuthService.login(dto);
-        const secure = this.nodeEnv === "production" || this.nodeEnv === "testing" ? true : false;
-        const sameSite = this.nodeEnv === "production" || this.nodeEnv === "testing" ? "strict" : "lax";
-        // const tunnelSameSite = "none";
-        const domain = this.nodeEnv === "production" || this.nodeEnv === "testing" ? ".igaproductos.com" : undefined;
-        response.cookie("iga_customer_access_token", login.access_token, {
-            httpOnly: true,
-            secure,
-            sameSite,
-            domain,
-            maxAge: 1000 * 60 * 60 * 24,
-        });
-
-        response.cookie("iga_customer_csrf_token", login.csrfToken, {
-            httpOnly: false,
-            secure,
-            sameSite,
-            domain,
-            maxAge: 1000 * 60 * 60 * 24,
-        });
-
-
-        return { payload: login.payload, csrfToken: login.csrfToken };
+        return await this.customerAuthService.login({ res: response, dto });
     };
 
     @Post("login/google")
+    @UseGuards(CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Inicia sesión con Google OAuth" })
     @ApiResponse({ status: 201, description: "Sesión iniciada exitosamente con Google", type: AuthCustomer })
     @ApiResponse({ status: 401, description: "Token de Google inválido o expirado" })
@@ -65,39 +45,20 @@ export class CustomerAuthController {
         @Body() dto: GoogleAuthDTO,
         @Res({ passthrough: true }) response: ExpressResponse,
     ): Promise<AuthCustomer> {
-        const login = await this.customerAuthService.loginWithGoogle(dto);
-        const secure = this.nodeEnv === "production" || this.nodeEnv === "testing" ? true : false;
-        const sameSite = this.nodeEnv === "production" || this.nodeEnv === "testing" ? "strict" : "lax";
-        // const tunnelSameSite = "none";
-        const domain = this.nodeEnv === "production" || this.nodeEnv === "testing" ? ".igaproductos.com" : undefined;
-        response.cookie("iga_customer_access_token", login.access_token, {
-            httpOnly: true,
-            secure,
-            sameSite,
-            domain,
-            maxAge: 1000 * 60 * 60 * 24,
-        });
-
-        response.cookie("iga_customer_csrf_token", login.csrfToken, {
-            httpOnly: false,
-            secure,
-            sameSite,
-            domain,
-            maxAge: 1000 * 60 * 60 * 24,
-        });
-        return { payload: login.payload, csrfToken: login.csrfToken };
+        return await this.customerAuthService.loginWithGoogle({ res: response, dto });
     };
 
     @Post("logout")
-    @UseGuards(RequiredCustomerAuthGuard)
+    @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Cierra sesión de un usuario" })
     @ApiResponse({ status: 200, description: "Sesión cerrada exitosamente" })
     @ApiResponse({ status: 500, description: "Error al cerrar sesión" })
     async logout(
+        @Req() req: ExpressRequest,
         @Res({ passthrough: true }) response: ExpressResponse,
     ): Promise<string> {
-        response.clearCookie("iga_customer_access_token");
-        response.clearCookie("iga_customer_csrf_token");
+        const sessionId = req.cookies?.["session_id"];
+        await this.customerAuthService.logout({ res: response, sessionId });
         return "Sesión cerrada";
 
     };
@@ -119,9 +80,12 @@ export class CustomerAuthController {
     @ApiResponse({ status: 200, description: "Token enviado exitosamente" })
     @ApiResponse({ status: 500, description: "Error al enviar el token" })
     async sendTokenToEmail(
-        @Body() dto: { sessionId: string, email: string }
+        @Body() dto: { email: string },
+        @Req() req: ExpressRequest,
     ): Promise<string> {
-        await this.customerAuthService.sendTokenToEmail({ sessionId: dto.sessionId, email: dto.email, type: "verification" });
+        const sessionId = req.cookies?.["session_id"];
+        if (!sessionId) throw new UnauthorizedException("No se encontro la sesion");
+        await this.customerAuthService.sendTokenToEmail({ sessionId, email: dto.email, type: "verification" });
         return "Código de verificación enviado a tu correo";
     };
 
@@ -130,9 +94,12 @@ export class CustomerAuthController {
     @ApiResponse({ status: 200, description: "Token reenviado exitosamente" })
     @ApiResponse({ status: 500, description: "Error al reenviar el token" })
     async resendTokenToEmail(
-        @Body() dto: { sessionId: string, email: string }
+        @Body() dto: { email: string },
+        @Req() req: ExpressRequest,
     ): Promise<string> {
-        await this.customerAuthService.resendTokenToEmail({ sessionId: dto.sessionId, email: dto.email, type: "verification" });
+        const sessionId = req.cookies?.["session_id"];
+        if (!sessionId) throw new UnauthorizedException("No se encontro la sesion");
+        await this.customerAuthService.resendTokenToEmail({ sessionId, email: dto.email, type: "verification" });
         return "Código de verificación reenviado a tu correo";
     };
 
@@ -164,9 +131,12 @@ export class CustomerAuthController {
     @ApiResponse({ status: 200, description: "Token validado exitosamente" })
     @ApiResponse({ status: 500, description: "Error al validar el token" })
     async validateRestorePasswordToken(
-        @Body() dto: { sessionId: string, email: string, restorePasswordToken: string }
+        @Body() dto: { email: string, restorePasswordToken: string },
+        @Req() req: ExpressRequest,
     ): Promise<boolean> {
-        return await this.customerAuthService.validateRestorePasswordToken({ sessionId: dto.sessionId, email: dto.email, token: dto.restorePasswordToken });
+        const sessionId = req.cookies?.["session_id"];
+        if (!sessionId) throw new UnauthorizedException("No se encontro la sesion");
+        return await this.customerAuthService.validateRestorePasswordToken({ sessionId, email: dto.email, token: dto.restorePasswordToken });
     };
 
     @Post("password/restore/token/send")
@@ -174,9 +144,12 @@ export class CustomerAuthController {
     @ApiResponse({ status: 200, description: "Token enviado exitosamente" })
     @ApiResponse({ status: 500, description: "Error al enviar el token" })
     async sendRestorePasswordToken(
-        @Body() dto: { sessionId: string, email: string },
+        @Body() dto: { email: string },
+        @Req() req: ExpressRequest,
     ): Promise<string> {
-        await this.customerAuthService.sendRestorePasswordTokenToEmail({ sessionId: dto.sessionId, email: dto.email });
+        const sessionId = req.cookies?.["session_id"];
+        if (!sessionId) throw new UnauthorizedException("No se encontro la sesion");
+        await this.customerAuthService.sendRestorePasswordTokenToEmail({ sessionId, email: dto.email });
         return "Código de restablecimiento de contraseña enviado a tu correo";
     };
 
@@ -185,9 +158,12 @@ export class CustomerAuthController {
     @ApiResponse({ status: 200, description: "Token reenviado exitosamente" })
     @ApiResponse({ status: 500, description: "Error al reenviar el token" })
     async resendRestorePasswordToken(
-        @Body() dto: { sessionId: string, email: string }
+        @Body() dto: { email: string },
+        @Req() req: ExpressRequest,
     ): Promise<string> {
-        await this.customerAuthService.resendTokenToEmail({ sessionId: dto.sessionId, email: dto.email, type: "restore-password" });
+        const sessionId = req.cookies?.["session_id"];
+        if (!sessionId) throw new UnauthorizedException("No se encontro la sesion");
+        await this.customerAuthService.resendTokenToEmail({ sessionId, email: dto.email, type: "restore-password" });
         return "Código de restablecimiento de contraseña reenviado a tu correo";
     };
 

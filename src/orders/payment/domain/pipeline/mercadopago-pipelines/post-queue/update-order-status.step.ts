@@ -18,7 +18,6 @@ export class UpdateOrderStatusStep implements IStep<MercadoPagoPaymentContext> {
         if (!isMercadoPagoStatus(payment.status!)) throw new BadRequestException("Estatus de pago no compatible");
 
         const result = await this.prisma.$transaction(async (tx) => {
-            // Idempotencia: si el pago ya tiene el mismo estado, no volver a procesar
             const existingPayment = await tx.orderPaymentDetails.findUnique({
                 where: { payment_id: BigInt(payment.id!) }
             });

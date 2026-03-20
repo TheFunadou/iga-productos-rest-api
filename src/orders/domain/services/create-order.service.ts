@@ -23,6 +23,8 @@ export class CreateOrderService {
         const { customer: { addressUUID, customerUUID }, guestForm, isGuest, orderUUID } = args;
         if (isGuest) {
             if (!guestForm) throw new BadRequestException("Error al crear orden de pago, no se encontro el formulario del invitado.")
+            const hasAccount = await this.prisma.customer.findFirst({ where: { email: guestForm.email } });
+            if (hasAccount) throw new BadRequestException("Este correo ya tiene una cuenta activa, inicia sesión para continuar con tu compra");
             await this.cache.setData<OrderRequestFormGuestDTO>({
                 entity: "order:guest:data",
                 query: { orderUUID },
@@ -53,6 +55,17 @@ export class CreateOrderService {
         if (!customerData || !customerAddressData) throw new BadRequestException("Error al crear orden de pago, no se encotraron los datos del cliente");
         return buildValidatedAuthCustomerData({ customerAddressData, customerData });
     };
+
+    private async getItems({ skuList }: { skuList: string[] }) {
+        const items = await this.prisma.productVersion.findMany({
+            where: { sku: { in: skuList } },
+            select: {
+                id: true,
+                sku: true,
+
+            }
+        })
+    }
 
     async buildShoppingCart({ orderItems, couponCode }: { orderItems: OrderShoppingCartDTO[], couponCode?: string }) {
         const skuList = orderItems.map((item) => item.product);

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { OffersUtilsService } from "src/offers/offers.utils.service";
 import { PRODUCT_VERSION_CARD_BASE_SELECT } from "src/product-version/helpers";

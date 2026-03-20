@@ -16,8 +16,9 @@ import { SendNotificationStep } from "../../pipeline/mercadopago-pipelines/post-
 import { InvalidateCacheStep } from "../../pipeline/mercadopago-pipelines/post-queue/invalidate-cache.step";
 import { MercadoPagoProvider } from "src/orders/providers/mercado-pago.provider";
 import { OrderProcessingStatus, ProcessPaymentJob } from "src/orders/payment/payment.interfaces";
+import { PaymentService } from "src/orders/payment/payment.service";
 
-@Processor("mercadopago-payment-processing", { concurrency: 5 })
+@Processor("payment-processor", { concurrency: 5 })
 export class MercadoPagoPaymentQueueConsumer extends WorkerHost {
     private readonly logger = new Logger(MercadoPagoPaymentQueueConsumer.name);
 
@@ -27,7 +28,8 @@ export class MercadoPagoPaymentQueueConsumer extends WorkerHost {
         private readonly shipping: ShippingService,
         private readonly shoppingCart: ShoppingCartService,
         private readonly notifications: NotificationsService,
-        private readonly mercadopago: MercadoPagoProvider
+        private readonly mercadopago: MercadoPagoProvider,
+        private readonly paymentService: PaymentService
     ) { super(); }
 
     async process(job: Job<ProcessPaymentJob>): Promise<void> {
@@ -40,7 +42,7 @@ export class MercadoPagoPaymentQueueConsumer extends WorkerHost {
                 .pipe(new UpdateOrderStatusStep(this.prisma))
                 .pipe(new RestoreStockStep(this.prisma))
                 .pipe(new CreateShippingStep(this.shipping))
-                .pipe(new SendNotificationStep(this.prisma, this.notifications))
+                .pipe(new SendNotificationStep(this.notifications, this.paymentService))
                 .pipe(new InvalidateCacheStep(this.cache, this.shoppingCart))
                 .run(context);
 

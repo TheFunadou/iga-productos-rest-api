@@ -9,6 +9,8 @@ import { NotificationsService } from 'src/notifications/notifications.service';
 import { ConfigService } from '@nestjs/config';
 import { LoginTicket, OAuth2Client } from 'google-auth-library';
 import { UpdateCustomerDTO } from 'src/customer/customer.dto';
+import { Response as ExpressResponse } from 'express';
+
 
 @Injectable()
 export class CustomerAuthService {
@@ -30,19 +32,37 @@ export class CustomerAuthService {
         this.recaptchaSecretKey = this.config.get<string>("RECAPTCHA_SECRET_KEY");
     };
 
-    async login(dto: CustomerCredentialsDTO) {
-        const isHuman = await this.validateRecaptcha(dto.recaptchaToken);
-        if (!isHuman) throw new UnauthorizedException("Verificación de seguridad fallida. Eres un bot?");
-        if (!this.jwtCustomerSecret) {
-            if (this.nodeEnv === "DEV") this.logger.error("JWT_CUSTOMER_SECRET no se encontro en el archivo de variables de entorno");
+    private createCustomerSession({ res, authUser }: { res: ExpressResponse, authUser: CustomerPayload }) {
+        const accessToken = this.jwt.sign(authUser, { secret: this.jwtCustomerSecret });
+        const secure = this.nodeEnv === "production" || this.nodeEnv === "testing" ? true : false;
+        const sameSite = "lax";
+        const domain = this.nodeEnv === "production" || this.nodeEnv === "testing" ? ".igaproductos.com" : undefined;
+        res.cookie("access_token", accessToken, {
+            httpOnly: true,
+            secure,
+            sameSite,
+            domain,
+            maxAge: 1000 * 60 * 60 * 24,
+        });
+    };
+
+    async login({ res, dto }: { res: ExpressResponse, dto: CustomerCredentialsDTO }) {
+        try {
+            const isHuman = await this.validateRecaptcha(dto.recaptchaToken);
+            if (!isHuman) throw new UnauthorizedException("Verificación de seguridad fallida. Eres un bot?");
+            if (!this.jwtCustomerSecret) {
+                if (this.nodeEnv === "DEV") this.logger.error("JWT_CUSTOMER_SECRET no se encontro en el archivo de variables de entorno");
+                this.logger.error("Error al iniciar sesión");
+                throw new BadRequestException("Ocurrio un error inesperado al iniciar sesión");
+            };
+            const authUser = await this.authentication(dto);
+            this.createCustomerSession({ res, authUser });
+            return { payload: authUser };
+        } catch (error) {
             this.logger.error("Error al iniciar sesión");
+            this.logger.error(error);
             throw new BadRequestException("Ocurrio un error inesperado al iniciar sesión");
-        };
-        const authUser = await this.authentication(dto);
-        const token = this.jwt.sign(authUser, { secret: this.jwtCustomerSecret });
-        const csrfToken = randomUUID();
-        await this.cache.setData({ entity: "customer:session:csrf", query: { customerUUID: authUser.uuid }, data: { csrfToken }, aditionalOptions: { ttlMilliseconds: 1000 * 60 * 60 * 24 } });
-        return { access_token: token, payload: authUser, csrfToken };
+        }
     };
 
     private async authentication(dto: CustomerCredentialsDTO) {
@@ -78,6 +98,13 @@ export class CustomerAuthService {
         return data.csrfToken;
     };
 
+    async logout({ res, sessionId }: { res: ExpressResponse, sessionId: string }): Promise<void> {
+        res.clearCookie("access_token");
+        res.clearCookie("csrf_token");
+        res.clearCookie("session_id");
+        await this.cache.removeData({ entity: "session:csrf", query: { sessionId } });
+    };
+
     async getProfile(args: { uuid: string }): Promise<AuthCustomer> {
         const customer = await this.prisma.customer.findUnique({
             where: { uuid: args.uuid },
@@ -97,9 +124,7 @@ export class CustomerAuthService {
             last_name: customer.last_name,
             verified: customer.email_verified
         };
-        const csrfToken = await this.cache.getData<{ csrfToken: string }>({ entity: "customer:session:csrf", query: { customerUUID: args.uuid } });
-        if (!csrfToken) throw new NotFoundException("No se encontro token csrf asociado a este cliente");
-        return { payload, csrfToken: csrfToken.csrfToken };
+        return { payload };
     };
 
     async sendTokenToEmail({ sessionId, email, type }: { sessionId: string, email: string, type: "verification" | "restore-password" }): Promise<void> {
@@ -151,7 +176,7 @@ export class CustomerAuthService {
     };
 
 
-    async loginWithGoogle(dto: GoogleAuthDTO) {
+    async loginWithGoogle({ res, dto }: { res: ExpressResponse, dto: GoogleAuthDTO }) {
         if (!this.googleClientId || !this.jwtCustomerSecret) {
             if (this.nodeEnv === "DEV") this.logger.error("GOOGLE_CLIENT_ID o JWT_CUSTOMER_SECRET no se encontro en el archivo de variables de entorno");
             this.logger.error("Error al iniciar sesión");
@@ -192,15 +217,9 @@ export class CustomerAuthService {
                 last_name: customer.last_name,
                 verified: customer.email_verified,
             };
-            const token = this.jwt.sign(payload, { secret: this.jwtCustomerSecret });
-            const csrfToken = randomUUID();
-            await this.cache.setData({
-                entity: 'customer:session:csrf',
-                query: { customerUUID: customer.uuid },
-                data: { csrfToken },
-                aditionalOptions: { ttlMilliseconds: 1000 * 60 * 60 * 24 },
-            });
-            return { access_token: token, payload, csrfToken };
+            this.createCustomerSession({ res, authUser: payload });
+            console.log("payload", payload, "cliente autenticado con google exitosamente");
+            return { payload };
         }
 
         // Verificar si el email ya está registrado por flujo normal (credentials)
@@ -228,15 +247,8 @@ export class CustomerAuthService {
                 last_name: existingCustomerByEmail.last_name,
                 verified: existingCustomerByEmail.email_verified,
             };
-            const token = this.jwt.sign(payload, { secret: this.jwtCustomerSecret });
-            const csrfToken = randomUUID();
-            await this.cache.setData({
-                entity: 'customer:session:csrf',
-                query: { customerUUID: existingCustomerByEmail.uuid },
-                data: { csrfToken },
-                aditionalOptions: { ttlMilliseconds: 1000 * 60 * 60 * 24 },
-            });
-            return { access_token: token, payload, csrfToken };
+            this.createCustomerSession({ res, authUser: payload });
+            return { payload };
         }
 
         const newCustomer = await this.prisma.customer.create({
@@ -264,15 +276,8 @@ export class CustomerAuthService {
             last_name: newCustomer.last_name,
             verified: newCustomer.email_verified,
         };
-        const token = this.jwt.sign(payload, { secret: this.jwtCustomerSecret });
-        const csrfToken = randomUUID();
-        await this.cache.setData({
-            entity: 'customer:session:csrf',
-            query: { customerUUID: newCustomer.uuid },
-            data: { csrfToken },
-            aditionalOptions: { ttlMilliseconds: 1000 * 60 * 60 * 24 },
-        });
-        return { access_token: token, payload, csrfToken };
+        this.createCustomerSession({ res, authUser: payload });
+        return { payload };
     };
 
 

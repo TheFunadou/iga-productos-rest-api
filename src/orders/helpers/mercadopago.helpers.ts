@@ -1,6 +1,6 @@
 
 import { PreferenceCreateData } from "mercadopago/dist/clients/preference/create/types";
-import { MercadoPagoPreferenceBody, OrderRequestFormGuestDTO, OrderValidatedCustomerData } from "../order.dto";
+import { MercadoPagoPreferenceBody } from "../order.dto";
 import { ProductVersionCard } from "src/product-version/product-version.dto";
 import { Items as MercadoPagoItems } from "mercadopago/dist/clients/commonTypes";
 import { OrderShoppingCartDTO } from "../payment/payment.dto";

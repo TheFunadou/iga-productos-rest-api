@@ -9,7 +9,7 @@ export class CustomerJwtStrategy extends PassportStrategy(Strategy, "jwt-custome
         super({
             jwtFromRequest: ExtractJwt.fromExtractors([
                 (req: Request) => {
-                    return req?.cookies?.["iga_customer_access_token"]; //Extract JWT from cookies
+                    return req?.cookies?.["access_token"]; //Extract JWT from cookies
                 },
             ]),
             ignoreExpiration: false,

@@ -10,6 +10,8 @@ import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserModulePermissionsGuard } from 'src/user_auth/user_auth.module.permissions.guard';
 import { RequirePermissions } from 'src/user_auth/user_auth.module.permissions.decorator';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
+import { OptionalCustomerAuthGuard } from 'src/customer_auth/customer_auth.optional.guard';
+import { OptionalCustomer } from 'src/customer_auth/customer_auth.optional.decorator';
 
 @Controller('orders')
 export class OrdersController {
@@ -17,12 +19,10 @@ export class OrdersController {
         private readonly ordersService: OrdersService,
     ) { };
 
-
-
     @Post()
-    @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
-    @ApiOperation({ summary: "Crea una orden de pago con Mercado Pago para un cliente autenticado" })
-    @ApiResponse({ status: 200, description: "Orden de pago creada exitosamente" })
+    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
+    @ApiOperation({ summary: "Crea una orden de pago" })
+    @ApiResponse({ status: 200, description: "Orden de pago creada" })
     @ApiResponse({ status: 400, description: "Error al crear la orden de pago" })
     @ApiResponse({ status: 401, description: "No se proporciono un token de autenticacion" })
     @ApiResponse({ status: 403, description: "No se proporciono un token CSRF valido" })
@@ -30,35 +30,9 @@ export class OrdersController {
     @ApiResponse({ status: 500, description: "Error inesperado al crear la orden de pago" })
     @ApiHeader({ name: "csrf-token", description: "Token CSRF" })
     @ApiBody({ type: OrderRequestDTO })
-    async createMPAuthCustomer(@AuthenticatedCustomer() customer: CustomerPayload, @Body() dto: OrderRequestDTO) {
-        return await this.ordersService.createProviderOrder({ customerUUID: customer.uuid, orderRequest: dto });
+    async createOrder(@OptionalCustomer() customer: CustomerPayload, @Body() dto: OrderRequestDTO) {
+        return await this.ordersService.createProviderOrder({ customerUUID: customer?.uuid, orderRequest: dto });
     };
-
-    // @Post("mercadopago/authenticated")
-    // @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
-    // @ApiOperation({ summary: "Crea una orden de pago con Mercado Pago para un cliente autenticado" })
-    // @ApiResponse({ status: 200, description: "Orden de pago creada exitosamente" })
-    // @ApiResponse({ status: 400, description: "Error al crear la orden de pago" })
-    // @ApiResponse({ status: 401, description: "No se proporciono un token de autenticacion" })
-    // @ApiResponse({ status: 403, description: "No se proporciono un token CSRF valido" })
-    // @ApiResponse({ status: 404, description: "No se encontro al cliente" })
-    // @ApiResponse({ status: 500, description: "Error inesperado al crear la orden de pago" })
-    // @ApiHeader({ name: "csrf-token", description: "Token CSRF" })
-    // @ApiBody({ type: OrderRequestDTO })
-    // async createMPAuthCustomer(@AuthenticatedCustomer() customer: CustomerPayload, @Body() dto: OrderRequestDTO) {
-    //     return await this.ordersService.createMercadoPagoOrderAuthCustomer({ customerUUID: customer.uuid, orderRequest: dto });
-    // };
-
-    // @Post("mercadopago/guest")
-    // @ApiOperation({ summary: "Crea una orden de pago con Mercado Pago para un cliente invitado" })
-    // @ApiResponse({ status: 200, description: "Orden de pago creada exitosamente" })
-    // @ApiResponse({ status: 400, description: "Error al crear la orden de pago" })
-    // @ApiResponse({ status: 500, description: "Error inesperado al crear la orden de pago" })
-    // @ApiHeader({ name: "csrf-token", description: "Token CSRF" })
-    // @ApiBody({ type: OrderRequestGuestDTO })
-    // async createMPGuestCustomer(@Body() dto: OrderRequestGuestDTO) {
-    //     return await this.ordersService.createMercadoPagoOrderGuest({ orderRequest: dto });
-    // };
 
     @Get()
     @UseGuards(RequiredCustomerAuthGuard)
@@ -74,13 +48,14 @@ export class OrdersController {
     };
 
     @Get("checkout/:uuid")
+    @UseGuards(OptionalCustomerAuthGuard)
     @ApiOperation({ summary: "Obtiene los detalles de una orden" })
     @ApiResponse({ status: 200, description: "Items obtenidos exitosamente" })
     @ApiResponse({ status: 400, description: "Error al obtener los items de la orden" })
     @ApiResponse({ status: 404, description: "No se encontro la orden" })
     @ApiResponse({ status: 500, description: "Error inesperado al obtener los items de la orden" })
-    async getCheckoutOrder(@Param("uuid") uuid: string) {
-        return await this.ordersService.getCheckoutOrder({ orderUUID: uuid });
+    async getCheckoutOrder(@OptionalCustomer() customer: CustomerPayload, @Param("uuid") uuid: string) {
+        return await this.ordersService.getCheckoutOrder({ orderUUID: uuid, customerUUID: customer?.uuid });
     };
 
     @Get("details/:uuid")
@@ -95,7 +70,7 @@ export class OrdersController {
     };
 
     @Post("cancel/:uuid")
-    @UseGuards(RequiredCustomerAuthGuard)
+    @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Cancela una orden" })
     @ApiResponse({ status: 200, description: "Orden cancelada exitosamente" })
     @ApiResponse({ status: 400, description: "Error al cancelar la orden" })

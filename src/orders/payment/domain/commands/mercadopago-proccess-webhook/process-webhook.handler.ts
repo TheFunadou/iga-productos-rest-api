@@ -16,7 +16,7 @@ export class MercadoPagoProcessWebhookHandler implements ICommandHandler<Mercado
     constructor(
         private readonly mercadopago: MercadoPagoProvider,
         private readonly cache: CacheService,
-        @InjectQueue("mercadopago-payment-processing") private readonly queue: Queue
+        @InjectQueue("payment-processor") private readonly queue: Queue
     ) { };
 
     async execute(command: MercadoPagoProcessWebhookCommand): Promise<any> {

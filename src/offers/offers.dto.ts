@@ -146,3 +146,12 @@ export class OffersDashboardParams extends PaginationDTO {
     @Type(() => String)
     type?: OfferTargetType;
 };
+
+export interface HasPercentageDiscountArgs {
+    versionId: string;
+    productName: string;
+    productId: string;
+    categoryId: string;
+    subcategories: string[];
+    quantity: number
+};
