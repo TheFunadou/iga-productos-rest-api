@@ -1,7 +1,7 @@
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { Request, Response, NextFunction, CookieOptions } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { CacheService } from 'src/cache/cache.service';
 
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
@@ -18,9 +18,9 @@ export class SessionMiddleware implements NestMiddleware {
     private readonly cache: CacheService,
     private readonly configService: ConfigService,
   ) {
-    const nodeEnv = this.configService.get<string>('NODE_ENV', "DEV");
+    const nodeEnv = this.configService.get<string>('NODE_ENV') ?? 'development';
     this.secure = nodeEnv === 'production';
-    this.sameSite = "lax";
+    this.sameSite = this.secure ? 'strict' : 'lax';
   }
 
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -68,24 +68,16 @@ export class SessionMiddleware implements NestMiddleware {
 
     await this.saveInCache(sessionId, csrfToken);
 
-    const cookieDomain = this.secure ? '.igaproductos.com' : undefined;
-    res.cookie(SESSION_COOKIE, sessionId, {
+    const base = {
       httpOnly: true,
       secure: this.secure,
       sameSite: this.sameSite,
       maxAge: SESSION_TTL_MS,
       path: '/',
-      domain: cookieDomain,
-    });
-    res.cookie(CSRF_COOKIE, csrfToken, {
-      httpOnly: false,
-      secure: this.secure,
-      sameSite: this.sameSite,
-      maxAge: SESSION_TTL_MS,
-      path: '/',
-      domain: cookieDomain,
-    });
+    } satisfies Parameters<Response['cookie']>[2];
 
+    res.cookie(SESSION_COOKIE, sessionId, base);
+    res.cookie(CSRF_COOKIE, csrfToken, { ...base, httpOnly: false });
   }
 
   private generateToken(): string {
