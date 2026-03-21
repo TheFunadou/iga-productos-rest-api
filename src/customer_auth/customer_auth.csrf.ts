@@ -3,7 +3,6 @@ import {
     ExecutionContext,
     ForbiddenException,
     Injectable,
-    UnauthorizedException,
 } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { timingSafeEqual } from 'crypto';
