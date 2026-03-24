@@ -6,6 +6,7 @@ import { AuthUser, UserCredentialsDTO, UserPayload } from './user_auth.dto';
 import { AuthenticatedUser } from './user_auth.current_user.decorator';
 import { RequiredUserAuthGuard } from './user_auth.required.guard';
 import { ConfigService } from '@nestjs/config';
+import { UserCsrfAuthGuard } from './user_auth.csrf';
 
 @Controller('user-auth')
 export class UserAuthController {
@@ -18,6 +19,7 @@ export class UserAuthController {
     };
 
     @Post("login")
+    @UseGuards(UserCsrfAuthGuard)
     @ApiOperation({ summary: "Inicia sesión de un usuario" })
     @ApiResponse({ status: 200, description: "Sesión iniciada exitosamente", type: AuthUser })
     @ApiResponse({ status: 500, description: "Error al iniciar sesión" })
@@ -25,28 +27,20 @@ export class UserAuthController {
     async login(
         @Body() dto: UserCredentialsDTO,
         @Res({ passthrough: true }) response: ExpressResponse,
-        @Req() request: ExpressRequest
     ): Promise<AuthUser> {
         const login = await this.userAuthService.login(dto);
-        response.cookie("iga_user_access_token", login.access_token, {
+        response.cookie("access_token", login.access_token, {
             httpOnly: true,
             secure: this.nodeEnv === "production",
             sameSite: this.nodeEnv === "production" ? "strict" : "lax",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
-        response.cookie("iga_user_csrf_token", login.csrfToken, {
-            httpOnly: false,
-            secure: this.nodeEnv === "production",
-            sameSite: this.nodeEnv === "production" ? "strict" : "lax",
-            maxAge: 1000 * 60 * 60 * 24,
-        });
-
-        return { payload: login.payload, csrfToken: login.csrfToken };
+        return { payload: login.payload };
     };
 
     @Post("logout")
-    @UseGuards(RequiredUserAuthGuard)
+    @UseGuards(RequiredUserAuthGuard, UserCsrfAuthGuard)
     @ApiOperation({ summary: "Cierra sesión de un usuario" })
     @ApiResponse({ status: 200, description: "Sesión cerrada exitosamente" })
     @ApiResponse({ status: 500, description: "Error al cerrar sesión" })

@@ -56,9 +56,6 @@ export class UserPayload {
 export class AuthUser {
     @ApiProperty({ description: "Payload del usuario", type: UserPayload })
     payload: UserPayload;
-
-    @ApiProperty({ description: "Token de seguridad", type: String })
-    csrfToken: string;
 };
 
 

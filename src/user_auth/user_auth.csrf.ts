@@ -3,7 +3,6 @@ import {
     ExecutionContext,
     ForbiddenException,
     Injectable,
-    UnauthorizedException,
 } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { timingSafeEqual } from 'crypto';
@@ -17,9 +16,6 @@ export class UserCsrfAuthGuard implements CanActivate {
 
         // Safe methods don't need CSRF validation
         if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return true;
-
-        const user = request.user;
-        if (!user?.uuid) throw new UnauthorizedException('Usuario no autenticado');
 
         // 1. Token from header (sent by the frontend from the csrf_token cookie)
         const headerCsrfToken = request.headers['x-csrf-token'];

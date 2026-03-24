@@ -9,7 +9,7 @@ export class UserJwtStrategy extends PassportStrategy(Strategy, "jwt-user") {
         super({
             jwtFromRequest: ExtractJwt.fromExtractors([
                 (req: Request) => {
-                    return req?.cookies?.["iga_user_access_token"]; //Extract JWT from cookies
+                    return req?.cookies?.["access_token"];
                 },
             ]),
             ignoreExpiration: false,

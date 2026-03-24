@@ -10,22 +10,20 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserAuthService {
-    private readonly secret: string;
+    private readonly secret?: string;
     constructor(
         private readonly prisma: PrismaService,
         private readonly jwtService: JwtService,
         private readonly cacheService: CacheService,
         private readonly config: ConfigService,
     ) {
-        this.secret = this.config.get<string>("JWT_USER_SECRET") || "";
+        this.secret = this.config.get<string>("JWT_USER_SECRET");
     };
 
     async login(dto: UserCredentialsDTO) {
         const authUser = await this.authentication(dto);
         const token = this.jwtService.sign(authUser, { secret: this.secret });
-        const csrfToken = randomUUID();
-        await this.cacheService.setData({ entity: "user:session:csrf", query: { userUUID: authUser.uuid }, data: { csrfToken }, aditionalOptions: { ttlMilliseconds: 1000 * 60 * 60 } });
-        return { access_token: token, payload: authUser, csrfToken };
+        return { access_token: token, payload: authUser };
     };
 
     private async authentication(dto: UserCredentialsDTO): Promise<UserPayload> {
@@ -102,9 +100,7 @@ export class UserAuthService {
             role: user.role,
             permissions: formattedPermissions
         };
-        const csrfToken = await this.cacheService.getData<{ csrfToken: string }>({ entity: "user:session:csrf", query: { userUUID: uuid } });
-        if (!csrfToken) throw new NotFoundException("No se encontro token csrf asociado a este usuario");
-        return { payload, csrfToken: csrfToken.csrfToken };
+        return { payload };
     };
 
 

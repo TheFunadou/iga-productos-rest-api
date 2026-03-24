@@ -88,7 +88,9 @@ async function bootstrap() {
         "https://igaproductos.com",
         "https://www.igaproductos.com",
         "tauri://localhost",
-        "http://tauri.localhost"
+        "http://tauri.localhost",
+        "https://tauri.localhost"
+
       ];
 
       if (!origin || allowedOrigins.includes(origin)) {
