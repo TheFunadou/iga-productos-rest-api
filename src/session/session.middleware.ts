@@ -13,6 +13,7 @@ export class SessionMiddleware implements NestMiddleware {
   private readonly logger = new Logger(SessionMiddleware.name);
   private readonly secure: boolean;
   private readonly domain: string | undefined;
+  private readonly site: string | undefined;
 
   constructor(
     private readonly cache: CacheService,
@@ -22,6 +23,7 @@ export class SessionMiddleware implements NestMiddleware {
     this.secure = nodeEnv === 'production' || nodeEnv === 'testing';
     // Mismo dominio que usas en createCustomerSession
     this.domain = this.secure ? '.igaproductos.com' : undefined;
+    this.site = this.configService.get<string>("SITE");
   }
 
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -58,6 +60,7 @@ export class SessionMiddleware implements NestMiddleware {
   }
 
   private async createSession(res: Response): Promise<void> {
+
     const sessionId = this.generateToken();
     const csrfToken = this.generateToken();
     await this.saveInCache(sessionId, csrfToken);
@@ -65,10 +68,10 @@ export class SessionMiddleware implements NestMiddleware {
     const base: CookieOptions = {
       httpOnly: true,
       secure: this.secure,
-      sameSite: 'lax',          // igual que createCustomerSession
+      sameSite: "lax",
       maxAge: SESSION_TTL_MS,
       path: '/',
-      domain: this.domain,      // ← el fix: .igaproductos.com en prod
+      domain: this.domain,
     };
 
     res.cookie(SESSION_COOKIE, sessionId, base);

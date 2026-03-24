@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { randomInt, randomUUID } from 'crypto';
+import { randomInt } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { AuthCustomer, CustomerCredentialsDTO, CustomerPayload, GoogleAuthDTO, RestorePasswordPublicDTO } from './customer_auth.dto';
 import * as bcrypt from 'bcrypt';

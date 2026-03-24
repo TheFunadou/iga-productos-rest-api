@@ -28,15 +28,19 @@ export class UserAuthController {
         @Body() dto: UserCredentialsDTO,
         @Res({ passthrough: true }) response: ExpressResponse,
     ): Promise<AuthUser> {
-        const login = await this.userAuthService.login(dto);
-        response.cookie("access_token", login.access_token, {
+        const { access_token, payload } = await this.userAuthService.login(dto);
+        const secure = this.nodeEnv === "production" || this.nodeEnv === "testing" ? true : false;
+        const sameSite = "lax";
+        const domain = this.nodeEnv === "production" || this.nodeEnv === "testing" ? ".igaproductos.com" : undefined;
+        response.cookie("access_token", access_token, {
             httpOnly: true,
-            secure: true,
-            sameSite: "none",
+            secure,
+            sameSite,
+            domain,
             maxAge: 1000 * 60 * 60 * 24,
         });
 
-        return { payload: login.payload };
+        return { payload };
     };
 
     @Post("logout")
@@ -50,8 +54,9 @@ export class UserAuthController {
         @AuthenticatedUser() user: UserPayload
     ): Promise<string> {
         await this.userAuthService.logout(user.uuid);
-        response.clearCookie("iga_user_access_token");
-        response.clearCookie("iga_user_csrf_token");
+        response.clearCookie("access_token");
+        response.clearCookie("csrf_token");
+        response.clearCookie("session_id");
         return "Sesión cerrada";
 
     };
