@@ -31,8 +31,8 @@ export class UserAuthController {
         const login = await this.userAuthService.login(dto);
         response.cookie("access_token", login.access_token, {
             httpOnly: true,
-            secure: this.nodeEnv === "production",
-            sameSite: this.nodeEnv === "production" ? "strict" : "lax",
+            secure: true,
+            sameSite: "none",
             maxAge: 1000 * 60 * 60 * 24,
         });
 

@@ -8,6 +8,7 @@ import { ProductVersionFindService } from "src/product-version/product-version.f
 import { CacheService } from "src/cache/cache.service";
 import { buildShoppingCart, buildValidatedAuthCustomerData, buildValidatedGuestCustomerData, calcShoppingCartOrderResume } from "src/orders/orders.helpers";
 import { ProductVersionCard } from "src/product-version/product-version.dto";
+import { SearchCardsService } from "src/product-version/domain/services/search-cards.service";
 
 @Injectable()
 export class CreateOrderService {
@@ -15,7 +16,8 @@ export class CreateOrderService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly productVersionFind: ProductVersionFindService,
-        private readonly cache: CacheService
+        private readonly cache: CacheService,
+        private readonly searchCards: SearchCardsService
     ) { };
 
 
@@ -55,17 +57,6 @@ export class CreateOrderService {
         if (!customerData || !customerAddressData) throw new BadRequestException("Error al crear orden de pago, no se encotraron los datos del cliente");
         return buildValidatedAuthCustomerData({ customerAddressData, customerData });
     };
-
-    private async getItems({ skuList }: { skuList: string[] }) {
-        const items = await this.prisma.productVersion.findMany({
-            where: { sku: { in: skuList } },
-            select: {
-                id: true,
-                sku: true,
-
-            }
-        })
-    }
 
     async buildShoppingCart({ orderItems, couponCode }: { orderItems: OrderShoppingCartDTO[], couponCode?: string }) {
         const skuList = orderItems.map((item) => item.product);
