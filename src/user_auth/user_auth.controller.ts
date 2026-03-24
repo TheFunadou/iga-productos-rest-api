@@ -7,6 +7,7 @@ import { AuthenticatedUser } from './user_auth.current_user.decorator';
 import { RequiredUserAuthGuard } from './user_auth.required.guard';
 import { ConfigService } from '@nestjs/config';
 import { UserCsrfAuthGuard } from './user_auth.csrf';
+import { USER_COOKIE_NAME } from './user_auth.strategy';
 
 @Controller('user-auth')
 export class UserAuthController {
@@ -32,7 +33,7 @@ export class UserAuthController {
         const secure = this.nodeEnv === "production" || this.nodeEnv === "testing" ? true : false;
         const sameSite = "lax";
         const domain = this.nodeEnv === "production" || this.nodeEnv === "testing" ? ".igaproductos.com" : undefined;
-        response.cookie("access_token", access_token, {
+        response.cookie(USER_COOKIE_NAME, access_token, {
             httpOnly: true,
             secure,
             sameSite,
@@ -54,10 +55,19 @@ export class UserAuthController {
         @AuthenticatedUser() user: UserPayload
     ): Promise<string> {
         await this.userAuthService.logout(user.uuid);
-        response.clearCookie("access_token");
+        response.clearCookie(USER_COOKIE_NAME);
         response.clearCookie("csrf_token");
         response.clearCookie("session_id");
         return "Sesión cerrada";
 
+    };
+
+    @Get("init")
+    @UseGuards(RequiredUserAuthGuard, UserCsrfAuthGuard)
+    @ApiOperation({ summary: "Obtiene el usuario actual" })
+    @ApiResponse({ status: 200, description: "Usuario obtenido exitosamente", type: UserPayload })
+    @ApiResponse({ status: 500, description: "Error al obtener el usuario" })
+    async init(): Promise<string> {
+        return "ok";
     };
 }

@@ -87,10 +87,8 @@ async function bootstrap() {
         "http://localhost:5173",
         "https://igaproductos.com",
         "https://www.igaproductos.com",
-        "tauri://localhost",
-        "http://tauri.localhost",
-        "https://tauri.localhost"
-
+        "https://adminpanel.igaproductos.com",
+        "https://www.adminpanel.igaproductos.com",
       ];
 
       if (!origin || allowedOrigins.includes(origin)) {
@@ -99,6 +97,13 @@ async function bootstrap() {
         callback(new Error("Not allowed by CORS"));
       }
     },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "x-csrf-token",
+      "Accept",
+    ],
     credentials: true,
   });
   await app.listen(port);

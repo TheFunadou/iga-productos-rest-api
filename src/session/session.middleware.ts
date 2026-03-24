@@ -5,15 +5,12 @@ import { CookieOptions, Request, Response, NextFunction } from 'express';
 import { CacheService } from 'src/cache/cache.service';
 
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
-const SESSION_COOKIE = 'session_id';
-const CSRF_COOKIE = 'csrf_token';
 
 @Injectable()
 export class SessionMiddleware implements NestMiddleware {
   private readonly logger = new Logger(SessionMiddleware.name);
   private readonly secure: boolean;
   private readonly domain: string | undefined;
-  private readonly site: string | undefined;
 
   constructor(
     private readonly cache: CacheService,
@@ -21,24 +18,41 @@ export class SessionMiddleware implements NestMiddleware {
   ) {
     const nodeEnv = this.configService.get<string>('NODE_ENV', 'DEV');
     this.secure = nodeEnv === 'production' || nodeEnv === 'testing';
-    // Mismo dominio que usas en createCustomerSession
     this.domain = this.secure ? '.igaproductos.com' : undefined;
-    this.site = this.configService.get<string>("SITE");
+  };
+
+  private getCookieNames(req: Request) {
+    const origin = req.headers.origin || req.headers.referer || "";
+
+    // Si el origen contiene 'adminpanel', usamos los nombres de admin
+    if (origin.includes('adminpanel')) {
+      return {
+        session: 'iga_user_session_id',
+        csrf: 'iga_user_csrf_token'
+      };
+    }
+    // Por defecto (e-commerce)
+    return {
+      session: 'session_id',
+      csrf: 'csrf_token'
+    };
   }
 
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const cookies = this.getCookieNames(req);
+    res.locals.cookieNames = cookies;
     try {
-      const isValid = await this.validateSession(req);
+      const isValid = await this.validateSession(req, cookies);
       if (!isValid && !res.locals.sessionCreated) {
         res.locals.sessionCreated = true;
-        await this.createSession(res);
+        await this.createSession(res, cookies);
       }
     } catch (error) {
       this.logger.error('Session middleware failed', error instanceof Error ? error.stack : error);
       try {
         if (!res.locals.sessionCreated) {
           res.locals.sessionCreated = true;
-          await this.createSession(res);
+          await this.createSession(res, cookies);
         }
       } catch {
         this.logger.warn('Emergency session creation also failed — continuing without session');
@@ -48,9 +62,9 @@ export class SessionMiddleware implements NestMiddleware {
     }
   }
 
-  private async validateSession(req: Request): Promise<boolean> {
-    const sessionId = req.cookies?.[SESSION_COOKIE];
-    const csrfToken = req.cookies?.[CSRF_COOKIE];
+  private async validateSession(req: Request, names: { session: string, csrf: string }): Promise<boolean> {
+    const sessionId = req.cookies?.[names.session];
+    const csrfToken = req.cookies?.[names.csrf];
     if (typeof sessionId !== 'string' || typeof csrfToken !== 'string') return false;
     const cached = await this.cache.getData<{ csrfToken: string }>({
       entity: `session:${sessionId}`,
@@ -59,7 +73,7 @@ export class SessionMiddleware implements NestMiddleware {
     return this.timingSafeCompare(cached.csrfToken, csrfToken);
   }
 
-  private async createSession(res: Response): Promise<void> {
+  private async createSession(res: Response, names: { session: string, csrf: string }): Promise<void> {
 
     const sessionId = this.generateToken();
     const csrfToken = this.generateToken();
@@ -74,8 +88,8 @@ export class SessionMiddleware implements NestMiddleware {
       domain: this.domain,
     };
 
-    res.cookie(SESSION_COOKIE, sessionId, base);
-    res.cookie(CSRF_COOKIE, csrfToken, { ...base, httpOnly: false });
+    res.cookie(names.session, sessionId, base);
+    res.cookie(names.csrf, csrfToken, { ...base, httpOnly: false });
   }
 
   private generateToken(): string {
