@@ -68,11 +68,12 @@ export class ProductVersionService {
         });
     };
 
-    async patch({ data: { fatherUUID, productVersionSKU, product_version: data, version_images }, userUUID }: { data: PatchProductVersionDTO, userUUID: string }) {
+    async patch({ data, userUUID }: { data: PatchProductVersionDTO, userUUID: string }) {
+        const { fatherUUID, productVersionSKU, product_version, version_images } = data;
         return await this.prisma.$transaction(async (tx) => {
             const product = await tx.product.findUnique({ where: { uuid: fatherUUID }, select: { id: true } });
             if (!product) throw new NotFoundException("No se encontro el producto padre relacionado a la version");
-            if (data.main_version) {
+            if (product_version.main_version) {
                 await tx.productVersion.updateMany({
                     where: { product_id: product.id },
                     data: { main_version: false }
@@ -81,8 +82,8 @@ export class ProductVersionService {
             const udpated = await tx.productVersion.update({
                 where: { sku: productVersionSKU },
                 data: {
-                    ...data,
-                    unit_price: data.unit_price ? new Decimal(data.unit_price) : undefined,
+                    ...product_version,
+                    unit_price: product_version.unit_price ? new Decimal(product_version.unit_price) : undefined,
                 }
             }).catch((error) => {
                 if (this.nodeEnv === "DEV") this.logger.error(error);
