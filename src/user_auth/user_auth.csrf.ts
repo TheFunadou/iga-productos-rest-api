@@ -24,7 +24,7 @@ export class UserCsrfAuthGuard implements CanActivate {
         }
 
         // 2. session_id to find in cache
-        const sessionId = request.cookies?.['session_id'];
+        const sessionId = request.cookies?.['iga_user_session_id'];
         if (!sessionId) throw new ForbiddenException('Sesión no encontrada');
 
         // 3. Token stored in cache under the session created by the middleware
@@ -36,7 +36,7 @@ export class UserCsrfAuthGuard implements CanActivate {
         }
 
         // 4. Cookie csrf_token (the middleware sets it as httpOnly: false)
-        const cookieCsrfToken = request.cookies?.['csrf_token'];
+        const cookieCsrfToken = request.cookies?.['iga_user_csrf_token'];
         if (!cookieCsrfToken) throw new ForbiddenException('Cookie CSRF no encontrada');
 
         // 5. Triple validation with constant time comparison

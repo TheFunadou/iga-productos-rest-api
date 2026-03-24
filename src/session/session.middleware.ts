@@ -25,7 +25,7 @@ export class SessionMiddleware implements NestMiddleware {
     const origin = req.headers.origin || req.headers.referer || "";
 
     // Si el origen contiene 'adminpanel', usamos los nombres de admin
-    if (origin.includes('adminpanel')) {
+    if (origin.includes('adminpanel') || origin.includes('localhost:5173')) {
       return {
         session: 'iga_user_session_id',
         csrf: 'iga_user_csrf_token'
@@ -87,6 +87,21 @@ export class SessionMiddleware implements NestMiddleware {
       path: '/',
       domain: this.domain,
     };
+
+    // Dentro de createSession antes de res.cookie
+    console.log({
+      name: names.session,
+      secure: this.secure,
+      domain: this.domain,
+      env: this.configService.get("NODE_ENV")
+    });
+
+    console.log({
+      name: names.csrf,
+      secure: this.secure,
+      domain: this.domain,
+      env: this.configService.get("NODE_ENV")
+    });
 
     res.cookie(names.session, sessionId, base);
     res.cookie(names.csrf, csrfToken, { ...base, httpOnly: false });

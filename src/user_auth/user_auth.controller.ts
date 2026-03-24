@@ -61,13 +61,4 @@ export class UserAuthController {
         return "Sesión cerrada";
 
     };
-
-    @Get("init")
-    @UseGuards(RequiredUserAuthGuard, UserCsrfAuthGuard)
-    @ApiOperation({ summary: "Obtiene el usuario actual" })
-    @ApiResponse({ status: 200, description: "Usuario obtenido exitosamente", type: UserPayload })
-    @ApiResponse({ status: 500, description: "Error al obtener el usuario" })
-    async init(): Promise<string> {
-        return "ok";
-    };
 }
