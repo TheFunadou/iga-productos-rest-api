@@ -88,21 +88,6 @@ export class SessionMiddleware implements NestMiddleware {
       domain: this.domain,
     };
 
-    // Dentro de createSession antes de res.cookie
-    console.log({
-      name: names.session,
-      secure: this.secure,
-      domain: this.domain,
-      env: this.configService.get("NODE_ENV")
-    });
-
-    console.log({
-      name: names.csrf,
-      secure: this.secure,
-      domain: this.domain,
-      env: this.configService.get("NODE_ENV")
-    });
-
     res.cookie(names.session, sessionId, base);
     res.cookie(names.csrf, csrfToken, { ...base, httpOnly: false });
   }
