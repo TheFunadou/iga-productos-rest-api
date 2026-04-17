@@ -28,7 +28,7 @@ export class PaidOrderShipping {
 export class OrderShoppingCartDTO {
     @ApiProperty({ description: "SKU del producto que se va comprar", type: String })
     @IsString()
-    product: string;
+    sku: string;
 
     @ApiProperty({ description: "Cantidad de productos a comprar", type: Number })
     @IsNumber()
@@ -115,9 +115,12 @@ export class CustomerPaymentData extends CustomerAttributes {
 
 export interface PaymentDetails {
     uuid: string;
-    customer_address_id: string | null;
     is_guest_order: boolean;
     payment_provider: string;
+    buyer_name: string | null;
+    buyer_surname: string | null;
+    buyer_email: string | null;
+    buyer_phone: string | null;
     total_amount: Decimal;
     exchange: string;
     aditional_resource_url: string | null;
@@ -170,6 +173,24 @@ export interface PaymentDetails {
     shipping: {
         boxes_count: number,
         shipping_amount: Decimal
+    }[],
+    shipping_info: {
+        recipient_name: string;
+        recipient_last_name: string;
+        country: string;
+        state: string;
+        locality: string;
+        city: string;
+        street_name: string;
+        neighborhood: string;
+        zip_code: string;
+        address_type: string;
+        floor?: string | null;
+        number: string;
+        aditional_number?: string | null;
+        references_or_comments?: string | null;
+        country_phone_code: string
+        contact_number: string;
     } | null
 }
 

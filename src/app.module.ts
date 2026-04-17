@@ -25,6 +25,7 @@ import { AuditModule } from './audit/audit.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ReportsModule } from './reports/reports.module';
 import { SessionMiddleware } from './session/session.middleware';
+import { PaymentModule } from './orders/payment/payment.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { SessionMiddleware } from './session/session.middleware';
     ShippingModule,
     NotificationsModule,
     AuditModule,
+    PaymentModule,
     ReportsModule,
   ],
   controllers: [AppController],

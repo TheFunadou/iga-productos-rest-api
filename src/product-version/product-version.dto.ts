@@ -4,6 +4,7 @@ import { Transform, Type } from "class-transformer";
 import { IsArray, IsBoolean, IsDate, IsDecimal, IsEnum, IsInt, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
 import { PaginationDTO } from "src/common/DTO/pagination.dto";
 import { ProductAttributesWithUUID } from "src/product/product.dto";
+import { ProductVersionCardI } from "./application/pipelines/interfaces/product-version-card.interface";
 
 export class ProductVersion {
     @ApiProperty({ example: 1, description: "ID del producto" })
@@ -365,6 +366,35 @@ export class ProductVersionCardsFiltersDTO {
     couponCode?: string;
 };
 
+export class SearchCardsDTO {
+    @ApiProperty({ description: "Filtros" })
+    @Type(() => ProductVersionCardsFiltersDTO)
+    @IsOptional()
+    filters?: ProductVersionCardsFiltersDTO;
+
+    @ApiProperty({ description: "Lista de items" })
+    @Type(() => Object)
+    @IsOptional()
+    productList?: { productUUID: string, sku: string[] }[];
+};
+
+
+export class GetStockList {
+    @ApiProperty({ description: "Arreglo de SKU" })
+    @IsArray()
+    @Type(() => String)
+    @IsString({ each: true })
+    @IsOptional()
+    @Transform(({ value }) => {
+        if (Array.isArray(value)) {
+            return value.map(String);
+        }
+
+        return [String(value)];
+    })
+    skuList: string[];
+}
+
 export class GetProductVersionCardsRandomOptionsDTO {
     @ApiProperty({ description: "Limite de objetos recueperados MAX 25" })
     @IsInt()
@@ -418,3 +448,12 @@ export interface SearchCardsCacheQuery {
     customerUUID?: string;
     scope: "internal" | "external";
 };
+
+export class GetProductVersionCardsV2 {
+    @ApiProperty({ description: "Arreglo con los datos" })
+    data: ProductVersionCardI[];
+    @ApiProperty({ description: "Total de registros encontrados en la base de datos" })
+    totalRecords: number;
+    @ApiProperty({ description: "Total de paginas" })
+    totalPages: number;
+}

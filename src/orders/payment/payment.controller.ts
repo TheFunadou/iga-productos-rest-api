@@ -7,6 +7,7 @@ import { OrderProcessingStatus } from './payment.interfaces';
 import { OptionalCustomerAuthGuard } from 'src/customer_auth/customer_auth.optional.guard';
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 import { OptionalCustomer } from 'src/customer_auth/customer_auth.optional.decorator';
+import { PaymentDetailsI } from './domain/interfaces/payment.interfaces';
 
 @Controller('payment')
 export class PaymentController {
@@ -20,6 +21,7 @@ export class PaymentController {
         @Headers('x-signature') xSignature: string,
         @Headers('x-request-id') xRequestId: string,
     ) {
+        console.log("handleMercadoPagoWebhookV2", dataId, type, xSignature, xRequestId);
         await this.paymentService.processMercadoPagoWebhook({
             xSignature,
             xRequestId,
@@ -56,6 +58,18 @@ export class PaymentController {
         @Query("status") requiredStatus: OrderAndPaymentStatus[]
     ): Promise<GetPaidOrderDetails> {
         const status = await this.paymentService.getOrderStatusWithDetails({ orderUUID: uuid, requiredStatus: Array.isArray(requiredStatus) ? requiredStatus : [requiredStatus], customerUUID: customer?.uuid });
+        return status;
+    };
+
+    @Get("order/details/:uuid")
+    @ApiOperation({ summary: "Obtiene el estado de una orden por UUID" })
+    @ApiParam({ name: 'uuid', description: 'UUID de la orden' })
+    @ApiResponse({ status: 200, description: "Estado de la orden", type: Object })
+    async getOrderDetails(
+        @Param('uuid') uuid: string,
+        @Query("status") requiredStatus: OrderAndPaymentStatus[]
+    ): Promise<PaymentDetailsI> {
+        const status = await this.paymentService.getDetails({ orderUUID: uuid, requiredStatus: Array.isArray(requiredStatus) ? requiredStatus : [requiredStatus] });
         return status;
     };
 

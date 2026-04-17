@@ -3,14 +3,21 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { OrderAndPaymentStatus } from "@prisma/client";
 import { CacheService } from "src/cache/cache.service";
 import { OrderRequestFormGuestDTO } from "src/orders/order.dto";
-import { CustomerPaymentData, GetPaidOrderDetails, PaymentDetails } from "../payment.dto";
+import { GetPaidOrderDetails, PaymentDetails } from "../payment.dto";
 import { buildAuthCustomerGetPaymentDetailsResponse, buildGuestGetPaymentDetailsResponse, buildPaymentOrderItems } from "../payment.helpers";
+import { OrderDescriptionI, PaymentDetailsI } from "../domain/interfaces/payment.interfaces";
+import { ShoppingCartItemsResumeI } from "src/customer/shopping-cart/application/interfaces/shopping-cart.interface";
+import { GetCustomerAddressOrder } from "src/customer/customer-addresses/customer-addresses.dto";
+import { OrderCheckoutItemI } from "src/orders/applications/pipeline/interfaces/order.interface";
+import { calcResume } from "src/orders/helpers/order.helpers";
+import { OrdersService } from "src/orders/orders.service";
 
 @Injectable()
 export class GetPaymentDetailsService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly cache: CacheService
+        private readonly cache: CacheService,
+        private readonly ordersService: OrdersService
     ) { };
 
 
@@ -23,39 +30,18 @@ export class GetPaymentDetailsService {
         return guestData;
     };
 
-    private async getCustomerData({ customerUUID, addressUUID }: { customerUUID: string, addressUUID: string }): Promise<CustomerPaymentData> {
-        const customerData = await this.prisma.customer.findUnique({
-            where: { uuid: customerUUID },
-            select: {
-                name: true,
-                last_name: true,
-                email: true,
-                customer_addresses: {
-                    where: { uuid: addressUUID },
-                    omit: {
-                        uuid: true,
-                        id: true,
-                        customer_id: true,
-                        created_at: true,
-                        updated_at: true,
-                        default_address: true
-                    }
-                }
-            }
-        });
-        if (!customerData) throw new NotFoundException("Datos de envio no encontrados");
-        return customerData;
-    }
-
     private async getPaymentDetails({ orderUUID }: { orderUUID: string }): Promise<PaymentDetails> {
         const response = await this.prisma.order.findUnique({
             where: { uuid: orderUUID },
             select: {
                 uuid: true,
+                buyer_name: true,
+                buyer_surname: true,
+                buyer_email: true,
+                buyer_phone: true,
                 is_guest_order: true,
                 payment_provider: true,
                 total_amount: true,
-                customer_address_id: true,
                 exchange: true,
                 aditional_resource_url: true,
                 coupon_code: true,
@@ -107,6 +93,11 @@ export class GetPaymentDetailsService {
                         boxes_count: true,
                         shipping_amount: true
                     }
+                },
+                shipping_info: {
+                    omit: {
+                        id: true, order_id: true
+                    }
                 }
             }
         });
@@ -114,6 +105,91 @@ export class GetPaymentDetailsService {
         if (!response) throw new NotFoundException("Orden no encontrada");
         return response;
     }
+
+    private async getDetailsV2({ orderUUID }: { orderUUID: string }): Promise<OrderDescriptionI> {
+        const order = await this.ordersService.getCheckoutOrderV2({ orderUUID });
+        const paymentDetails = await this.cache.remember({
+            method: "staleWhileRevalidate",
+            entity: "customer:order:payment-details",
+            query: { orderUUID },
+            aditionalOptions: {
+                ttlMilliseconds: 1000 * 60 * 10,
+                staleTimeMilliseconds: 1000 * 60 * 8
+            },
+            fallback: async () => {
+                const data = await this.prisma.order.findUnique({
+                    where: { uuid: orderUUID },
+                    select: {
+                        payment_provider: true,
+                        is_guest_order: true,
+                        buyer_name: true,
+                        buyer_surname: true,
+                        buyer_email: true,
+                        buyer_phone: true,
+                        total_amount: true,
+                        exchange: true,
+                        aditional_resource_url: true,
+                        created_at: true,
+                        updated_at: true,
+                        payment_details: {
+                            select: {
+                                created_at: true,
+                                updated_at: true,
+                                last_four_digits: true,
+                                payment_class: true,
+                                payment_method: true,
+                                customer_paid_amount: true,
+                                installments: true,
+                                payment_status: true
+                            }
+                        }
+                    }
+                });
+
+                if (!data) throw new BadRequestException("Orden no encontrada");
+                return data;
+            }
+        });
+
+
+        return {
+            orderUUID: order.orderUUID,
+            isGuestOrder: paymentDetails.is_guest_order,
+            paymentProvider: paymentDetails.payment_provider,
+            buyer: {
+                name: paymentDetails.buyer_name,
+                surname: paymentDetails.buyer_surname,
+                email: paymentDetails.buyer_email,
+                phone: paymentDetails.buyer_phone
+            },
+            totalAmount: parseFloat(paymentDetails.total_amount.toString()).toLocaleString("es-MX", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }),
+            exchange: paymentDetails.exchange as "MXN" | "USD",
+            aditionalResourceUrl: paymentDetails.aditional_resource_url,
+            createdAt: paymentDetails.created_at,
+            updatedAt: paymentDetails.updated_at,
+            paymentDetails: paymentDetails.payment_details.map(pd => ({
+                createdAt: pd.created_at,
+                updatedAt: pd.updated_at,
+                lastFourDigits: pd.last_four_digits,
+                paymentClass: pd.payment_class,
+                paymentMethod: pd.payment_method,
+                customerPaidAmount: pd.customer_paid_amount,
+                installments: pd.installments,
+                paymentStatus: pd.payment_status,
+                paidAmount: parseFloat(pd.customer_paid_amount.toString()).toLocaleString("es-MX", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }),
+            })),
+            items: order.items,
+            paymentResume: order.resume,
+            shipping: order.shippingAddress,
+            couponCode: order.couponCode
+        } satisfies OrderDescriptionI
+    };
 
     private async pollingStatus(args: { orderUUID: string, requiredStatus: OrderAndPaymentStatus[] }) {
         const { orderUUID, requiredStatus } = args;
@@ -154,14 +230,38 @@ export class GetPaymentDetailsService {
 
                 };
                 if (!customerUUID) throw new BadRequestException("Error al obtener los detalles del pago, no se encontro el cliente");
-                if (!orderDetails.customer_address_id) throw new BadRequestException("Error al obtener los detalles del pago, no se encontro la direccion de envio");
-                const customerData = await this.getCustomerData({ customerUUID, addressUUID: orderDetails.customer_address_id });
                 return buildAuthCustomerGetPaymentDetailsResponse({
                     orderDetails,
-                    customerData,
+                    customerData: {
+                        customer_addresses: [orderDetails.shipping_info!],
+                        email: orderDetails.buyer_email!,
+                        name: orderDetails.buyer_name!,
+                        last_name: orderDetails.buyer_surname!
+                    },
                     orderItems,
                     orderStatus: status
                 });
+            }
+        })
+    }
+
+
+    async executeV2(args: { orderUUID: string, requiredStatus: OrderAndPaymentStatus[] }): Promise<PaymentDetailsI> {
+        const { orderUUID, requiredStatus } = args;
+        const buildQueryKey = { orderUUID };
+        const { includesRequiredStatus, status } = await this.pollingStatus({ orderUUID, requiredStatus });
+        if (!includesRequiredStatus) return { status };
+        return await this.cache.remember<PaymentDetailsI>({
+            method: "staleWhileRevalidate",
+            entity: "client:payment:details",
+            query: buildQueryKey,
+            aditionalOptions: {
+                ttlMilliseconds: 1000 * 60 * 5,
+                staleTimeMilliseconds: 1000 * 60 * 3
+            },
+            fallback: async () => {
+                const order = await this.getDetailsV2({ orderUUID });
+                return { status, order } satisfies PaymentDetailsI
             }
         })
     }

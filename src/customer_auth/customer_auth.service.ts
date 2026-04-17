@@ -32,7 +32,7 @@ export class CustomerAuthService {
         this.recaptchaSecretKey = this.config.get<string>("RECAPTCHA_SECRET_KEY");
     };
 
-    private createCustomerSession({ res, authUser }: { res: ExpressResponse, authUser: CustomerPayload }) {
+    private async createCustomerSession({ res, authUser }: { res: ExpressResponse, authUser: CustomerPayload }) {
         const accessToken = this.jwt.sign(authUser, { secret: this.jwtCustomerSecret });
         const secure = this.nodeEnv === "production" || this.nodeEnv === "testing" ? true : false;
         const sameSite = "lax";
@@ -56,7 +56,7 @@ export class CustomerAuthService {
                 throw new BadRequestException("Ocurrio un error inesperado al iniciar sesión");
             };
             const authUser = await this.authentication(dto);
-            this.createCustomerSession({ res, authUser });
+            await this.createCustomerSession({ res, authUser });
             return { payload: authUser };
         } catch (error) {
             this.logger.error("Error al iniciar sesión");
@@ -75,6 +75,7 @@ export class CustomerAuthService {
                 last_name: true,
                 email_verified: true,
                 accounts: { select: { password: true, } },
+                shopping_carts: { select: { id: true } }
             }
         });
 
@@ -87,7 +88,8 @@ export class CustomerAuthService {
             email: user.email,
             name: user.name,
             last_name: user.last_name,
-            verified: user.email_verified
+            verified: user.email_verified,
+            hasShoppingCart: user.shopping_carts.length > 0
         };
         return payload;
     };
@@ -113,7 +115,8 @@ export class CustomerAuthService {
                 email: true,
                 name: true,
                 last_name: true,
-                email_verified: true
+                email_verified: true,
+                shopping_carts: { select: { id: true } }
             }
         });
         if (!customer) throw new NotFoundException("Cliente no encontrado");
@@ -122,7 +125,8 @@ export class CustomerAuthService {
             email: customer.email,
             name: customer.name,
             last_name: customer.last_name,
-            verified: customer.email_verified
+            verified: customer.email_verified,
+            hasShoppingCart: customer.shopping_carts.length > 0
         };
         return { payload };
     };
@@ -204,7 +208,22 @@ export class CustomerAuthService {
         // Buscar si ya existe cuenta vinculada a Google
         const existingAccount = await this.prisma.customerAccount.findUnique({
             where: { provider_id_account_id: { provider_id: 'google', account_id: googleId } },
-            include: { customer: true },
+            select: {
+                customer: {
+                    select: {
+                        uuid: true,
+                        email: true,
+                        name: true,
+                        last_name: true,
+                        email_verified: true,
+                        shopping_carts: {
+                            select: {
+                                id: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         if (existingAccount) {
@@ -216,6 +235,7 @@ export class CustomerAuthService {
                 name: customer.name,
                 last_name: customer.last_name,
                 verified: customer.email_verified,
+                hasShoppingCart: customer.shopping_carts.length > 0
             };
             this.createCustomerSession({ res, authUser: payload });
             return { payload };
@@ -224,7 +244,20 @@ export class CustomerAuthService {
         // Verificar si el email ya está registrado por flujo normal (credentials)
         const existingCustomerByEmail = await this.prisma.customer.findUnique({
             where: { email },
-            include: { accounts: { where: { provider_id: 'credentials' } } },
+            select: {
+                id: true,
+                uuid: true,
+                email: true,
+                name: true,
+                last_name: true,
+                email_verified: true,
+                shopping_carts: {
+                    select: {
+                        id: true
+                    }
+                },
+                accounts: { where: { provider_id: 'credentials' } }
+            }
         });
 
         if (existingCustomerByEmail) {
@@ -245,6 +278,7 @@ export class CustomerAuthService {
                 name: existingCustomerByEmail.name,
                 last_name: existingCustomerByEmail.last_name,
                 verified: existingCustomerByEmail.email_verified,
+                hasShoppingCart: existingCustomerByEmail.shopping_carts.length > 0
             };
             this.createCustomerSession({ res, authUser: payload });
             return { payload };
@@ -266,6 +300,18 @@ export class CustomerAuthService {
                     },
                 },
             },
+            select: {
+                uuid: true,
+                email: true,
+                name: true,
+                last_name: true,
+                email_verified: true,
+                shopping_carts: {
+                    select: {
+                        id: true
+                    }
+                }
+            }
         });
 
         const payload: CustomerPayload = {
@@ -274,6 +320,7 @@ export class CustomerAuthService {
             name: newCustomer.name,
             last_name: newCustomer.last_name,
             verified: newCustomer.email_verified,
+            hasShoppingCart: newCustomer.shopping_carts.length > 0
         };
         this.createCustomerSession({ res, authUser: payload });
         return { payload };

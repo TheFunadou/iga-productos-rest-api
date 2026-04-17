@@ -34,6 +34,9 @@ export class CustomerPayload {
 
     @ApiProperty({ description: "Email validado?", type: String })
     verified: boolean;
+
+    @ApiProperty({ description: "Tiene carrito de compras?", type: String })
+    hasShoppingCart: boolean;
 };
 
 

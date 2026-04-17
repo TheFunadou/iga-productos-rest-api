@@ -41,7 +41,7 @@ export class MercadoPagoPaymentQueueConsumer extends WorkerHost {
                 .pipe(new FetchPaymentDetailsStep(this.mercadopago))
                 .pipe(new UpdateOrderStatusStep(this.prisma))
                 .pipe(new RestoreStockStep(this.prisma))
-                .pipe(new CreateShippingStep(this.shipping))
+                .pipe(new CreateShippingStep(this.shipping, this.prisma))
                 .pipe(new SendNotificationStep(this.notifications, this.paymentService))
                 .pipe(new InvalidateCacheStep(this.cache, this.shoppingCart))
                 .run(context);

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CacheFactoryService } from './cache.factory';
-import { createHash } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import { CacheInterface } from './cache.interfaces';
 import Redis from 'ioredis';
 
@@ -150,36 +150,129 @@ export class CacheService {
         return count > 0;
     }
 
+    /**
+ * Releases a Redis lock atomically using a Lua script.
+ * The lock is removed only when the stored token matches `lockValue`,
+ * preventing a process from releasing a lock it no longer owns.
+ */
+    private async releaseLock(lockKey: string, lockValue: string): Promise<void> {
+        try {
+            await this.redis.eval(
+                `if redis.call("get", KEYS[1]) == ARGV[1] then
+               return redis.call("del", KEYS[1])
+             else
+               return 0
+             end`,
+                1,
+                lockKey,
+                lockValue
+            );
+        } catch (err) {
+            console.error(`[CacheService] Failed to release lock ${lockKey} via Lua:`, err);
+            // Best-effort hard delete to avoid a permanently held lock.
+            try { await this.redis.del(lockKey); } catch { /* swallow */ }
+        }
+    }
+
+    /**
+     * Polls Redis with exponential backoff until the key is populated or the
+     * timeout expires. Used by follower processes waiting for the leader to
+     * backfill a cache miss.
+     *
+     * @param logicalKey - Logical (non-namespaced) cache key to poll.
+     * @param maxWaitMs  - Maximum time to wait in milliseconds.
+     * @returns Deserialized data, or null on timeout.
+     */
+    private async waitForMissToPopulate<T>(
+        logicalKey: string,
+        maxWaitMs: number
+    ): Promise<T | null> {
+        let delay = 20;
+        const start = Date.now();
+        let attempts = 0;
+        const maxAttempts = 50;
+
+        while (Date.now() - start < maxWaitMs && attempts < maxAttempts) {
+            const cached = await this.redisGet<T>(logicalKey);
+            if (cached !== null) return cached.data;
+            await new Promise(r => setTimeout(r, delay));
+            delay = Math.min(delay * 2, 500);
+            attempts++;
+        }
+
+        console.warn(
+            `[CacheService] waitForMissToPopulate timeout for key ${logicalKey} after ${attempts} attempts`
+        );
+        return null;
+    }
+
+
     // ==================== PRIVATE: VERSION MANAGEMENT ====================
 
-    /**
-     * Retrieves the current version number for an entity/query.
-     * Defaults to 1 when the version key does not yet exist.
-     * @param entity - Entity name.
-     * @param query  - Optional query parameters.
-     * @returns Current version number.
-     */
-    private async getVersion(entity: string, query?: any): Promise<number> {
-        const rKey = this.versionRedisKey(this.buildVersionKey(entity, query));
-        const raw = await this.redis.get(rKey);
-        if (raw === null) return 1;
-        const parsed = parseInt(raw, 10);
-        return isNaN(parsed) ? 1 : parsed;
-    }
+    // /**
+    //  * Retrieves the current version number for an entity/query.
+    //  * Defaults to 1 when the version key does not yet exist.
+    //  * @param entity - Entity name.
+    //  * @param query  - Optional query parameters.
+    //  * @returns Current version number.
+    //  */
+    // private async getVersion(entity: string, query?: any): Promise<number> {
+    //     const rKey = this.versionRedisKey(this.buildVersionKey(entity, query));
+    //     const raw = await this.redis.get(rKey);
+    //     if (raw === null) return 1;
+    //     const parsed = parseInt(raw, 10);
+    //     return isNaN(parsed) ? 1 : parsed;
+    // }
+
+    // /**
+    //  * Retrieves the current entity-level version number.
+    //  * Defaults to 1 when the version key does not yet exist.
+    //  * @param entity - Entity name.
+    //  * @returns Current entity version number.
+    //  */
+    // private async getEntityVersion(entity: string): Promise<number> {
+    //     const rKey = this.versionRedisKey(this.buildEntityVersionKey(entity));
+    //     const raw = await this.redis.get(rKey);
+    //     if (raw === null) return 1;
+    //     const parsed = parseInt(raw, 10);
+    //     return isNaN(parsed) ? 1 : parsed;
+    // }
 
     /**
-     * Retrieves the current entity-level version number.
-     * Defaults to 1 when the version key does not yet exist.
+     * Fetches both the entity-level and query-level version counters in a
+     * single Redis call.
+     *
+     * When no query is provided both version keys are identical, so only one
+     * GET is issued. When a query is provided a single MGET retrieves both
+     * keys in one round-trip instead of two serial GETs.
+     *
      * @param entity - Entity name.
-     * @returns Current entity version number.
+     * @param query  - Optional query parameters.
+     * @returns { entityVersion, queryVersion } – both default to 1 when absent.
      */
-    private async getEntityVersion(entity: string): Promise<number> {
-        const rKey = this.versionRedisKey(this.buildEntityVersionKey(entity));
-        const raw = await this.redis.get(rKey);
-        if (raw === null) return 1;
-        const parsed = parseInt(raw, 10);
-        return isNaN(parsed) ? 1 : parsed;
+    private async getVersionsBatch(
+        entity: string,
+        query?: any
+    ): Promise<{ entityVersion: number; queryVersion: number }> {
+        const entityVersionKey = this.versionRedisKey(this.buildEntityVersionKey(entity));
+
+        // Without a query both keys resolve to the same Redis key.
+        // A single GET avoids the redundant second call.
+        if (!query) {
+            const raw = await this.redis.get(entityVersionKey);
+            const version = raw === null ? 1 : (parseInt(raw, 10) || 1);
+            return { entityVersion: version, queryVersion: version };
+        }
+
+        const queryVersionKey = this.versionRedisKey(this.buildVersionKey(entity, query));
+        const [entityRaw, queryRaw] = await this.redis.mget(entityVersionKey, queryVersionKey);
+
+        return {
+            entityVersion: entityRaw === null ? 1 : (parseInt(entityRaw, 10) || 1),
+            queryVersion: queryRaw === null ? 1 : (parseInt(queryRaw, 10) || 1),
+        };
     }
+
 
     /**
      * Increments the entity-level version counter.
@@ -190,8 +283,8 @@ export class CacheService {
      */
     private async incrementEntityVersion(entity: string): Promise<void> {
         const rKey = this.versionRedisKey(this.buildEntityVersionKey(entity));
-        const current = await this.getEntityVersion(entity);
-        await this.redis.set(rKey, String(current + 1), "PX", 1000 * 60 * 60 * 24 * 7);
+        const { entityVersion } = await this.getVersionsBatch(entity);
+        await this.redis.set(rKey, String(entityVersion + 1), "PX", 1000 * 60 * 60 * 24 * 7);
     }
 
     /**
@@ -202,8 +295,8 @@ export class CacheService {
      */
     private async incrementVersion(entity: string, query: any): Promise<void> {
         const rKey = this.versionRedisKey(this.buildVersionKey(entity, query));
-        const current = await this.getVersion(entity, query);
-        await this.redis.set(rKey, String(current + 1), "PX", 1000 * 60 * 60 * 24 * 7);
+        const { queryVersion } = await this.getVersionsBatch(entity, query);
+        await this.redis.set(rKey, String(queryVersion + 1), "PX", 1000 * 60 * 60 * 24 * 7);
     }
 
     // ==================== PRIVATE: TTL UTILITIES ====================
@@ -338,8 +431,8 @@ export class CacheService {
         const staleTime: number | undefined = args.aditionalOptions?.staleTimeMilliseconds
             ?? (ttl !== undefined ? ttl * 0.9 : undefined);
 
-        const queryVersion = await this.getVersion(args.entity, args.query);
-        const entityVersion = await this.getEntityVersion(args.entity);
+        const { queryVersion, entityVersion } = await this.getVersionsBatch(args.entity, args.query);
+
         const key = this.buildCacheKey({
             entity: args.entity,
             queryVersion,
@@ -398,8 +491,8 @@ export class CacheService {
             ?? (ttl !== undefined ? ttl * 0.9 : undefined);
 
         const now = Date.now();
-        const queryVersion = await this.getVersion(args.entity, args.query);
-        const entityVersion = await this.getEntityVersion(args.entity);
+        const { queryVersion, entityVersion } = await this.getVersionsBatch(args.entity, args.query);
+
         const key = this.buildCacheKey({
             entity: args.entity,
             queryVersion,
@@ -446,8 +539,8 @@ export class CacheService {
     }): Promise<T | null> {
         if (!args.entity) throw new Error("Entity is required in CacheOptions");
 
-        const queryVersion = await this.getVersion(args.entity, args.query);
-        const entityVersion = await this.getEntityVersion(args.entity);
+        const { queryVersion, entityVersion } = await this.getVersionsBatch(args.entity, args.query);
+
         const key = this.buildCacheKey({
             entity: args.entity,
             queryVersion,
@@ -474,6 +567,368 @@ export class CacheService {
     }
 
     /**
+ * Retrieves multiple cache entries in a single Redis MGET round-trip.
+ * Each entry is resolved using the same version-based key generation as
+ * {@link getData}, so entity/query invalidation is fully respected.
+ *
+ * Keys that are absent from the cache or cannot be deserialized are
+ * reported in the `misses` array so the caller can decide how to
+ * hydrate them (e.g. batch-query the DB and backfill with {@link setData}).
+ *
+ * @param args - Array of { entity, query? } tuples to look up.
+ * @returns An object with:
+ *   - `hits`:   a `Map<string, T>` of **logical key → unwrapped data**
+ *               for every tuple found in the cache.
+ *   - `misses`: an array of logical keys absent from the cache.
+ *
+ * @example
+ * const { hits, misses } = await cacheService.getMultipleData<Product>([
+ *   { entity: 'product', query: { id: '1' } },
+ *   { entity: 'product', query: { id: '2' } },
+ *   { entity: 'product', query: { id: '99' } },
+ * ]);
+ * // hits  → Map<string, Product>  ← keys found in cache
+ * // misses → string[]             ← keys that were a cache miss
+ */
+    async getMultipleData<T>(
+        args: { entity: string; query?: any }[]
+    ): Promise<{ hits: Map<string, T>; misses: string[] }> {
+        if (args.length === 0) return { hits: new Map(), misses: [] };
+
+        // Build the two Redis version keys for each entry.
+        // Deduplicate entity version keys to avoid redundant keys in the MGET
+        // (e.g. when the same entity appears multiple times in args).
+        const versionKeysPerArg = args.map((arg) => ({
+            entityKey: this.versionRedisKey(this.buildEntityVersionKey(arg.entity)),
+            queryKey: arg.query
+                ? this.versionRedisKey(this.buildVersionKey(arg.entity, arg.query))
+                : null,
+        }));
+
+        // Collect UNIQUE version keys preserving their position for later lookup.
+        const uniqueVersionKeys = [
+            ...new Set(
+                versionKeysPerArg.flatMap(({ entityKey, queryKey }) =>
+                    queryKey ? [entityKey, queryKey] : [entityKey]
+                )
+            ),
+        ];
+
+        // Single MGET for ALL version keys.
+        const versionRaws = await this.redis.mget(...uniqueVersionKeys);
+        const versionMap = new Map<string, number>();
+        uniqueVersionKeys.forEach((key, i) => {
+            const raw = versionRaws[i];
+            versionMap.set(key, raw === null ? 1 : (parseInt(raw, 10) || 1));
+        });
+
+        // Resolve each logical cache key using the fetched versions.
+        const keyEntries = args.map((arg, i) => {
+            const { entityKey, queryKey } = versionKeysPerArg[i];
+            const entityVersion = versionMap.get(entityKey)!;
+            const queryVersion = queryKey ? versionMap.get(queryKey)! : entityVersion;
+            return this.buildCacheKey({ entity: arg.entity, queryVersion, entityVersion, query: arg.query });
+        });
+
+        // Single MGET for ALL data keys.
+        const namespacedKeys = keyEntries.map(k => this.dataCacheKey(k));
+        const raws = await this.redis.mget(...namespacedKeys);
+
+        const hits = new Map<string, T>();
+        const misses: string[] = [];
+
+        for (let i = 0; i < keyEntries.length; i++) {
+            const entry = this.deserialize<CacheInterface<T>>(raws[i]);
+            if (entry !== null) {
+                hits.set(keyEntries[i], entry.data);
+            } else {
+                misses.push(keyEntries[i]);
+            }
+        }
+
+        return { hits, misses };
+    };
+
+    /**
+     * Retrieves multiple cache entries in a single Redis MGET round-trip.
+     * For any misses, exactly one process (the **leader**) calls the batch
+     * fallback, writes the results to Redis and releases each lock. All other
+     * concurrent processes (**followers**) wait via exponential backoff and
+     * re-read from Redis — avoiding repeated DB hits under high concurrency.
+     *
+     * ─────────────────────────── FLOW ───────────────────────────
+     *
+     * 1. MGET version keys   (1 Redis round-trip)
+     * 2. MGET data keys      (1 Redis round-trip)
+     * 3. Per miss → try SET lock:multiget:{key} NX   (parallel)
+     *    ├─ Leader (OK)   → calls fallback ONCE with all its locked misses
+     *    │                 → awaits redisSet per result → releases locks
+     *    └─ Follower (—)  → waitWithBackoff until leader populates the key
+     *                       └─ if timeout → defensive fallback call
+     * 4. Merge results preserving original order.
+     * 5. Report keys that were never resolved as `misses`.
+     *
+     * ─────────────────────── DETAILED EXAMPLE ───────────────────────────
+     *
+     * INPUT
+     * ─────
+     * where: [
+     *   { entity: 'product', query: { uuid: 'uuid-1'  } },  ← Redis HIT
+     *   { entity: 'product', query: { uuid: 'uuid-2'  } },  ← Redis HIT
+     *   { entity: 'product', query: { uuid: 'uuid-99' } },  ← Redis MISS  → found in DB
+     *   { entity: 'product', query: { uuid: 'uuid-xx' } },  ← Redis MISS  → NOT in DB
+     * ]
+     * fallback: async (misses) => {
+     *   const uuids = misses.map(m => m.originalArg.query.uuid);  // ['uuid-99', 'uuid-xx']
+     *   const rows  = await prisma.product.findMany({ where: { uuid: { in: uuids } } });
+     *   // rows only contains uuid-99; uuid-xx doesn't exist in DB → omitted
+     *   return rows.map(r => ({
+     *     logicalKey: misses.find(m => m.originalArg.query.uuid === r.uuid)!.logicalKey,
+     *     data: mapRowToProductI(r),
+     *   }));
+     * }
+     * options: { ttl: 1_200_000, staleTime: 900_000 }
+     *
+     * PROCESS
+     * ───────
+     * Round-trip 1 : MGET version keys          → all default to v1
+     * Round-trip 2 : MGET data keys             → [hit1, hit2, null, null]
+     * Lock attempts : SET lock:multiget:{key-99} NX → OK  (leader for 99)
+     *                 SET lock:multiget:{key-xx} NX → OK  (leader for xx)
+     * Fallback call : DB WHERE uuid IN ('uuid-99', 'uuid-xx') → only uuid-99 found
+     * redisSet      : igaProductos:product:{hash-99}:eV1:qV1 = <json>  (await)
+     * releaseLocks  : del lock:multiget:{key-99}, lock:multiget:{key-xx}
+     *
+     * OUTPUT
+     * ──────
+     * {
+     *   data: [
+     *     { id:'1', uuid:'uuid-1',  name:'Laptop', ... },  ← hit
+     *     { id:'2', uuid:'uuid-2',  name:'Mouse',  ... },  ← hit
+     *     { id:'3', uuid:'uuid-99', name:'Screen', ... },  ← miss → hydrated from DB
+     *   ],
+     *   misses: ['product:{hash-xx}:eV1:qV1'],  ← uuid-xx: not in Redis, not in DB
+     * }
+     *
+     * @param args.where            - Keys to look up (entity + optional query).
+     * @param args.fallback         - Batch function called ONCE with all leader misses.
+     *                                Must return `{ logicalKey, data }[]`. Entries not
+     *                                found in the source should simply be omitted.
+     * @param args.options.ttl      - TTL in ms for backfilled entries (default 5 min).
+     * @param args.options.staleTime - Stale boundary in ms (default ttl × 0.9).
+     * @param args.options.jitter   - Apply TTL jitter to prevent stampedes (default true).
+     * @returns `{ data, misses }` where `data` is the merged array in original request
+     *          order (falsy excluded) and `misses` are logical keys that could not be
+     *          resolved from Redis or the fallback.
+     *
+     * @example
+     * const { data, misses } = await this.cache.getMultipleDataWithFallback<ProductI>({
+     *   where: [
+     *     { entity: 'product', query: { uuid: 'uuid-1'  } },
+     *     { entity: 'product', query: { uuid: 'uuid-99' } },
+     *   ],
+     *   fallback: async (misses) => {
+     *     const uuids = misses.map(m => m.originalArg.query.uuid);
+     *     const rows  = await prisma.product.findMany({ where: { uuid: { in: uuids } } });
+     *     return rows.map(r => ({
+     *       logicalKey: misses.find(m => m.originalArg.query.uuid === r.uuid)!.logicalKey,
+     *       data: mapRowToProductI(r),
+     *     }));
+     *   },
+     *   options: { ttl: 20 * 60 * 1000, staleTime: 15 * 60 * 1000 },
+     * });
+     * // data   → ProductI[]  (resolved entries in original order)
+     * // misses → string[]    (logical keys with no data anywhere)
+     */
+    async getMultipleDataWithFallback<T>(args: {
+        where: { entity: string; query?: any }[];
+        fallback: (
+            misses: { logicalKey: string; originalArg: { entity: string; query?: any } }[]
+        ) => Promise<{ logicalKey: string; data: T }[]>;
+        options?: {
+            ttl?: number;
+            staleTime?: number;
+            jitter?: boolean;
+        };
+    }): Promise<{ data: T[]; misses: string[] }> {
+        const { where, fallback, options } = args;
+
+        if (where.length === 0) return { data: [], misses: [] };
+
+        // ── Phase 1: resolve all version keys in one MGET ─────────────────────
+        const versionKeysPerArg = where.map((arg) => ({
+            entityKey: this.versionRedisKey(this.buildEntityVersionKey(arg.entity)),
+            queryKey: arg.query
+                ? this.versionRedisKey(this.buildVersionKey(arg.entity, arg.query))
+                : null,
+        }));
+
+        const uniqueVersionKeys = [
+            ...new Set(
+                versionKeysPerArg.flatMap(({ entityKey, queryKey }) =>
+                    queryKey ? [entityKey, queryKey] : [entityKey]
+                )
+            ),
+        ];
+
+        const versionRaws = await this.redis.mget(...uniqueVersionKeys);
+        const versionMap = new Map<string, number>();
+        uniqueVersionKeys.forEach((key, i) => {
+            const raw = versionRaws[i];
+            versionMap.set(key, raw === null ? 1 : (parseInt(raw, 10) || 1));
+        });
+
+        const keyEntries = where.map((arg, i) => {
+            const { entityKey, queryKey } = versionKeysPerArg[i];
+            const entityVersion = versionMap.get(entityKey)!;
+            const queryVersion = queryKey ? versionMap.get(queryKey)! : entityVersion;
+            return this.buildCacheKey({ entity: arg.entity, queryVersion, entityVersion, query: arg.query });
+        });
+
+        // ── Phase 2: fetch all data keys in one MGET ──────────────────────────
+        const namespacedKeys = keyEntries.map(k => this.dataCacheKey(k));
+        const raws = await this.redis.mget(...namespacedKeys);
+
+        // ── Phase 3: classify hits vs misses ──────────────────────────────────
+        const results = new Map<string, T>();
+        const missDescriptors: { logicalKey: string; originalArg: { entity: string; query?: any } }[] = [];
+
+        for (let i = 0; i < keyEntries.length; i++) {
+            const entry = this.deserialize<CacheInterface<T>>(raws[i]);
+            if (entry !== null) {
+                results.set(keyEntries[i], entry.data);
+            } else {
+                missDescriptors.push({ logicalKey: keyEntries[i], originalArg: where[i] });
+            }
+        }
+
+        // ── Phase 4: distributed locking for misses ───────────────────────────
+        if (missDescriptors.length > 0) {
+            const useJitter = options?.jitter ?? true;
+            const baseTtl = options?.ttl ?? 300_000;
+            const ttl = useJitter ? this.applyJitter(0.2, baseTtl) : baseTtl;
+            const staleTime = options?.staleTime ?? (ttl !== undefined ? ttl * 0.9 : undefined);
+
+            const LOCK_TTL_MS = 10_000;
+            const FOLLOWER_WAIT_MS = 5_000;
+            const lockValue = randomUUID();
+
+            // Per-key lock attempts in parallel — fine-grained, so overlapping
+            // miss sets from different requests don't block each other entirely.
+            const lockResults = await Promise.all(
+                missDescriptors.map(({ logicalKey }) =>
+                    this.redis.call(
+                        'SET', `lock:multiget:${logicalKey}`,
+                        lockValue, 'NX', 'PX', LOCK_TTL_MS
+                    ) as Promise<string | null>
+                )
+            );
+
+            const leaderMisses: typeof missDescriptors = [];
+            const followerMisses: typeof missDescriptors = [];
+
+            missDescriptors.forEach((descriptor, i) => {
+                (lockResults[i] === 'OK' ? leaderMisses : followerMisses).push(descriptor);
+            });
+
+            // ── Leader path ───────────────────────────────────────────────────
+            if (leaderMisses.length > 0) {
+                try {
+                    const hydratedMisses = await fallback(leaderMisses);
+
+                    for (const { logicalKey, data } of hydratedMisses) {
+                        results.set(logicalKey, data);
+                        const now = Date.now();
+                        const cacheEntry: CacheInterface<T> = {
+                            data,
+                            metadata: {
+                                ttl,
+                                staleTime: staleTime?.toString(),
+                                staleAt: staleTime ? new Date(now + staleTime).toISOString() : undefined,
+                                createdAt: new Date(now).toISOString(),
+                                expiresAt: ttl ? new Date(now + ttl).toISOString() : undefined,
+                                strategy: 'settedData',
+                                hitCount: 0,
+                            },
+                        };
+                        // Intentional await — followers read from Redis after lock release.
+                        await this.redisSet(logicalKey, cacheEntry, ttl);
+                    }
+                } finally {
+                    await Promise.all(
+                        leaderMisses.map(({ logicalKey }) =>
+                            this.releaseLock(`lock:multiget:${logicalKey}`, lockValue)
+                        )
+                    );
+                }
+            }
+
+            // ── Follower path ─────────────────────────────────────────────────
+            if (followerMisses.length > 0) {
+                const followerResults = await Promise.all(
+                    followerMisses.map(({ logicalKey }) =>
+                        this.waitForMissToPopulate<T>(logicalKey, FOLLOWER_WAIT_MS)
+                    )
+                );
+
+                const timedOutMisses: typeof missDescriptors = [];
+
+                followerMisses.forEach(({ logicalKey, originalArg }, i) => {
+                    const data = followerResults[i];
+                    if (data !== null) {
+                        results.set(logicalKey, data);
+                    } else {
+                        timedOutMisses.push({ logicalKey, originalArg });
+                    }
+                });
+
+                // Defensive fallback: leader timed out or crashed.
+                if (timedOutMisses.length > 0) {
+                    console.warn(
+                        `[CacheService] ${timedOutMisses.length} follower(s) timed out — calling fallback defensively`
+                    );
+                    const defensive = await fallback(timedOutMisses);
+                    for (const { logicalKey, data } of defensive) {
+                        results.set(logicalKey, data);
+                        const now = Date.now();
+                        const cacheEntry: CacheInterface<T> = {
+                            data,
+                            metadata: {
+                                ttl,
+                                staleTime: staleTime?.toString(),
+                                staleAt: staleTime ? new Date(now + staleTime).toISOString() : undefined,
+                                createdAt: new Date(now).toISOString(),
+                                expiresAt: ttl ? new Date(now + ttl).toISOString() : undefined,
+                                strategy: 'settedData',
+                                hitCount: 0,
+                            },
+                        };
+                        this.redisSet(logicalKey, cacheEntry, ttl).catch(err =>
+                            console.error(`[CacheService] Defensive SET failed for key ${logicalKey}:`, err)
+                        );
+                    }
+                }
+            }
+        }
+
+        // ── Phase 5: merge in original order, collect persistent misses ───────
+        // A persistent miss is a key that went through the full lifecycle
+        // (Redis miss → fallback → defensive fallback) and still has no data.
+        // This signals that the source of truth has no record for that key.
+        const persistentMisses = missDescriptors
+            .filter(d => !results.has(d.logicalKey))
+            .map(d => d.logicalKey);
+
+        const data = keyEntries
+            .map(key => results.get(key))
+            .filter((item): item is T => item !== null && item !== undefined);
+
+        return { data, misses: persistentMisses };
+    }
+
+
+
+    /**
      * Removes a specific cache entry.
      * Returns true if the entry existed and was removed, false otherwise.
      *
@@ -490,8 +945,8 @@ export class CacheService {
         entity: string,
         query?: any
     }): Promise<boolean> {
-        const queryVersion = await this.getVersion(args.entity, args.query);
-        const entityVersion = await this.getEntityVersion(args.entity);
+        const { queryVersion, entityVersion } = await this.getVersionsBatch(args.entity, args.query);
+
         const key = this.buildCacheKey({
             entity: args.entity,
             queryVersion,
@@ -532,8 +987,8 @@ export class CacheService {
     }): Promise<T | null> {
         if (!args.entity) throw new Error("Entity is required to update cache data");
 
-        const queryVersion = await this.getVersion(args.entity, args.query);
-        const entityVersion = await this.getEntityVersion(args.entity);
+        const { queryVersion, entityVersion } = await this.getVersionsBatch(args.entity, args.query);
+
         const key = this.buildCacheKey({
             entity: args.entity,
             queryVersion,
@@ -614,8 +1069,8 @@ export class CacheService {
     }): Promise<T | null> {
         if (!args.entity) throw new Error("Entity is required to update cache data");
 
-        const queryVersion = await this.getVersion(args.entity, args.query);
-        const entityVersion = await this.getEntityVersion(args.entity);
+        const { queryVersion, entityVersion } = await this.getVersionsBatch(args.entity, args.query);
+
         const key = this.buildCacheKey({
             entity: args.entity,
             queryVersion,

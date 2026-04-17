@@ -160,28 +160,6 @@ export class OrderRequestFormGuestDTO extends GuestAddressDTO {
     consent: boolean;
 };
 
-// export class OrderRequestGuestDTO {
-//     @ApiProperty({ description: "ID de la sesión del invitado", type: String })
-//     @IsString()
-//     @IsNotEmpty({ message: "El campo session_id (ID de la sesión) no puede estar vacio" })
-//     session_id: string;
-
-//     @ApiProperty({ description: "Array de objetos de los productos/items que se van a comprar", type: OrderShoppingCartDTO, isArray: true })
-//     @IsArray()
-//     @ValidateNested({ each: true })
-//     @Type(() => OrderShoppingCartDTO)
-//     shopping_cart: OrderShoppingCartDTO[];
-
-//     @ApiProperty({ description: "Datos del invitado", type: OrderRequestFormGuestDTO })
-//     @ValidateNested()
-//     @Type(() => OrderRequestFormGuestDTO)
-//     form: OrderRequestFormGuestDTO;
-
-//     @ApiProperty({ description: "Código de cupón", type: String })
-//     @IsString()
-//     @IsOptional()
-//     coupon_code?: string;
-// };
 
 export class OrderRequestDTO {
     @ApiProperty({ description: "Array de objetos de los productos/items que se van a comprar", type: OrderShoppingCartDTO, isArray: true })
@@ -211,6 +189,28 @@ export class OrderRequestDTO {
     guestForm?: OrderRequestFormGuestDTO;
 };
 
+
+export class OrderRequestV2DTO {
+    @ApiProperty({ description: "UUID del domicilio de envio del producto", type: String })
+    @IsString()
+    @IsOptional()
+    addressUUID?: string;
+
+    @ApiProperty({ description: "Código de cupón", type: String })
+    @IsString()
+    @IsOptional()
+    couponCode?: string;
+
+    @ApiProperty({ description: "Proveedor de pago", type: String })
+    @IsString()
+    paymentProvider: PaymentProviders;
+
+    @ApiProperty({ description: "Datos del invitado", type: OrderRequestFormGuestDTO })
+    @ValidateNested()
+    @Type(() => OrderRequestFormGuestDTO)
+    @IsOptional()
+    guestForm?: OrderRequestFormGuestDTO;
+};
 
 
 
@@ -332,6 +332,13 @@ export class UpdateOrderStatusDTO {
     status: OrderAndPaymentStatus;
 };
 
+export class CreatedOrder {
+    @ApiProperty({ description: "folio (local) de la operación", type: String })
+    orderUUID: string;
+    @ApiProperty({ description: "Proveedor de pago", type: String })
+    paymentProvider: PaymentProviders;
+};
+
 export interface MercadoPagoPreferenceBody {
     internalOrderId: string,
     items: MercadoPagoItems[],
@@ -409,8 +416,10 @@ export interface AddItemsToOrderOrderItems {
     product_version_id: string,
     quantity: number,
     unit_price: number,
+    final_price: number,
+    isOffer: boolean,
+    discount?: number,
     subtotal: number,
-    discount?: number
 }
 
 export interface AddItemsToOrder {

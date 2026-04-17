@@ -62,34 +62,4 @@ export class ProductVersionFindService {
             }
         })
     };
-
-    // async searchCardsBySKUList(args: { tx?: any, skuList: string[], customerUUID?: string, couponCode?: string }): Promise<ProductVersionCard[]> {
-    //     const builtSelect = this.utilsService.buildFindCardsSelect({ customerUUID: args.customerUUID });
-    //     const results = args.tx ? await args.tx.productVersion.findMany({
-    //         where: { sku: { in: args.skuList } },
-    //         select: builtSelect
-    //     }) : await this.prisma.productVersion.findMany({
-    //         where: { sku: { in: args.skuList } },
-    //         select: builtSelect
-    //     });
-
-    //     const productVersionsData = results.map(r => ({
-    //         versionId: r.id,
-    //         productId: r.product.id,
-    //         categoryId: r.product.category_id,
-    //         subcategoryIds: r.product.subcategories.map(s => s.subcategories.uuid)
-    //     }));
-
-    //     if (args.couponCode) {
-    //         const discountsInfo = await this.offersUtilsService.checkMultipleProductVersionsDiscountsByCoupon({
-    //             couponCode: args.couponCode,
-    //             productVersions: productVersionsData
-    //         });
-
-    //         return this.utilsService.formatCards({ data: results, discountsMap: discountsInfo });
-    //     };
-    //     const discountsMap = await this.offersUtilsService.checkMultipleProductVersionsDiscounts(productVersionsData);
-    //     return this.utilsService.formatCards({ data: results, discountsMap })
-
-    // }
 };

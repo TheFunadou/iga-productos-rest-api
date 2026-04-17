@@ -343,7 +343,6 @@ model CustomerAddresses {
   created_at             DateTime @default(now())
   updated_at             DateTime @updatedAt
   customer               Customer @relation("customer_address:customer", fields: [customer_id], references: [id], onDelete: Cascade)
-  orders                 Order[]  @relation("order:customer_addresses")
 
   @@index([customer_id]) // Buscar direcciones de un cliente
   @@index([default_address]) // Buscar dirección por defecto
@@ -351,31 +350,45 @@ model CustomerAddresses {
 }
 
 model Order {
-  id                     String                @id @default(cuid())
-  uuid                   String                @unique @default(dbgenerated("gen_random_uuid()"))
-  external_order_id      String                @unique
-  customer_id            String?
-  customer_address_id    String?
-  is_guest_order         Boolean               @default(false)
+  id   String @id @default(cuid())
+  uuid String @unique @default(dbgenerated("gen_random_uuid()"))
+
+  // Snapshot del comprador (sirve para guest y para registrados)
+  buyer_name    String  @default("N/A")
+  buyer_surname String  @default("N/A")
+  buyer_email   String  @default("N/A")
+  buyer_phone   String?
+
+  external_order_id String @unique
+
+  // Usuario registrado (opcional)
+  customer_id String?
+  customer    Customer? @relation("order:customer", fields: [customer_id], references: [id])
+
+  // Indica si fue compra como invitado
+  is_guest_order Boolean @default(false)
+
   payment_provider       String
   status                 OrderAndPaymentStatus
   total_amount           Decimal               @db.Decimal(10, 2)
   exchange               String
   aditional_resource_url String?
   coupon_code            String?
-  created_at             DateTime              @default(now())
-  updated_at             DateTime              @updatedAt
-  customer_address       CustomerAddresses?    @relation("order:customer_addresses", fields: [customer_address_id], references: [id])
-  customer               Customer?             @relation("order:customer", fields: [customer_id], references: [id])
-  payment_details        OrderPaymentDetails[] @relation("order_payment_details:order")
-  order_items            OrderItemsDetails[]   @relation("order_items_details:order")
-  shipping               Shipping?             @relation("shipping:order")
 
-  @@index([customer_id]) // Buscar órdenes de un cliente
-  @@index([status]) // Filtrar órdenes por estado
-  @@index([created_at]) // Ordenar órdenes por fecha
-  @@index([payment_provider]) // Filtrar por proveedor de pago
-  @@index([coupon_code]) // Buscar órdenes que usaron un cupón específico
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relaciones
+  shipping_info   OrderShippingInfo?
+  shipping        Shipping[]            @relation("shipping:order")
+  payment_details OrderPaymentDetails[] @relation("order_payment_details:order")
+  order_items     OrderItemsDetails[]   @relation("order_items_details:order")
+
+  @@index([customer_id])
+  @@index([status])
+  @@index([created_at])
+  @@index([payment_provider])
+  @@index([coupon_code])
   @@map("order")
 }
 
@@ -408,6 +421,8 @@ model OrderItemsDetails {
   product_version_id String
   quantity           Int
   unit_price         Decimal        @db.Decimal(10, 2)
+  final_price        Decimal        @db.Decimal(10, 2)
+  isOffer            Boolean        @default(false)
   discount           Int            @default(0)
   subtotal           Decimal        @db.Decimal(10, 2)
   order              Order          @relation("order_items_details:order", fields: [order_id], references: [id])
@@ -418,44 +433,83 @@ model OrderItemsDetails {
   @@map("order_items_details")
 }
 
-model Shipping {
-  id               String         @id @default(cuid())
-  uuid             String         @unique @default(dbgenerated("gen_random_uuid()"))
-  order_id         String         @unique
-  shipping_status  ShippingStatus
-  concept          String
-  tracking_number  String?
-  carrier          String?
-  shipping_amount  Decimal        @db.Decimal(10, 2)
-  insurance_amount Decimal?       @db.Decimal(10, 2)
-  boxes_count      Int
-  created_at       DateTime       @default(now())
-  updated_at       DateTime       @updatedAt
-  order            Order          @relation("shipping:order", fields: [order_id], references: [id])
+model OrderShippingInfo {
+  id                     String  @id @default(cuid())
+  order_id               String  @unique
+  recipient_name         String  @db.VarChar(40)
+  recipient_last_name    String  @db.VarChar(60)
+  country                String  @db.VarChar(40)
+  state                  String  @db.VarChar(40)
+  city                   String  @db.VarChar(50)
+  locality               String  @db.VarChar(50)
+  street_name            String  @db.VarChar(60)
+  neighborhood           String  @db.VarChar(60)
+  zip_code               String  @db.VarChar(10)
+  address_type           String  @db.VarChar(30)
+  floor                  String? @db.VarChar(3)
+  number                 String  @db.VarChar(10)
+  aditional_number       String? @db.VarChar(10)
+  references_or_comments String? @db.VarChar(80)
+  country_phone_code     String  @db.VarChar(4)
+  contact_number         String  @db.VarChar(15)
 
-  @@index([shipping_status]) // Filtrar envíos por estado
-  @@index([tracking_number]) // Buscar por número de rastreo
-  @@index([carrier]) // Filtrar por transportista
+  order    Order     @relation(fields: [order_id], references: [id])
+  shipping Shipping?
+
+  @@map("order_shipping_info")
+}
+
+model Shipping {
+  id                     String         @id @default(cuid())
+  uuid                   String         @unique @default(dbgenerated("gen_random_uuid()"))
+  order_id               String
+  order_shipping_info_id String         @unique
+  shipping_status        ShippingStatus
+  concept                String
+  carrier                String?
+  tracking_number        String?
+  shipping_amount        Decimal        @db.Decimal(10, 2)
+  insurance_amount       Decimal?       @db.Decimal(10, 2)
+  boxes_count            Int            @default(1)
+
+  shipped_at   DateTime?
+  delivered_at DateTime?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  order               Order             @relation("shipping:order", fields: [order_id], references: [id])
+  order_shipping_info OrderShippingInfo @relation(fields: [order_shipping_info_id], references: [id])
+
+  @@index([shipping_status])
+  @@index([tracking_number])
+  @@index([carrier])
   @@map("shipping")
 }
 
 model Offers {
-  id                  String        @id @default(cuid())
-  uuid                String        @unique @default(cuid())
+  id                  String          @id @default(cuid())
+  uuid                String          @unique @default(cuid())
   description         String
   discount_percentage Int
-  code                String?       @unique
+  code                String?         @unique
   type                OfferType
   status              OfferStatus
   start_date          DateTime
   end_date            DateTime
   max_uses            Int?
-  current_uses        Int           @default(0)
-  created_at          DateTime      @default(now())
-  updated_at          DateTime      @updatedAt
+  current_uses        Int             @default(0)
+  min_purchase_amount Decimal?        @db.Decimal(10, 2)
+  max_purchase_amount Decimal?        @db.Decimal(10, 2)
+  priority            Int             @default(0)
+  is_exclusive        Boolean         @default(false)
+  stack_group         OfferStackGroup @default(BASE)
+  max_stack           Int?            @default(1)
+  created_at          DateTime        @default(now())
+  updated_at          DateTime        @updatedAt
   user_id             String
-  offer_targets       OfferTarget[] @relation("offer_target:offers")
-  user                User          @relation("offer:user", fields: [user_id], references: [id], onDelete: Cascade)
+  offer_targets       OfferTarget[]   @relation("offer_target:offers")
+  user                User            @relation("offer:user", fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([status]) // Filtrar ofertas activas/pausadas
   @@index([type]) // Filtrar por tipo de oferta
@@ -571,11 +625,19 @@ enum OfferType {
   COUPON
 }
 
+enum OfferStackGroup {
+  BASE
+  COUPON
+  SHIPPING
+}
+
 enum OfferTargetType {
   PRODUCT // Aplica a un producto y TODAS sus versiones
   CATEGORY // Aplica a toda una categoría
   SUBCATEGORY // Aplica a productos con ruta de subcategorías
   PRODUCT_VERSION // Aplica a una versión específica de producto
+  COMBINATIONS // Aplica a combinaciones de productos
+  SHIPPING // Aplica a envios
 }
 
 enum OfferStatus {
@@ -584,6 +646,8 @@ enum OfferStatus {
   ENDED
   CANCELLED
   PENDING
+  EXPIRED
+  FINISHED
 }
 
 enum OrderAndPaymentStatus {
@@ -596,6 +660,7 @@ enum OrderAndPaymentStatus {
   REFUNDED
   IN_MEDIATION
   CHARGED_BACK
+  ABANDONED
 }
 
 enum ShippingStatus {

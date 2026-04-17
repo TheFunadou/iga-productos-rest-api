@@ -6,11 +6,18 @@ import { CustomerCsrfAuthGuard } from 'src/customer_auth/customer_auth.csrf';
 import { AddItemDTO, ShoppingCartDTO, ToggleCheckDTO, UpdateItemQtyDTO } from './shopping-cart.dto';
 import { AuthenticatedCustomer } from 'src/customer_auth/customer_auth.current.decorator';
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
+import { SetItemDTO, ShoppingCartDTO as ShoppingCartDTOV2, ToggleCheckV2DTO } from './application/DTO/shopping-cart.dto';
+import { OptionalCustomer } from 'src/customer_auth/customer_auth.optional.decorator';
+import { Cookie } from 'src/common/decorators/cookie.decorator';
+import { ShoppingCartServiceV2 } from './domain/services/shopping-cart.service';
+import { LoadShoppingCartI } from './application/interfaces/shopping-cart.interface';
+import { OptionalCustomerAuthGuard } from 'src/customer_auth/customer_auth.optional.guard';
 
 @Controller('shopping-cart')
 export class ShoppingCartController {
     constructor(
-        private readonly shoppingCartService: ShoppingCartService
+        private readonly shoppingCartService: ShoppingCartService,
+        private readonly shoppingCartServiceV2: ShoppingCartServiceV2
     ) { };
 
     @Get()
@@ -100,5 +107,150 @@ export class ShoppingCartController {
     async uncheckAll(@AuthenticatedCustomer() customer: CustomerPayload): Promise<ShoppingCartDTO[]> {
         return await this.shoppingCartService.uncheckAll({ customerUUID: customer.uuid });
     };
+
+
+    @Get('v2')
+    @ApiOperation({ summary: "Recuperar el carrito de compras (V2 - Redis/DB)" })
+    @ApiResponse({ status: 200, type: ShoppingCartDTOV2, isArray: true })
+    async recoverShoppingCartV2(
+        @OptionalCustomer() customer: CustomerPayload,
+        @Cookie('session_id') sessionId: string
+    ): Promise<ShoppingCartDTOV2[]> {
+        return await this.shoppingCartServiceV2.getCustomerShoppingCart({
+            customerUUID: customer?.uuid,
+            sessionId
+        });
+    };
+    @Post('v2/item')
+    @ApiOperation({ summary: "Añadir o actualizar cantidad de un producto (V2)" })
+    @ApiResponse({ status: 200, type: ShoppingCartDTOV2, isArray: true })
+    async setItemV2(
+        @OptionalCustomer() customer: CustomerPayload,
+        @Cookie('session_id') sessionId: string,
+        @Body() dto: SetItemDTO
+    ): Promise<ShoppingCartDTOV2[]> {
+        return await this.shoppingCartServiceV2.setItem({
+            customerUUID: customer?.uuid,
+            sessionId,
+            data: dto
+        });
+    };
+    @Delete('v2/clear-cart')
+    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
+    @ApiOperation({ summary: "Vaciar el carrito de compras (V2)" })
+    @ApiResponse({ status: 200, type: ShoppingCartDTOV2, isArray: true })
+    async clearCartV2(
+        @OptionalCustomer() customer: CustomerPayload,
+        @Cookie('session_id') sessionId: string
+    ): Promise<ShoppingCartDTOV2[]> {
+        return await this.shoppingCartServiceV2.clearShoppingCart({
+            customerUUID: customer?.uuid,
+            sessionId
+        });
+    };
+
+
+    @Delete('v2/:sku')
+    @ApiOperation({ summary: "Eliminar un producto del carrito (V2)" })
+    @ApiResponse({ status: 200, type: ShoppingCartDTOV2, isArray: true })
+    async removeItemV2(
+        @OptionalCustomer() customer: CustomerPayload,
+        @Cookie('session_id') sessionId: string,
+        @Param('sku') sku: string
+    ): Promise<ShoppingCartDTOV2[]> {
+        return await this.shoppingCartServiceV2.removeItem({
+            customerUUID: customer?.uuid,
+            sessionId,
+            sku
+        });
+    };
+    @Put('v2/check/toggle')
+    @ApiOperation({ summary: "Seleccionar/Deseleccionar un producto (V2)" })
+    @ApiResponse({ status: 200, type: ShoppingCartDTOV2, isArray: true })
+    async toggleCheckV2(
+        @OptionalCustomer() customer: CustomerPayload,
+        @Cookie('session_id') sessionId: string,
+        @Body() dto: ToggleCheckV2DTO
+    ): Promise<ShoppingCartDTOV2[]> {
+        return await this.shoppingCartServiceV2.toggleCheckItem({
+            customerUUID: customer?.uuid,
+            sessionId,
+            sku: dto.sku
+        });
+    };
+    @Put('v2/check/all')
+    @ApiOperation({ summary: "Seleccionar todos los productos (V2)" })
+    @ApiResponse({ status: 200, type: ShoppingCartDTOV2, isArray: true })
+    async checkAllV2(
+        @OptionalCustomer() customer: CustomerPayload,
+        @Cookie('session_id') sessionId: string
+    ): Promise<ShoppingCartDTOV2[]> {
+        return await this.shoppingCartServiceV2.checkAllItems({
+            customerUUID: customer?.uuid,
+            sessionId
+        });
+    };
+    @Put('v2/uncheck/all')
+    @ApiOperation({ summary: "Deseleccionar todos los productos (V2)" })
+    @ApiResponse({ status: 200, type: ShoppingCartDTOV2, isArray: true })
+    async uncheckAllV2(
+        @OptionalCustomer() customer: CustomerPayload,
+        @Cookie('session_id') sessionId: string
+    ): Promise<ShoppingCartDTOV2[]> {
+        return await this.shoppingCartServiceV2.uncheckAllItems({
+            customerUUID: customer?.uuid,
+            sessionId
+        });
+    };
+    @Post('v2')
+    @ApiOperation({ summary: "Crear carrito en base de datos desde sesión (V2)" })
+    @ApiResponse({ status: 201, type: ShoppingCartDTOV2, isArray: true })
+    async createShoppingCartV2(
+        @OptionalCustomer() customer: CustomerPayload,
+        @Cookie('session_id') sessionId: string
+    ): Promise<ShoppingCartDTOV2[]> {
+        return await this.shoppingCartServiceV2.createShoppingCart({
+            customerUUID: customer?.uuid,
+            sessionId
+        });
+    };
+    @Post('v2/merge')
+    @ApiOperation({ summary: "Fusionar carrito de sesión con carrito de cliente (V2)" })
+    @ApiResponse({ status: 201, type: ShoppingCartDTOV2, isArray: true })
+    async mergeShoppingCartV2(
+        @OptionalCustomer() customer: CustomerPayload,
+        @Cookie('session_id') sessionId: string
+    ): Promise<ShoppingCartDTOV2[]> {
+        return await this.shoppingCartServiceV2.mergeShoppingCart({
+            customerUUID: customer?.uuid,
+            sessionId
+        });
+    };
+    @Post('v2/save')
+    @ApiOperation({ summary: "Persistir carrito actual a la base de datos (V2)" })
+    @ApiResponse({ status: 201, type: ShoppingCartDTOV2, isArray: true })
+    async saveShoppingCartV2(
+        @OptionalCustomer() customer: CustomerPayload
+    ): Promise<ShoppingCartDTOV2[]> {
+        // Nota: saveShoppingCart solo tiene sentido si el usuario está autenticado
+        return await this.shoppingCartServiceV2.saveShoppingCart({
+            customerUUID: customer?.uuid
+        });
+    };
+
+    @Get("v2/load")
+    @ApiOperation({ summary: "Cargar tarjetas del carrito de compras" })
+    @ApiResponse({ status: 200, type: ShoppingCartDTOV2, isArray: true })
+    async loadCards(
+        @OptionalCustomer() customer: CustomerPayload,
+        @Cookie('session_id') sessionId: string
+    ): Promise<LoadShoppingCartI> {
+        return await this.shoppingCartServiceV2.loadShoppingCart({
+            customerUUID: customer?.uuid,
+            sessionId
+        });
+    };
+
+
 
 };

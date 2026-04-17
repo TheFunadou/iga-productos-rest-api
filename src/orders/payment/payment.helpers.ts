@@ -1,7 +1,7 @@
 import { OrderAndPaymentStatus } from "@prisma/client";
 import { CustomerPaymentData, GetPaidOrderDetails, MercadoPagoPaymentStatus, OrderItems, OrderResume, PaymentDetails } from "./payment.dto";
 import { OrderRequestFormGuestDTO } from "../order.dto";
-import { IVA_VALUE, MAX_ITEMS_PER_BOX_VALUE, SHIPPING_BOX_COST_VALUE } from "../orders.helpers";
+import { IVA, MAX_ITEMS_PER_BOX, SHIPPING_COST } from "../helpers/order.helpers";
 
 
 export function isMercadoPagoStatus(value: string): value is MercadoPagoPaymentStatus {
@@ -88,8 +88,8 @@ export const buildAuthCustomerGetPaymentDetailsResponse = (
                     customer_installment_amount: details.customer_installment_amount.toString()
                 })),
                 shipping: {
-                    boxesQty: orderDetails.shipping?.boxes_count,
-                    shippingCost: orderDetails.shipping?.shipping_amount.toString()
+                    boxesQty: orderDetails.shipping[0]?.boxes_count,
+                    shippingCost: orderDetails.shipping[0]?.shipping_amount.toString()
                 },
                 resume: calcOrderItemsResume({ orderItems })
             }
@@ -152,8 +152,8 @@ export const buildGuestGetPaymentDetailsResponse = (
                     customer_installment_amount: details.customer_installment_amount.toString()
                 })),
                 shipping: {
-                    boxesQty: orderDetails.shipping?.boxes_count,
-                    shippingCost: orderDetails.shipping?.shipping_amount.toString()
+                    boxesQty: orderDetails.shipping[0]?.boxes_count,
+                    shippingCost: orderDetails.shipping[0]?.shipping_amount.toString()
                 },
                 resume: calcOrderItemsResume({ orderItems })
             }
@@ -165,8 +165,8 @@ export const calcOrderItemsResume = ({ orderItems }: { orderItems: OrderItems[] 
     const itemsQty = orderItems.reduce((acc, item) => {
         return acc + item.quantity
     }, 0);
-    const boxesQty = Math.ceil(itemsQty / MAX_ITEMS_PER_BOX_VALUE);
-    const shippingCost = boxesQty * SHIPPING_BOX_COST_VALUE;
+    const boxesQty = Math.ceil(itemsQty / MAX_ITEMS_PER_BOX);
+    const shippingCost = boxesQty * SHIPPING_COST;
 
     const subtotal = orderItems.reduce((acc, item) => {
         const itemTotal = parseFloat(item.product_version.unit_price.toString()) * item.quantity;
@@ -181,7 +181,7 @@ export const calcOrderItemsResume = ({ orderItems }: { orderItems: OrderItems[] 
         }
     }, 0);
 
-    const iva = subtotal * IVA_VALUE;
+    const iva = subtotal * IVA;
     const subtotalBeforeIVA = subtotal - iva;
     const subtotalWithDiscount = subtotal - discount;
     const total = subtotalWithDiscount + shippingCost;

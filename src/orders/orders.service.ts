@@ -2,14 +2,18 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderItems } from './payment/payment.dto';
-import { GetOrders, GetOrdersQuery, CheckoutOrder, OrderRequestDTO, GetOrderDetails, OrdersDashboardParams, GetOrdersDashboard, OrderRequestFormGuestDTO } from './order.dto';
+import { GetOrders, GetOrdersQuery, CheckoutOrder, OrderRequestDTO, OrderRequestV2DTO, GetOrderDetails, OrdersDashboardParams, GetOrdersDashboard, OrderRequestFormGuestDTO, CreatedOrder } from './order.dto';
 import { ShoppingCartDTO } from 'src/customer/shopping-cart/shopping-cart.dto';
 import { OrderAndPaymentStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { CommandBus } from '@nestjs/cqrs';
-import { CreateOrderCommand } from './domain/commands/create-order/create-order.command';
 import { calcShoppingCartOrderResume } from './orders.helpers';
 import { GetCustomerAddressOrder } from 'src/customer/customer-addresses/customer-addresses.dto';
+import { CreateOrderCommand } from './applications/commands/create-order.command';
+import { CreateOrderCommand as CreateOrderCommandV2 } from './applications/commands/create-order-v2.command';
+import { CheckoutOrderI, OrderCheckoutItemI } from './applications/pipeline/interfaces/order.interface';
+import { calcResume } from './helpers/order.helpers';
+import { ShoppingCartItemsResumeI } from 'src/customer/shopping-cart/application/interfaces/shopping-cart.interface';
 
 @Injectable()
 export class OrdersService {
@@ -24,7 +28,7 @@ export class OrdersService {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
     };
 
-    async createProviderOrder(args: { orderRequest: OrderRequestDTO, customerUUID?: string }) {
+    async createProviderOrder(args: { orderRequest: OrderRequestDTO, customerUUID?: string }): Promise<CreatedOrder> {
         const { orderRequest, customerUUID } = args;
         const provider = orderRequest.paymentProvider.replaceAll("_", "");
         const notificationUrl = this.nodeEnv !== "production" ? "https://captious-brazenly-gladys.ngrok-free.dev" : "https://api.igaproductos.com"
@@ -34,6 +38,24 @@ export class OrdersService {
                 "https://igaproductos.com",
                 `${notificationUrl}/payment/${provider}/webhook`,
                 orderRequest.paymentProvider,
+                customerUUID,
+                orderRequest.addressUUID,
+                orderRequest.couponCode,
+                orderRequest.guestForm
+            )
+        )
+    };
+
+    async createProviderOrderV2(args: { orderRequest: OrderRequestV2DTO, customerUUID?: string, sessionId: string }): Promise<CreatedOrder> {
+        const { orderRequest, customerUUID, sessionId } = args;
+        const provider = orderRequest.paymentProvider.replaceAll("_", "");
+        const notificationUrl = this.nodeEnv === "DEV" ? "https://captious-brazenly-gladys.ngrok-free.dev" : "https://api.igaproductos.com"
+        return this.commandBus.execute(
+            new CreateOrderCommandV2(
+                "https://igaproductos.com",
+                `${notificationUrl}/payment/${provider}/webhook`,
+                orderRequest.paymentProvider,
+                sessionId,
                 customerUUID,
                 orderRequest.addressUUID,
                 orderRequest.couponCode,
@@ -104,7 +126,7 @@ export class OrdersService {
                         },
                         orderItemImages: or.order_items.flatMap((items) => items.product_version.product_version_images.map(img => img.image_url)),
                         totalOrderItems: or._count.order_items,
-                        shippingStatus: or.shipping?.shipping_status
+                        shippingStatus: or.shipping[0].shipping_status
                     })),
                     totalPages: Math.ceil(totalRecords / limit),
                     totalRecords,
@@ -115,7 +137,7 @@ export class OrdersService {
         });
     };
 
-    async getOrderDetailsByOrderUUID({ orderUUID, customerUUID }: { orderUUID: string, customerUUID: string }) {
+    async getOrderDetailsByOrderUUID({ orderUUID, customerUUID }: { orderUUID: string, customerUUID?: string }) {
         return await this.cache.remember<GetOrderDetails>({
             method: "staleWhileRevalidate",
             entity: "customer:order:details",
@@ -126,6 +148,9 @@ export class OrdersService {
                     select: {
                         uuid: true,
                         status: true,
+                        buyer_name: true,
+                        buyer_surname: true,
+                        buyer_email: true,
                         created_at: true,
                         updated_at: true,
                         total_amount: true,
@@ -161,7 +186,6 @@ export class OrdersService {
                                 subtotal: true,
                                 product_version: {
                                     select: {
-                                        unit_price: true,
                                         sku: true,
                                         color_line: true,
                                         color_name: true,
@@ -185,19 +209,14 @@ export class OrdersService {
                                 },
                             }
                         },
-                        customer_address: {
-                            omit: {
-                                id: true,
-                                customer_id: true,
-                                created_at: true,
-                                updated_at: true
-                            }
+                        shipping_info: {
+                            omit: { id: true, order_id: true }
                         },
                     }
                 });
 
                 if (!order) throw new NotFoundException("No se encontro la orden");
-                if (!order.customer_address) throw new NotFoundException("No se encontro la direccion del destinatario");
+                if (!order.shipping_info) throw new NotFoundException("No se encontro la direccion del destinatario");
 
                 const orderItems: OrderItems[] = order.order_items.map((item) => ({
                     category: item.product_version.product.category.name,
@@ -210,11 +229,11 @@ export class OrdersService {
                         color_name: item.product_version.color_name,
                         color_line: item.product_version.color_line,
                         sku: item.product_version.sku,
-                        unit_price: item.product_version.unit_price,
+                        unit_price: item.unit_price,
                         stock: item.product_version.stock,
                         unit_price_with_discount: item.discount > 0 ?
-                            (item.discount * (parseFloat(item.product_version.unit_price.toString()) / 100)).toString()
-                            : item.product_version.unit_price.toString(),
+                            (item.discount * (parseFloat(item.unit_price.toString()) / 100)).toString()
+                            : item.unit_price.toString(),
                     },
                     quantity: item.quantity,
                     discount: item.discount > 0 ? item.discount : undefined,
@@ -228,9 +247,9 @@ export class OrdersService {
                 const response: GetOrderDetails = {
                     status: order.status,
                     order: {
-                        address: order.customer_address,
+                        address: { ...order.shipping_info, default_address: true },
                         items: orderItems,
-                        customer: undefined,
+                        customer: { email: order.buyer_email, name: order.buyer_name, last_name: order.buyer_surname },
                         details: {
                             order: {
                                 uuid: order.uuid,
@@ -248,14 +267,14 @@ export class OrdersService {
                                 customer_paid_amount: details.customer_paid_amount.toString(),
                                 customer_installment_amount: details.customer_installment_amount.toString()
                             })),
-                            shipping: order.shipping ? {
-                                boxes_count: order.shipping.boxes_count,
-                                shipping_amount: order.shipping.shipping_amount.toString(),
-                                carrier: order.shipping.carrier,
-                                created_at: order.shipping.created_at,
-                                shipping_status: order.shipping.shipping_status,
-                                tracking_number: order.shipping.tracking_number,
-                                updated_at: order.shipping.updated_at
+                            shipping: order.shipping.length > 0 ? {
+                                boxes_count: order.shipping[0].boxes_count,
+                                shipping_amount: order.shipping[0].shipping_amount.toString(),
+                                carrier: order.shipping[0].carrier,
+                                created_at: order.shipping[0].created_at,
+                                shipping_status: order.shipping[0].shipping_status,
+                                tracking_number: order.shipping[0].tracking_number,
+                                updated_at: order.shipping[0].updated_at
                             } : null,
                             resume
                         }
@@ -348,19 +367,17 @@ export class OrdersService {
                     const shippingData = await this.prisma.order.findUnique({
                         where: { uuid: orderUUID },
                         select: {
-                            customer_address: {
+                            shipping_info: {
                                 omit: {
                                     id: true,
-                                    customer_id: true,
-                                    created_at: true,
-                                    updated_at: true
+                                    order_id: true
                                 }
                             },
                         }
                     })
 
-                    if (!shippingData?.customer_address) throw new NotFoundException("No se encontro una dirección de envio de este cliente para esta orden");
-                    shippingAddress = { ...shippingData.customer_address }
+                    if (!shippingData?.shipping_info) throw new NotFoundException("No se encontro una dirección de envio de este cliente para esta orden");
+                    shippingAddress = { ...shippingData.shipping_info, default_address: true }
                 };
 
                 if (!shippingAddress) throw new BadRequestException("No se encontro una dirección de envio para esta orden");
@@ -400,6 +417,113 @@ export class OrdersService {
                 };
 
                 return checkoutOrder;
+            }
+        })
+
+    };
+
+    async getCheckoutOrderV2({ orderUUID }: { orderUUID: string }): Promise<CheckoutOrderI> {
+        return await this.cache.remember<CheckoutOrderI>({
+            method: "staleWhileRevalidate",
+            entity: "customer:order:checkout",
+            aditionalOptions: {
+                ttlMilliseconds: 1000 * 60 * 10,
+                staleTimeMilliseconds: 1000 * 60 * 8
+            },
+            query: { orderUUID },
+            fallback: async () => {
+                const order = await this.prisma.order.findUnique({
+                    where: { uuid: orderUUID },
+                    select: {
+                        uuid: true,
+                        external_order_id: true,
+                        is_guest_order: true,
+                        payment_provider: true,
+                        coupon_code: true,
+                        order_items: {
+                            select: {
+                                quantity: true,
+                                discount: true,
+                                unit_price: true,
+                                final_price: true,
+                                isOffer: true,
+                                subtotal: true,
+                                product_version: {
+                                    select: {
+                                        unit_price: true,
+                                        sku: true,
+                                        color_line: true,
+                                        color_name: true,
+                                        color_code: true,
+                                        product_version_images: {
+                                            select: { main_image: true, image_url: true },
+                                            orderBy: { main_image: "desc" as const }
+                                        },
+                                        product: {
+                                            select: {
+                                                product_name: true,
+                                                category: { select: { name: true } },
+                                                subcategories: { select: { subcategories: { select: { uuid: true, description: true } }, }, }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        shipping_info: { omit: { id: true, order_id: true } }
+                    }
+                });
+
+                if (!order) throw new NotFoundException("No se encontro la orden");
+                if (!order.shipping_info) throw new NotFoundException("No se encontro la dirección de envio de la orden");
+                const shippingAddress: GetCustomerAddressOrder = {
+                    ...order.shipping_info,
+                    default_address: true
+                };
+
+                const items: OrderCheckoutItemI[] = order.order_items.map(items => ({
+                    name: items.product_version.product.product_name,
+                    category: items.product_version.product.category.name,
+                    subcategories: items.product_version.product.subcategories.map(sub => ({ uuid: sub.subcategories.uuid, name: sub.subcategories.description })),
+                    sku: items.product_version.sku,
+                    color: {
+                        line: items.product_version.color_line,
+                        name: items.product_version.color_name,
+                        code: items.product_version.color_code,
+                    },
+                    unitPrice: items.unit_price.toString(),
+                    finalPrice: items.final_price.toString(),
+                    quantity: items.quantity,
+                    offer: {
+                        isOffer: items.isOffer,
+                        discount: items.discount,
+                    },
+                    subtotal: items.subtotal.toString(),
+                    images: items.product_version.product_version_images.map((image) => ({
+                        url: image.image_url,
+                        mainImage: image.main_image,
+                    })),
+                }));
+
+                const resumeItems: ShoppingCartItemsResumeI[] = items.map(item => ({
+                    sku: item.sku,
+                    quantity: item.quantity,
+                    unitPrice: item.unitPrice,
+                    finalPrice: item.finalPrice,
+                    isOffer: item.offer.isOffer,
+                    discount: item.offer.discount,
+                }));
+
+                const resume = calcResume({ items: resumeItems });
+
+                return {
+                    orderUUID: order.uuid,
+                    shippingAddress,
+                    items,
+                    externalId: order.external_order_id,
+                    resume,
+                    couponCode: order.coupon_code,
+                } satisfies CheckoutOrderI;
             }
         })
 
@@ -467,7 +591,7 @@ export class OrdersService {
             const order = await tx.order.update({
                 where: { uuid: orderUUID },
                 data: {
-                    status: "CANCELLED"
+                    status: "ABANDONED"
                 },
                 select: {
                     id: true,
@@ -476,12 +600,13 @@ export class OrdersService {
                 }
             });
 
-            const shipping = await tx.shipping.findUnique({
+            const shipping = await tx.shipping.findMany({
                 where: { order_id: order.id },
-                select: { id: true }
+                select: { id: true },
+                take: 1
             });
 
-            if (shipping) await tx.shipping.delete({ where: { id: shipping.id } });
+            if (shipping) await tx.shipping.delete({ where: { id: shipping[0].id } });
 
             // restore the stock of the products
             for (const item of order.order_items) {
@@ -491,7 +616,7 @@ export class OrdersService {
                 });
             };
 
-            return `Orden ${orderUUID} cancelada.`;
+            return `Orden ${orderUUID} abandonada.`;
         });
     };
 
@@ -520,7 +645,6 @@ export class OrdersService {
                         id: true,
                         external_order_id: true,
                         customer_id: true,
-                        customer_address_id: true,
                     },
                     include: {
                         shipping: { select: { shipping_status: true } },
@@ -534,7 +658,7 @@ export class OrdersService {
                     data: data.map((order) => ({
                         ...order,
                         total_amount: order.total_amount.toString(),
-                        shipping_status: order.shipping?.shipping_status ? order.shipping.shipping_status : null,
+                        shipping_status: order.shipping[0]?.shipping_status ? order.shipping[0].shipping_status : null,
                         customer_uuid: order.customer?.uuid
                     })),
                     totalRecords,

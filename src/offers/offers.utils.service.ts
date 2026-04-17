@@ -1,13 +1,14 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import { CacheService } from "src/cache/cache.service";
 import { PrismaService } from "src/prisma/prisma.service";
-import { HasPercentageDiscountArgs } from "./offers.dto";
 
 
 @Injectable()
 export class OffersUtilsService {
     constructor(
-        private readonly prisma: PrismaService
+        private readonly prisma: PrismaService,
+        private readonly cache: CacheService
     ) { };
 
     async checkSingleProductVersionDiscount(args: {

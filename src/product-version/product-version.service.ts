@@ -1,10 +1,14 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateProductVersionDTO, GetStockDashboard, PatchProductVersionDTO, SafeProductVersionImages, SearchProductVersionsDTO, StockDashboardParams, UpdateStockBySKUDTO } from './product-version.dto';
+import { CreateProductVersionDTO, GetProductVersionCardsV2, GetStockDashboard, PatchProductVersionDTO, ProductVersionCardsFiltersDTO, SafeProductVersionImages, SearchProductVersionsDTO, StockDashboardParams, UpdateStockBySKUDTO } from './product-version.dto';
 import { Decimal } from '@prisma/client/runtime/index-browser';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserLogEvent } from 'src/audit/user-log.event';
+import { GetCardsCommand } from './application/commands/get-cards.command';
+import { GetDetailsCommand } from './application/commands/get-details.command';
+import { CommandBus } from '@nestjs/cqrs';
+import { AggregateCardEntitiesService } from './domain/services/search-cards/aggregate-entities.service';
 
 @Injectable()
 export class ProductVersionService {
@@ -13,7 +17,9 @@ export class ProductVersionService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cache: CacheService,
-        private readonly eventEmmiter: EventEmitter2
+        private readonly eventEmmiter: EventEmitter2,
+        private readonly commandBus: CommandBus,
+        private readonly aggCards: AggregateCardEntitiesService
     ) { };
 
     async create({ data, userUUID }: { data: CreateProductVersionDTO, userUUID: string }) {
@@ -252,11 +258,24 @@ export class ProductVersionService {
         });
     };
 
+    async getCards(args: {
+        customerUUID: string | undefined,
+        scope: "internal" | "external",
+        filters?: ProductVersionCardsFiltersDTO,
+        productsList?: { productUUID: string, sku: string[] }[],
+    }): Promise<GetProductVersionCardsV2> {
+        return this.commandBus.execute<GetCardsCommand, GetProductVersionCardsV2>(
+            new GetCardsCommand(args.customerUUID, args.scope, args.filters, args.productsList)
+        );
+    }
+
+    async getDetails(sku: string, customerUUID?: string) {
+        return this.commandBus.execute(new GetDetailsCommand(sku.toUpperCase(), customerUUID));
+    };
 
 
-
-
-
-
-
+    async getStock(skuList: string[]) {
+        return await this.aggCards.aggregateProductVersionStock({ skuList });
+    };
 };
+

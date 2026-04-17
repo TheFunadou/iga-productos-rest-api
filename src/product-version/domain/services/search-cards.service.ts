@@ -16,11 +16,13 @@ export class SearchCardsService {
         return customerUUID ? `product-version:search:cards:${customerUUID}${aditionalValue}` : `product-version:search:cards:public:${aditionalValue}`
     };
 
-    buildCacheQuery({ filters, customerUUID, scope }: { filters: SearchCardsFiltersDTO, customerUUID?: string, scope: "internal" | "external" }): SearchCardsCacheQuery {
+    buildCacheQuery(args: { filters: SearchCardsFiltersDTO, customerUUID?: string, scope: "internal" | "external" }): SearchCardsCacheQuery {
+        const { filters, customerUUID, scope } = args;
         return customerUUID ? { filters, customerUUID, scope } : { filters, scope }
     };
 
-    buildPagination({ filters: { page: pageFilter, limit: limitFilter }, scope }: { filters: SearchCardsFiltersDTO, scope: "internal" | "external" }): { take: number, skip: number } {
+    buildPagination(args: { filters: SearchCardsFiltersDTO, scope: "internal" | "external" }): { take: number, skip: number } {
+        const { filters: { page: pageFilter, limit: limitFilter }, scope } = args;
         if (scope === "external" && limitFilter && limitFilter > this.MAX_CARDS_LIMIT) throw new BadRequestException("Ingresa un limite menos grande");
         const take = limitFilter ? limitFilter : 15;
         const page = pageFilter && pageFilter > 0 ? (pageFilter - 1) : 0;
@@ -112,7 +114,5 @@ export class SearchCardsService {
 
         return await this.offerUtils.checkMultipleProductVersionsDiscounts(productVersionsData);
     };
-
-
 
 };

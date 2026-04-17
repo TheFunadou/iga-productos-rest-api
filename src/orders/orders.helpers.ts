@@ -2,10 +2,10 @@ import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
 import { OrderRequestFormGuestDTO, OrderValidatedCustomerData } from "./order.dto";
 import { ProductVersionCard } from "src/product-version/product-version.dto";
 import { OrderResume, OrderShoppingCartDTO } from "./payment/payment.dto";
+import { OrderShoppingCartI } from "./applications/pipeline/interfaces/order.interface";
+import { IVA, SHIPPING_COST, MAX_ITEMS_PER_BOX } from "./helpers/order.helpers";
+import { ShoppingCartResumeI } from "src/customer/shopping-cart/application/interfaces/shopping-cart.interface";
 
-export const IVA_VALUE = 0.16;
-export const SHIPPING_BOX_COST_VALUE = 1.00; //Mexican pesos
-export const MAX_ITEMS_PER_BOX_VALUE = 10;
 
 export const buildValidatedAuthCustomerData = (args: {
     customerData: {
@@ -83,7 +83,7 @@ export const buildShoppingCart = (args: { productVersionCards: ProductVersionCar
         },
         product_images: card.product_images,
         isChecked: true,
-        quantity: args.orderItems.find((cart) => cart.product === card.product_version.sku)?.quantity!,
+        quantity: args.orderItems.find((cart) => cart.sku === card.product_version.sku)?.quantity!,
         isOffer: card.isOffer,
         discount: card.discount,
         isFavorite: card.isFavorite
@@ -95,8 +95,8 @@ export const calcShoppingCartOrderResume = (args: { shoppingCart: ShoppingCartDT
     const itemsQty = onlyCheckedItems.reduce((acc, item) => {
         return acc + item.quantity
     }, 0);
-    const boxesQty = Math.ceil(itemsQty / MAX_ITEMS_PER_BOX_VALUE);
-    const shippingCost = boxesQty * SHIPPING_BOX_COST_VALUE;
+    const boxesQty = Math.ceil(itemsQty / MAX_ITEMS_PER_BOX);
+    const shippingCost = boxesQty * SHIPPING_COST;
 
     const subtotal = onlyCheckedItems.reduce((acc, item) => {
         const itemTotal = parseFloat(item.product_version.unit_price.toString()) * item.quantity;
@@ -111,7 +111,7 @@ export const calcShoppingCartOrderResume = (args: { shoppingCart: ShoppingCartDT
         }
     }, 0);
 
-    const iva = subtotal * IVA_VALUE;
+    const iva = subtotal * IVA;
     const subtotalBeforeIVA = subtotal - iva;
     const subtotalWithDiscount = subtotal - discount;
     const total = subtotalWithDiscount + shippingCost;
@@ -128,4 +128,3 @@ export const calcShoppingCartOrderResume = (args: { shoppingCart: ShoppingCartDT
 
     return response;
 };
-

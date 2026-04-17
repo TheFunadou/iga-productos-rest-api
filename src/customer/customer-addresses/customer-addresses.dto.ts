@@ -145,3 +145,5 @@ export class GetCustomerAddresses {
     @ApiProperty({ example: 1 })
     totalPages: number;
 };
+
+export class CreateOrderShippingInfo extends OmitType(CustomerAddress, ["id", "customer_id", "uuid", "default_address", "created_at", "updated_at"] as const) { };

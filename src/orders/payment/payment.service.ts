@@ -1,13 +1,13 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { GetPaidOrderDetails, OrderItems, MercadoPagoWebhook } from './payment.dto';
+import { GetPaidOrderDetails, MercadoPagoWebhook } from './payment.dto';
 import { OrderAndPaymentStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { CommandBus } from '@nestjs/cqrs';
 import { MercadoPagoProcessWebhookCommand } from './domain/commands/mercadopago-proccess-webhook/process-webhook.command';
 import { OrderProcessingStatus } from './payment.interfaces';
 import { GetPaymentDetailsService } from './services/get-payment-details.service';
+import { PaymentDetailsI } from './domain/interfaces/payment.interfaces';
 
 @Injectable()
 export class PaymentService {
@@ -71,6 +71,11 @@ export class PaymentService {
     async getOrderStatusWithDetails(args: { orderUUID: string, customerUUID?: string, requiredStatus: OrderAndPaymentStatus[] }): Promise<GetPaidOrderDetails> {
         const { orderUUID, customerUUID, requiredStatus } = args;
         return await this.getPaymentDetails.execute({ orderUUID, requiredStatus, customerUUID });
+    };
+
+    async getDetails(args: { orderUUID: string, requiredStatus: OrderAndPaymentStatus[] }): Promise<PaymentDetailsI> {
+        const { orderUUID, requiredStatus } = args;
+        return await this.getPaymentDetails.executeV2({ orderUUID, requiredStatus });
     };
 
 

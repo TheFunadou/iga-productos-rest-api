@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ProductVersionService } from './product-version.service';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { CreateProductVersionDTO, PatchProductVersionDTO, ProductVersionCardsFiltersDTO, StockDashboardParams, UpdateStockBySKUDTO } from './product-version.dto';
+import { CreateProductVersionDTO, GetProductVersionCardsV2, PatchProductVersionDTO, ProductVersionCardsFiltersDTO, SearchCardsDTO, StockDashboardParams, UpdateStockBySKUDTO } from './product-version.dto';
 import { ProductVersionFindService } from './product-version.find.service';
 import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
@@ -12,12 +12,13 @@ import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 import { OptionalCustomerAuthGuard } from 'src/customer_auth/customer_auth.optional.guard';
 import { AuthenticatedUser } from 'src/user_auth/user_auth.current_user.decorator';
 import { UserPayload } from 'src/user_auth/user_auth.dto';
+import { CustomerCsrfAuthGuard } from 'src/customer_auth/customer_auth.csrf';
 
 @Controller('product-version')
 export class ProductVersionController {
     constructor(
         private readonly findProductVersionService: ProductVersionFindService,
-        private readonly productVersionService: ProductVersionService
+        private readonly productVersionService: ProductVersionService,
     ) { };
 
     @Post()
@@ -71,6 +72,17 @@ export class ProductVersionController {
         return await this.productVersionService.list({ input });
     };
 
+    @Post("search/v2")
+    @UseGuards(OptionalCustomerAuthGuard)
+    @ApiOperation({ description: "Buscar tarjetas de producto (pipeline v2)" })
+    @ApiResponse({ status: 200, description: "Tarjetas construidas exitosamente", type: GetProductVersionCardsV2 })
+    @ApiResponse({ status: 400, description: "Error al buscar versiones de producto" })
+    @ApiResponse({ status: 500, description: "Error interno del servidor" })
+    @ApiBody({ type: SearchCardsDTO })
+    async getCards(@OptionalCustomer() customer: CustomerPayload, @Body() dto: SearchCardsDTO) {
+        return await this.productVersionService.getCards({ filters: dto.filters, customerUUID: customer?.uuid, scope: "external", productsList: dto.productList });
+    };
+
     @Post("search")
     @UseGuards(OptionalCustomerAuthGuard)
     @ApiOperation({ description: "Buscar versiones de producto" })
@@ -93,6 +105,17 @@ export class ProductVersionController {
         return await this.findProductVersionService.showDetails({ sku, customerUUID: customer?.uuid });
     };
 
+    @Get("details/v2/:sku")
+    @UseGuards(OptionalCustomerAuthGuard)
+    @ApiOperation({ description: "Buscar detalles de versión (pipeline v2)" })
+    @ApiResponse({ status: 200, description: "Detalles construidos exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al buscar detalles de la versión" })
+    @ApiResponse({ status: 500, description: "Error interno del servidor" })
+    @ApiParam({ name: "sku", description: "SKU del producto", required: true })
+    async getDetailsV2(@Param("sku") sku: string, @OptionalCustomer() customer: CustomerPayload) {
+        return await this.productVersionService.getDetails(sku, customer?.uuid);
+    };
+
 
     @Get("stock/dashboard")
     @UseGuards(RequiredUserAuthGuard, UserModulePermissionsGuard)
@@ -110,6 +133,17 @@ export class ProductVersionController {
         return await this.productVersionService.stockDashboard({ params });
     };
 
+    @Post("stock")
+    @UseGuards(CustomerCsrfAuthGuard)
+    @ApiOperation({ description: "Obtener stock de versiones de producto" })
+    @ApiResponse({ status: 200, description: "Stock de versiones de producto obtenido exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al obtener stock de versiones de producto" })
+    @ApiResponse({ status: 500, description: "Error al obtener stock de versiones de producto" })
+    @ApiBody({ type: [String] })
+    async getStock(@Body() skuList: string[]) {
+        return await this.productVersionService.getStock(skuList);
+    };
+
     @Patch("stock")
     @UseGuards(RequiredUserAuthGuard, UserCsrfAuthGuard, UserModulePermissionsGuard)
     @RequirePermissions({ PRODUCTS: ["UPDATE"] })
@@ -123,6 +157,7 @@ export class ProductVersionController {
     async updateStock(@Body() dto: UpdateStockBySKUDTO, @AuthenticatedUser() user: UserPayload) {
         return await this.productVersionService.updateStock({ dto, userUUID: user.uuid });
     };
+
 
 
 };

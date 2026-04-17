@@ -2,24 +2,33 @@ import { Logger } from "@nestjs/common";
 import { ShippingService } from "src/shipping/shipping.service";
 import { MercadoPagoPaymentContext } from "../payment-context";
 import { IStep } from "../pipeline.interface";
+import { PrismaService } from "src/prisma/prisma.service";
 
 export class CreateShippingStep implements IStep<MercadoPagoPaymentContext> {
     private readonly logger = new Logger(CreateShippingStep.name);
 
-    constructor(private readonly shipping: ShippingService) { }
+    constructor(
+        private readonly shipping: ShippingService,
+        private readonly prisma: PrismaService
+    ) { }
 
     async execute(context: MercadoPagoPaymentContext): Promise<void> {
         // Solo actúa si la orden fue APPROVED o PENDING
         if (!["APPROVED", "PENDING"].includes(context.orderStatus!) || context.skipped) return;
         if (!context.orderId) throw new Error("CreateShippingStep: orderId no disponible en contexto");
 
-        await this.shipping.createShippingByApprovedOrder({
-            orderId: context.orderId,
-            dto: {
-                concept: "Envio de productos",
-                shipping_status: context.orderStatus === "APPROVED" ? "IN_PREPARATION" : "STAND_BY",
-            }
-        });
+
+        await this.prisma.$transaction(async (tx) => {
+            await this.shipping.createShippingByApprovedOrder({
+                tx,
+                orderId: context.orderId!,
+                dto: {
+                    concept: "Envio de productos",
+                    shipping_status: context.orderStatus === "APPROVED" ? "IN_PREPARATION" : "STAND_BY",
+                },
+                shippingInfoId: ""
+            });
+        })
 
         this.logger.log(`Shipping creado para orden ${context.orderUUID} con status ${context.orderStatus}`);
     }

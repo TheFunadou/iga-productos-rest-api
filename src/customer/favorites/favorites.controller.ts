@@ -27,16 +27,16 @@ export class FavoritesController {
         return await this.favoritesService.toogleFavorite({ customerUUID: customer.uuid, sku: dto.sku });
     };
 
-    @Get()
-    @UseGuards(RequiredCustomerAuthGuard)
-    @ApiOperation({ summary: "Obtener favoritos de un cliente" })
-    @ApiResponse({ status: 200, description: "Favoritos obtenidos" })
-    @ApiResponse({ status: 400, description: "Error al obtener favoritos" })
-    @ApiResponse({ status: 404, description: "No se encontro al cliente" })
-    @ApiResponse({ status: 500, description: "Error al obtener favoritos" })
-    @ApiQuery({ name: "page", description: "Pagina actual", required: false })
-    @ApiQuery({ name: "limit", description: "Cantidad de items por pagina", required: false })
-    async find(@AuthenticatedCustomer() customer: CustomerPayload, @Query() query: PaginationDTO) {
-        return await this.favoritesService.find({ customerUUID: customer.uuid, pagination: { page: query.page, limit: query.limit } });
-    };
+    // @Get()
+    // @UseGuards(RequiredCustomerAuthGuard)
+    // @ApiOperation({ summary: "Obtener favoritos de un cliente" })
+    // @ApiResponse({ status: 200, description: "Favoritos obtenidos" })
+    // @ApiResponse({ status: 400, description: "Error al obtener favoritos" })
+    // @ApiResponse({ status: 404, description: "No se encontro al cliente" })
+    // @ApiResponse({ status: 500, description: "Error al obtener favoritos" })
+    // @ApiQuery({ name: "page", description: "Pagina actual", required: false })
+    // @ApiQuery({ name: "limit", description: "Cantidad de items por pagina", required: false })
+    // async find(@AuthenticatedCustomer() customer: CustomerPayload, @Query() query: PaginationDTO) {
+    //     return await this.favoritesService.find({ customerUUID: customer.uuid, pagination: { page: query.page, limit: query.limit } });
+    // };
 };

@@ -5,6 +5,8 @@ import { CreateShippingDTO, GetShippingDashboard, UpdateShippingDTO } from './sh
 import { Decimal } from '@prisma/client/runtime/client';
 import { OrdersDashboardParams } from 'src/orders/order.dto';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
+import { SHIPPING_COST } from 'src/orders/helpers/order.helpers';
 
 @Injectable()
 export class ShippingService {
@@ -18,51 +20,19 @@ export class ShippingService {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
     };
 
-    async createShippingByApprovedOrder(args: { tx?: any, orderId: string, dto: CreateShippingDTO }) {
-        const shippingCost = 264.00; //Mexican pesos
-        const { tx } = args;
-        const order = args.tx ? await args.tx.order.findUnique({
-            where: { id: args.orderId },
-            select: { id: true, order_items: { select: { quantity: true } } }
-        }) : await this.prisma.order.findUnique({
+    async createShippingByApprovedOrder(args: { tx: Prisma.TransactionClient, orderId: string, dto: CreateShippingDTO, shippingInfoId: string }) {
+        const { tx, shippingInfoId } = args;
+        const order = await tx.order.findUnique({
             where: { id: args.orderId },
             select: { id: true, order_items: { select: { quantity: true } } }
         });
         if (!order) throw new NotFoundException("Orden no encontrada");
         const totalItems = order.order_items.reduce((acc, item) => acc + item.quantity, 0);
         const boxesQty = Math.ceil(totalItems / 10);
-        const shipping_amount = new Decimal(shippingCost * boxesQty)
-        const created = tx ? await tx.shipping.create({
-            data: { order_id: order.id, ...args.dto, boxes_count: boxesQty, shipping_amount }
-        }) : await this.prisma.shipping.create({
-            data: { order_id: order.id, ...args.dto, boxes_count: boxesQty, shipping_amount }
+        const shipping_amount = new Decimal(SHIPPING_COST * boxesQty)
+        await tx.shipping.create({
+            data: { order_id: order.id, ...args.dto, boxes_count: boxesQty, shipping_amount, order_shipping_info_id: shippingInfoId }
         });
-        this.logger.log(`Envio creado con UUID: ${created.uuid}`);
-    };
-
-    async create(args: { tx?: any, dto: CreateShippingDTO }) {
-        const shippingCost = 264.00; //Mexican pesos
-        const { tx } = args;
-        if (!args.dto.uuid) throw new BadRequestException("Se necesita proveer un UUID de orden");
-        const order = args.tx ? await args.tx.order.findUnique({
-            where: { uuid: args.dto.uuid },
-            select: { id: true, order_items: { select: { quantity: true } } }
-        }) : await this.prisma.order.findUnique({
-            where: { uuid: args.dto.uuid },
-            select: { id: true, order_items: { select: { quantity: true } } }
-        });
-        if (!order) throw new NotFoundException("Orden no encontrada");
-        const totalItems = order.order_items.reduce((acc, item) => acc + item.quantity, 0);
-        const boxesQty = Math.ceil(totalItems / 10);
-        const shipping_amount = new Decimal(shippingCost * boxesQty)
-        const created = tx ? await tx.shipping.create({
-            data: { order_id: order.id, ...args.dto, boxes_count: boxesQty, shipping_amount }
-        }) : await this.prisma.shipping.create({
-            data: { order_id: order.id, ...args.dto, boxes_count: boxesQty, shipping_amount }
-        });
-        const message = `Envio creado con UUID: ${created.uuid}`;
-        this.logger.log(message);
-        return message;
     };
 
 
@@ -114,7 +84,7 @@ export class ShippingService {
 
     async updateShipping({ dto }: { dto: UpdateShippingDTO }) {
         const { uuid, ...data } = dto;
-        const shippingOrder = this.prisma.shipping.findUnique({ where: { uuid } });
+        const shippingOrder = this.prisma.shipping.findMany({ where: { uuid } });
         if (!shippingOrder) throw new NotFoundException("Orden de envio no encontrada");
 
         await this.prisma.shipping.update({

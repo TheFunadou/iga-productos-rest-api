@@ -13,13 +13,10 @@ import { CustomerCsrfAuthGuard } from './customer_auth.csrf';
 
 @Controller('customer-auth')
 export class CustomerAuthController {
-    private readonly nodeEnv: string;
     constructor(
         private readonly customerAuthService: CustomerAuthService,
         private readonly configService: ConfigService
-    ) {
-        this.nodeEnv = this.configService.get<string>("NODE_ENV") || "DEV";
-    };
+    ) { };
 
     @Post("login")
     @UseGuards(CustomerCsrfAuthGuard)

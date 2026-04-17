@@ -8,8 +8,6 @@ import { ShippingModule } from 'src/shipping/shipping.module';
 import { ShoppingCartModule } from 'src/customer/shopping-cart/shopping-cart.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
 import { CqrsModule } from '@nestjs/cqrs';
-
-// Nuevas clases
 import { MercadoPagoPaymentQueueConsumer } from './domain/queues/mercadopago/payment-queue.consumer';
 import { MercadoPagoProcessWebhookHandler } from './domain/commands/mercadopago-proccess-webhook/process-webhook.handler';
 import { MercadoPagoProvider } from '../providers/mercado-pago.provider';
@@ -29,6 +27,7 @@ import { OrdersModule } from '../orders.module';
     CqrsModule,
     CacheModule,
     PrismaModule,
+    OrdersModule,
     ShippingModule,
     ShoppingCartModule,
     NotificationsModule,
