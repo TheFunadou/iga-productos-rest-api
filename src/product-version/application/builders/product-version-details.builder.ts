@@ -7,6 +7,7 @@ import { ProductVersionDetailedData, ProductVersionDetailsI, SafeParentDetailedI
  * Encapsulates the logic for building detailed product version information
  */
 export class ProductVersionDetailsBuilder {
+    private productUUID: string = "";
     private name: string = "";
     private category: { uuid: string, name: string } = { uuid: "", name: "" };
     private subcategories: { uuid: string, name: string }[] = [];
@@ -24,6 +25,7 @@ export class ProductVersionDetailsBuilder {
     private details: ProductVersionDetailedData = {
         techSheetUrl: "",
         status: "",
+        description: "",
         specs: "",
         applications: "",
         recommendations: "",
@@ -35,6 +37,7 @@ export class ProductVersionDetailsBuilder {
      * Sets the basic product information
      */
     withProduct(product: ProductI): this {
+        this.productUUID = product.uuid;
         this.name = product.name;
         this.category = { uuid: product.category.uuid, name: product.category.name };
         this.subcategories = product.subcategories;
@@ -122,6 +125,7 @@ export class ProductVersionDetailsBuilder {
             techSheetUrl: versionData.technicalSheetUrl,
             createdAt: versionData.createdAt,
             updatedAt: versionData.updatedAt,
+            description: productData.details.description,
             isReviewed
         };
         return this;
@@ -145,6 +149,7 @@ export class ProductVersionDetailsBuilder {
         }
 
         return {
+            productUUID: this.productUUID,
             name: this.name,
             category: this.category,
             subcategories: this.subcategories,
@@ -168,7 +173,6 @@ export class ProductVersionDetailsBuilder {
      */
     static build(context: BuildDetailsContext): ProductVersionDetailsI {
         const {
-
             productEntity,
             productVersionEntity,
             stockEntities,

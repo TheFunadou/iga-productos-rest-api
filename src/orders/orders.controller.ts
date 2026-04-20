@@ -13,27 +13,14 @@ import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
 import { OptionalCustomerAuthGuard } from 'src/customer_auth/customer_auth.optional.guard';
 import { OptionalCustomer } from 'src/customer_auth/customer_auth.optional.decorator';
 import { Cookie } from 'src/common/decorators/cookie.decorator';
+import { BuyNowItemDTO } from './payment/payment.dto';
+import { LoadShoppingCartI } from 'src/customer/shopping-cart/application/interfaces/shopping-cart.interface';
 
 @Controller('orders')
 export class OrdersController {
     constructor(
         private readonly ordersService: OrdersService,
     ) { };
-
-    @Post()
-    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
-    @ApiOperation({ summary: "Crea una orden de pago" })
-    @ApiResponse({ status: 200, description: "Orden de pago creada" })
-    @ApiResponse({ status: 400, description: "Error al crear la orden de pago" })
-    @ApiResponse({ status: 401, description: "No se proporciono un token de autenticacion" })
-    @ApiResponse({ status: 403, description: "No se proporciono un token CSRF valido" })
-    @ApiResponse({ status: 404, description: "No se encontro al cliente" })
-    @ApiResponse({ status: 500, description: "Error inesperado al crear la orden de pago" })
-    @ApiHeader({ name: "csrf-token", description: "Token CSRF" })
-    @ApiBody({ type: OrderRequestDTO })
-    async createOrder(@OptionalCustomer() customer: CustomerPayload, @Body() dto: OrderRequestDTO): Promise<CreatedOrder> {
-        return await this.ordersService.createProviderOrder({ customerUUID: customer?.uuid, orderRequest: dto });
-    };
 
     @Post("v2")
     @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
@@ -46,8 +33,8 @@ export class OrdersController {
     @ApiResponse({ status: 500, description: "Error inesperado al crear la orden de pago" })
     @ApiHeader({ name: "csrf-token", description: "Token CSRF" })
     @ApiBody({ type: OrderRequestV2DTO })
-    async createOrderV2(@OptionalCustomer() customer: CustomerPayload, @Body() dto: OrderRequestV2DTO, @Cookie("session_id") sessionId: string): Promise<CreatedOrder> {
-        return await this.ordersService.createProviderOrderV2({ customerUUID: customer?.uuid, orderRequest: dto, sessionId });
+    async createOrder(@OptionalCustomer() customer: CustomerPayload, @Body() dto: OrderRequestV2DTO, @Cookie("session_id") sessionId: string): Promise<CreatedOrder> {
+        return await this.ordersService.createProviderOrder({ customerUUID: customer?.uuid, orderRequest: dto, sessionId });
     };
 
     @Get()
@@ -121,14 +108,15 @@ export class OrdersController {
         return await this.ordersService.cancelOrder({ orderUUID: uuid });
     };
 
-    @Get("buy-now/:sku")
+    @Get("buy-now")
+    @UseGuards(OptionalCustomerAuthGuard)
     @ApiOperation({ summary: "Obtiene los detalles de una orden" })
     @ApiResponse({ status: 200, description: "Items obtenidos exitosamente" })
     @ApiResponse({ status: 400, description: "Error al obtener los items de la orden" })
     @ApiResponse({ status: 404, description: "No se encontro la orden" })
     @ApiResponse({ status: 500, description: "Error inesperado al obtener los items de la orden" })
-    async getBuyNowItem(@Param("sku") sku: string) {
-        return await this.ordersService.getBuyNowItem({ sku });
+    async getBuyNowItem(@OptionalCustomer() customer: CustomerPayload, @Query() query: BuyNowItemDTO): Promise<LoadShoppingCartI> {
+        return await this.ordersService.getBuyNowItem({ query, customerUUID: customer?.uuid });
     };
 
     @Get("dashboard")

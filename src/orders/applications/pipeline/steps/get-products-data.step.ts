@@ -1,6 +1,6 @@
 import { OrderPipelineStepI } from "../interfaces/pipeline-step.interface";
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { OrderContext } from "../order.context-v2";
+import { OrderContext } from "../order.context";
 import { AggregateCardEntitiesService } from "src/product-version/domain/services/search-cards/aggregate-entities.service";
 import { AggregateOfferEntitiesService } from "src/offers/domain/services/aggregate-offer-entities.service";
 import { OfferLookupInputI, ProductI, ProductVersionI } from "src/product-version/application/pipelines/interfaces/get-cards.interface";

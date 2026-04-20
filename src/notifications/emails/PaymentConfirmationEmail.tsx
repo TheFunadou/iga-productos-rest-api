@@ -9,7 +9,7 @@ import {
     Section,
     Link,
 } from "@react-email/components";
-import { GetPaidOrderDetails } from "../../orders/payment/payment.dto";
+import { PaymentDetailsI } from "../../orders/payment/domain/interfaces/payment.interfaces";
 
 const baseUrl = "https://igaproductos.com";
 const IgaLogo =
@@ -34,15 +34,22 @@ function formatCurrency(amount: number | string): string {
 }
 
 export interface PaymentConfirmationEmailProps {
-    paidOrderDetails: GetPaidOrderDetails;
+    data: PaymentDetailsI;
 }
 
-export default function PaymentConfirmationEmail({ paidOrderDetails }: PaymentConfirmationEmailProps) {
-    if (!paidOrderDetails || !paidOrderDetails.order) return null;
+export default function PaymentConfirmationEmail({ data }: PaymentConfirmationEmailProps) {
+    if (!data || !data.order) return null;
 
-    const { address, items, customer, details } = paidOrderDetails.order;
-    const { resume, order } = details;
-    const orderUUID = order?.uuid || "N/A";
+    const { order } = data;
+    const {
+        shipping: address,
+        items,
+        buyer: customer,
+        paymentResume: resume,
+        orderUUID,
+        paymentProvider,
+        isGuestOrder
+    } = order;
 
     return (
         <Html lang="es">
@@ -96,13 +103,13 @@ export default function PaymentConfirmationEmail({ paidOrderDetails }: PaymentCo
                                 <tr>
                                     <td width="50%" style={{ verticalAlign: "top" }}>
                                         <Text style={{ fontSize: "12px", fontWeight: "700", color: colors.textMuted, margin: "0 0 6px", textTransform: "uppercase" }}>Comprador</Text>
-                                        <Text style={{ fontSize: "13px", color: colors.textDark, margin: "0 0 4px", fontWeight: "600" }}>{customer?.name} {customer?.last_name}</Text>
+                                        <Text style={{ fontSize: "13px", color: colors.textDark, margin: "0 0 4px", fontWeight: "600" }}>{customer?.name} {customer?.surname}</Text>
                                         <Text style={{ fontSize: "13px", color: colors.textLight, margin: "0" }}>{customer?.email}</Text>
                                     </td>
                                     <td width="50%" style={{ verticalAlign: "top" }}>
                                         <Text style={{ fontSize: "12px", fontWeight: "700", color: colors.textMuted, margin: "0 0 6px", textTransform: "uppercase" }}>Método / Medio</Text>
-                                        <Text style={{ fontSize: "13px", color: colors.textDark, margin: "0 0 4px", fontWeight: "600" }}>{order?.payment_provider === "mercado_pago" ? "Mercado Pago" : "PayPal"}</Text>
-                                        <Text style={{ fontSize: "13px", color: colors.textLight, margin: "0" }}>{order?.is_guest_order ? "Invitado" : "Registrado"}</Text>
+                                        <Text style={{ fontSize: "13px", color: colors.textDark, margin: "0 0 4px", fontWeight: "600" }}>{paymentProvider === "mercado_pago" ? "Mercado Pago" : "PayPal"}</Text>
+                                        <Text style={{ fontSize: "13px", color: colors.textLight, margin: "0" }}>{isGuestOrder ? "Invitado" : "Registrado"}</Text>
                                     </td>
                                 </tr>
                             </table>
@@ -137,17 +144,16 @@ export default function PaymentConfirmationEmail({ paidOrderDetails }: PaymentCo
                             Productos ({items.length})
                         </Heading>
 
-                        {items.map((item: any, index) => {
-                            const itemName = item.product_name || item.name || "Producto";
-                            const itemQty = item.quantity || item.qty || 1;
-                            const images = item.product_images || [];
-                            const mainImageObj = images.find((img: any) => img.main_image) || images[0];
-                            const imageUrl = mainImageObj?.image_url || "";
+                        {items.map((item, index) => {
+                            const itemName = item.name || "Producto";
+                            const itemQty = item.quantity || 1;
+                            const images = item.images || [];
+                            const mainImageObj = images.find((img) => img.mainImage) || images[0];
+                            const imageUrl = mainImageObj?.url || "";
 
-                            const price = parseFloat(item.product_version?.unit_price || item.price || 0);
-                            const priceDiscount = parseFloat(item.product_version?.unit_price_with_discount || price);
-                            const hasDiscount = priceDiscount < price && item.discount && item.discount > 0;
-                            const finalPrice = hasDiscount ? priceDiscount : price;
+                            const price = parseFloat(item.unitPrice || "0");
+                            const finalPrice = parseFloat(item.finalPrice || "0");
+                            const hasDiscount = item.offer?.isOffer;
                             const isLast = index === items.length - 1;
 
                             return (
@@ -162,8 +168,8 @@ export default function PaymentConfirmationEmail({ paidOrderDetails }: PaymentCo
                                             <Text style={{ fontSize: "14px", fontWeight: "700", color: colors.textDark, margin: "0 0 6px" }}>{itemName}</Text>
                                             <Text style={{ fontSize: "12px", color: colors.textLight, margin: "0" }}>
                                                 Cantidad: <strong style={{ color: colors.textMid }}>{itemQty}</strong>
-                                                {(item.product_version?.color_name || item.product_version?.sku) && (
-                                                    <span> • Color: {item.product_version?.color_name || "N/A"} • SKU: {item.product_version?.sku || "N/A"}</span>
+                                                {(item.color?.name || item.sku) && (
+                                                    <span> • Color: {item.color?.name || "N/A"} • SKU: {item.sku || "N/A"}</span>
                                                 )}
                                             </Text>
                                         </td>
@@ -185,21 +191,21 @@ export default function PaymentConfirmationEmail({ paidOrderDetails }: PaymentCo
                             <table role="presentation" width="100%" cellPadding="0" cellSpacing="0">
                                 <tr>
                                     <td style={{ paddingBottom: "10px", color: colors.textMid, fontSize: "13px" }}>Subtotal</td>
-                                    <td style={{ paddingBottom: "10px", textAlign: "right", color: colors.textDark, fontSize: "13px", fontWeight: "600" }}>{formatCurrency(resume.subtotalBeforeIVA)}</td>
+                                    <td style={{ paddingBottom: "10px", textAlign: "right", color: colors.textDark, fontSize: "13px", fontWeight: "600" }}>{formatCurrency(resume.itemsSubtotalBeforeTaxes)}</td>
                                 </tr>
                                 <tr>
                                     <td style={{ paddingBottom: "10px", color: colors.textMid, fontSize: "13px" }}>I.V.A (16%)</td>
                                     <td style={{ paddingBottom: "10px", textAlign: "right", color: colors.textDark, fontSize: "13px", fontWeight: "600" }}>{formatCurrency(resume.iva)}</td>
                                 </tr>
-                                {resume.discount > 0 && (
+                                {parseFloat(resume.discount) > 0 && (
                                     <tr>
                                         <td style={{ paddingBottom: "10px", color: colors.success, fontSize: "13px", fontWeight: "600" }}>Descuentos</td>
                                         <td style={{ paddingBottom: "10px", textAlign: "right", color: colors.success, fontSize: "13px", fontWeight: "600" }}>-{formatCurrency(resume.discount)}</td>
                                     </tr>
                                 )}
-                                {resume.shippingCost > 0 && (
+                                {parseFloat(resume.shippingCost) > 0 && (
                                     <tr>
-                                        <td style={{ paddingBottom: "12px", color: colors.textMid, fontSize: "13px" }}>Envío ({resume.boxesQty} cajas)</td>
+                                        <td style={{ paddingBottom: "12px", color: colors.textMid, fontSize: "13px" }}>Envío ({resume.boxesCount} cajas)</td>
                                         <td style={{ paddingBottom: "12px", textAlign: "right", color: colors.textDark, fontSize: "13px", fontWeight: "600" }}>{formatCurrency(resume.shippingCost)}</td>
                                     </tr>
                                 )}
@@ -221,7 +227,7 @@ export default function PaymentConfirmationEmail({ paidOrderDetails }: PaymentCo
                     {/* ── FOOTER ── */}
                     <Section style={{ borderTop: `1px solid ${colors.border}`, padding: "20px", textAlign: "center" }}>
                         <Text style={{ fontSize: "12px", color: colors.textMuted, margin: "0" }}>
-                            © {new Date().getFullYear()} IGA Productos. Todos los derechos reservados.
+                            © {new Date().getFullYear()} Iga Productos. Todos los derechos reservados.
                         </Text>
                         <Text style={{ fontSize: "12px", color: "#7e848dff", margin: "4px 0 0" }}>
                             Este es un correo automático. Por favor no contestes directamente a este mensaje.

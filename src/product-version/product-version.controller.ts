@@ -2,7 +2,6 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } f
 import { ProductVersionService } from './product-version.service';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CreateProductVersionDTO, GetProductVersionCardsV2, PatchProductVersionDTO, ProductVersionCardsFiltersDTO, SearchCardsDTO, StockDashboardParams, UpdateStockBySKUDTO } from './product-version.dto';
-import { ProductVersionFindService } from './product-version.find.service';
 import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
 import { UserModulePermissionsGuard } from 'src/user_auth/user_auth.module.permissions.guard';
@@ -17,7 +16,6 @@ import { CustomerCsrfAuthGuard } from 'src/customer_auth/customer_auth.csrf';
 @Controller('product-version')
 export class ProductVersionController {
     constructor(
-        private readonly findProductVersionService: ProductVersionFindService,
         private readonly productVersionService: ProductVersionService,
     ) { };
 
@@ -81,28 +79,6 @@ export class ProductVersionController {
     @ApiBody({ type: SearchCardsDTO })
     async getCards(@OptionalCustomer() customer: CustomerPayload, @Body() dto: SearchCardsDTO) {
         return await this.productVersionService.getCards({ filters: dto.filters, customerUUID: customer?.uuid, scope: "external", productsList: dto.productList });
-    };
-
-    @Post("search")
-    @UseGuards(OptionalCustomerAuthGuard)
-    @ApiOperation({ description: "Buscar versiones de producto" })
-    @ApiResponse({ status: 200, description: "Versiones de producto buscadas exitosamente" })
-    @ApiResponse({ status: 400, description: "Error al buscar versiones de producto" })
-    @ApiResponse({ status: 500, description: "Error al buscar versiones de producto" })
-    @ApiBody({ type: ProductVersionCardsFiltersDTO })
-    async search(@OptionalCustomer() customer: CustomerPayload, @Body() dto: ProductVersionCardsFiltersDTO) {
-        return await this.findProductVersionService.searchCards({ filters: dto, customerUUID: customer?.uuid, scope: "external" });
-    };
-
-    @Get("details/:sku")
-    @UseGuards(OptionalCustomerAuthGuard)
-    @ApiOperation({ description: "Buscar versiones de producto" })
-    @ApiResponse({ status: 200, description: "Versiones de producto buscadas exitosamente" })
-    @ApiResponse({ status: 400, description: "Error al buscar versiones de producto" })
-    @ApiResponse({ status: 500, description: "Error al buscar versiones de producto" })
-    @ApiParam({ name: "sku", description: "Buscar versiones de producto", required: true })
-    async showDetails(@OptionalCustomer() customer: CustomerPayload, @Param("sku") sku: string) {
-        return await this.findProductVersionService.showDetails({ sku, customerUUID: customer?.uuid });
     };
 
     @Get("details/v2/:sku")

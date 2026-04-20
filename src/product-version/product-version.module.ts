@@ -4,11 +4,8 @@ import { ProductVersionService } from './product-version.service';
 import { CacheModule } from 'src/cache/cache.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { ProductVersionUtilsService } from './product-version.utils.service';
-import { ProductVersionFindService } from './product-version.find.service';
 import { OffersModule } from 'src/offers/offers.module';
 import { CqrsModule } from '@nestjs/cqrs';
-import { SearchCardsService } from './domain/services/search-cards.service';
-import { SearchPVCardsHandler } from './domain/command/search-cards.handler';
 import { SearchCardsBuildWhereService } from './domain/services/search-cards/build-where.service';
 import { FavoritesModule } from 'src/customer/favorites/favorites.module';
 
@@ -53,9 +50,6 @@ const GET_DETAILS_STEPS_PROVIDERS = [
     // Servicios existentes
     ProductVersionService,
     ProductVersionUtilsService,
-    ProductVersionFindService,
-    SearchCardsService,
-    SearchPVCardsHandler,
     SearchCardsBuildWhereService,
     AggregateCardEntitiesService,
     AggregateDetailsEntitiesService,
@@ -90,6 +84,6 @@ const GET_DETAILS_STEPS_PROVIDERS = [
 
 
   imports: [PrismaModule, CacheModule, OffersModule, CqrsModule, FavoritesModule],
-  exports: [ProductVersionFindService, ProductVersionService, SearchCardsService, AggregateCardEntitiesService]
+  exports: [ProductVersionService, AggregateCardEntitiesService]
 })
 export class ProductVersionModule { }

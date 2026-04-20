@@ -14,7 +14,7 @@ export interface OrderShoppingCartI {
     unitPrice: string;
     finalPrice: string;
     quantity: number;
-    offer: { isOffer: boolean, discount: number };
+    offer: { isOffer: boolean, discount: number, offerIds: string[] };
     subtotal: string;
 };
 

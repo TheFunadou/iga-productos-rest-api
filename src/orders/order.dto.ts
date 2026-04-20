@@ -210,6 +210,12 @@ export class OrderRequestV2DTO {
     @Type(() => OrderRequestFormGuestDTO)
     @IsOptional()
     guestForm?: OrderRequestFormGuestDTO;
+
+    @ApiProperty({ description: "Item de compra inmediata", type: ShoppingCartDTO })
+    @ValidateNested()
+    @Type(() => ShoppingCartDTO)
+    @IsOptional()
+    buyNowItem?: ShoppingCartDTO;
 };
 
 

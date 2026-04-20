@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { OrderAndPaymentStatus } from "@prisma/client";
 import { Order } from "mercadopago";
 import { GetCustomerAddressPayment } from "src/customer/customer-addresses/customer-addresses.dto";
@@ -7,6 +7,7 @@ import { CustomerAttributes } from "src/customer/customer.dto";
 import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
 import { SafeOrder, SafePaymentDetails } from "../order.dto";
 import { Decimal } from "@prisma/client/runtime/library";
+import { Type } from "class-transformer";
 
 export type PaymentProviders = "mercado_pago" | "paypal";
 export type MercadoPagoPaymentStatus = "approved" | "rejected" | "in_process" | "cancelled" | "authorized" | "pending" | "in_mediation" | "refunded" | "charged_back"
@@ -201,3 +202,23 @@ export interface MercadoPagoWebhook {
     type: string;
 };
 
+
+export class BuyNowItemDTO {
+    @ApiProperty({ description: "UUID del padre del producto" })
+    @IsString()
+    @IsNotEmpty()
+    @Type(() => String)
+    productUUID: string;
+
+    @ApiProperty({ description: "SKU del producto" })
+    @IsString()
+    @IsNotEmpty()
+    @Type(() => String)
+    sku: string;
+
+    @ApiProperty({ description: "Cantidad de articulos" })
+    @IsString()
+    @IsNotEmpty()
+    @Type(() => String)
+    quantity: number;
+};

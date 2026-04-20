@@ -3,7 +3,6 @@ import { FavoritesService } from './favorites.service';
 import { FavoritesController } from './favorites.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { CacheModule } from 'src/cache/cache.module';
-// import { ProductVersionModule } from 'src/product-version/product-version.module';
 
 @Module({
   providers: [FavoritesService],

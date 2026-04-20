@@ -1,9 +1,9 @@
 import { Logger } from "@nestjs/common";
 import { CacheService } from "src/cache/cache.service";
-import { ShoppingCartService } from "src/customer/shopping-cart/shopping-cart.service";
 import { MercadoPagoPaymentContext } from "../payment-context";
 import { IStep } from "../pipeline.interface";
 import { OrderProcessingStatus } from "src/orders/payment/payment.interfaces";
+import { ShoppingCartService } from "src/customer/shopping-cart/domain/services/shopping-cart.service";
 
 export class InvalidateCacheStep implements IStep<MercadoPagoPaymentContext> {
     private readonly logger = new Logger(InvalidateCacheStep.name);
@@ -15,7 +15,7 @@ export class InvalidateCacheStep implements IStep<MercadoPagoPaymentContext> {
 
     async execute(context: MercadoPagoPaymentContext): Promise<void> {
         if (context.skipped || !["APPROVED", "PENDING"].includes(context.orderStatus!)) return;
-        const { orderUUID, customerUUID, orderId, orderStatus } = context;
+        const { orderUUID, customerUUID, orderId, orderStatus, orderItems } = context;
 
         // Actualiza el estado de procesamiento a "completed" en cache
         await this.cache.setData<OrderProcessingStatus>({
@@ -39,10 +39,9 @@ export class InvalidateCacheStep implements IStep<MercadoPagoPaymentContext> {
             // Limpia el carrito del cliente si aplica
             if (customerUUID) {
                 this.logger.log(`Procesando invalidación de cache para cliente autenticado ${customerUUID}`);
-                await this.shoppingCart.updateShoppingCartByApprovedOrder({ customerUUID, orderId: orderId });
+                await this.shoppingCart.updateShoppingCartByApprovedOrder({ customerUUID, sessionId: "", orderItems: orderItems! });
                 await this.cache.invalidateMultipleQueries([
                     { entity: "customer:orders", query: { orderUUID, customerUUID } },
-                    { entity: "customer:shopping-cart", query: { customerUUID } }
                 ]);
             } else {
                 this.logger.log(`Orden de cliente invitado, omitiendo invalidación de carrito`);

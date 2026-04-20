@@ -18,11 +18,8 @@ export class UpdateDiscountsStep implements IStep<MercadoPagoPaymentContext> {
         if (!orderItems) throw new Error("UpdateDiscountsStep: orderItems no disponible en contexto");
 
         for (const item of orderItems) {
-            const hasDiscount = item.discount ? (item.discount > 0 ? true : false) : false;
-            if (hasDiscount) {
-
-
-            }
+            const hasDiscount = item.offer.discount ? (item.offer.discount > 0 ? true : false) : false;
+            // if (hasDiscount) await this.prisma.ce
         }
 
     }

@@ -1,19 +1,22 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { OrderItems } from './payment/payment.dto';
-import { GetOrders, GetOrdersQuery, CheckoutOrder, OrderRequestDTO, OrderRequestV2DTO, GetOrderDetails, OrdersDashboardParams, GetOrdersDashboard, OrderRequestFormGuestDTO, CreatedOrder } from './order.dto';
-import { ShoppingCartDTO } from 'src/customer/shopping-cart/shopping-cart.dto';
+import { BuyNowItemDTO, OrderItems } from './payment/payment.dto';
+import { GetOrders, GetOrdersQuery, CheckoutOrder, OrderRequestV2DTO, GetOrderDetails, OrdersDashboardParams, GetOrdersDashboard, OrderRequestFormGuestDTO, CreatedOrder } from './order.dto';
 import { OrderAndPaymentStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { CommandBus } from '@nestjs/cqrs';
 import { calcShoppingCartOrderResume } from './orders.helpers';
 import { GetCustomerAddressOrder } from 'src/customer/customer-addresses/customer-addresses.dto';
 import { CreateOrderCommand } from './applications/commands/create-order.command';
-import { CreateOrderCommand as CreateOrderCommandV2 } from './applications/commands/create-order-v2.command';
 import { CheckoutOrderI, OrderCheckoutItemI } from './applications/pipeline/interfaces/order.interface';
 import { calcResume } from './helpers/order.helpers';
-import { ShoppingCartItemsResumeI } from 'src/customer/shopping-cart/application/interfaces/shopping-cart.interface';
+import { LoadShoppingCartI, ShoppingCartItemsResumeI } from 'src/customer/shopping-cart/application/interfaces/shopping-cart.interface';
+import { ProductVersionService } from 'src/product-version/product-version.service';
+import { ProductListI } from 'src/product-version/application/pipelines/interfaces/get-cards.interface';
+import { toShoppingCartItemsResumeI } from 'src/customer/shopping-cart/helpers';
+import { ShoppingCartDTO } from 'src/customer/shopping-cart/application/DTO/shopping-cart.dto';
+import { ShoppingCartService } from 'src/customer/shopping-cart/domain/services/shopping-cart.service';
 
 @Injectable()
 export class OrdersService {
@@ -23,35 +26,19 @@ export class OrdersService {
         private readonly prisma: PrismaService,
         private readonly cache: CacheService,
         private readonly config: ConfigService,
-        private readonly commandBus: CommandBus
+        private readonly commandBus: CommandBus,
+        private readonly productVersionService: ProductVersionService,
+        private readonly shoppingCart: ShoppingCartService
     ) {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
     };
 
-    async createProviderOrder(args: { orderRequest: OrderRequestDTO, customerUUID?: string }): Promise<CreatedOrder> {
-        const { orderRequest, customerUUID } = args;
-        const provider = orderRequest.paymentProvider.replaceAll("_", "");
-        const notificationUrl = this.nodeEnv !== "production" ? "https://captious-brazenly-gladys.ngrok-free.dev" : "https://api.igaproductos.com"
-        return this.commandBus.execute(
-            new CreateOrderCommand(
-                orderRequest.orderItems,
-                "https://igaproductos.com",
-                `${notificationUrl}/payment/${provider}/webhook`,
-                orderRequest.paymentProvider,
-                customerUUID,
-                orderRequest.addressUUID,
-                orderRequest.couponCode,
-                orderRequest.guestForm
-            )
-        )
-    };
-
-    async createProviderOrderV2(args: { orderRequest: OrderRequestV2DTO, customerUUID?: string, sessionId: string }): Promise<CreatedOrder> {
+    async createProviderOrder(args: { orderRequest: OrderRequestV2DTO, customerUUID?: string, sessionId: string }): Promise<CreatedOrder> {
         const { orderRequest, customerUUID, sessionId } = args;
         const provider = orderRequest.paymentProvider.replaceAll("_", "");
         const notificationUrl = this.nodeEnv === "DEV" ? "https://captious-brazenly-gladys.ngrok-free.dev" : "https://api.igaproductos.com"
         return this.commandBus.execute(
-            new CreateOrderCommandV2(
+            new CreateOrderCommand(
                 "https://igaproductos.com",
                 `${notificationUrl}/payment/${provider}/webhook`,
                 orderRequest.paymentProvider,
@@ -529,61 +516,17 @@ export class OrdersService {
 
     };
 
-    async getBuyNowItem({ sku }: { sku: string }): Promise<ShoppingCartDTO> {
-        return await this.cache.remember({
-            method: "staleWhileRevalidateWithLock",
-            entity: "buy-now:item",
-            query: { sku },
-            fallback: async () => {
-                const productVersion = await this.prisma.productVersion.findFirst({
-                    where: { sku: { equals: sku, mode: "insensitive" } },
-                    select: {
-                        unit_price: true,
-                        sku: true,
-                        color_line: true,
-                        color_name: true,
-                        color_code: true,
-                        stock: true,
-                        product_version_images: {
-                            where: { main_image: true },
-                            select: { main_image: true, image_url: true },
-                            orderBy: { main_image: "desc" as const }
-                        },
-                        product: {
-                            select: {
-                                id: true,
-                                category_id: true,
-                                product_name: true,
-                                category: { select: { name: true } },
-                                subcategories: { select: { subcategories: { select: { uuid: true, description: true } }, }, }
-                            }
-                        }
-                    }
-                });
-
-                if (!productVersion) throw new NotFoundException("No se encontro la versión del producto");
-                return {
-                    product_version: {
-                        sku: productVersion.sku,
-                        color_line: productVersion.color_line,
-                        color_name: productVersion.color_name,
-                        color_code: productVersion.color_code,
-                        unit_price: productVersion.unit_price,
-                        stock: productVersion.stock,
-                        unit_price_with_discount: productVersion.unit_price.toString(),
-                    },
-                    product_name: productVersion.product.product_name,
-                    category: productVersion.product.category.name,
-                    subcategories: productVersion.product.subcategories.map((sub) => sub.subcategories.description),
-                    product_images: productVersion.product_version_images,
-                    quantity: 1,
-                    discount: 0,
-                    isFavorite: false,
-                    isOffer: false,
-                    isChecked: true
-                };
-            }
-        })
+    async getBuyNowItem({ query, customerUUID }: { query: BuyNowItemDTO, customerUUID?: string }): Promise<LoadShoppingCartI> {
+        const productsList: ProductListI[] = [{ productUUID: query.productUUID, sku: [query.sku] }];
+        const shoppingCartItem: ShoppingCartDTO = {
+            item: { sku: query.sku, productUUID: query.productUUID },
+            isChecked: true,
+            quantity: await this.shoppingCart.resolveStock({ quantity: query.quantity, sku: query.sku })
+        };
+        const card = await this.productVersionService.getCards({ customerUUID, productsList, scope: "internal" });
+        const items = toShoppingCartItemsResumeI({ cards: card.data, shoppingCart: [shoppingCartItem] });
+        const resume = calcResume({ items });
+        return { cards: card.data, shoppingCart: [shoppingCartItem], resume };
     };
 
     async cancelOrder({ orderUUID }: { orderUUID: string }) {

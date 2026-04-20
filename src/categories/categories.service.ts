@@ -5,6 +5,7 @@ import { CreateCategoryDTO, SummaryCategories, GetCategories, PatchCategoryDTO }
 import { UserLogEvent } from 'src/audit/user-log.event';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CategoriesService {
@@ -109,14 +110,19 @@ export class CategoriesService {
                 const result: SummaryCategories[] = [];
 
                 for (const category of categories) {
+
+                    let cascosSkuList: string[] = ["CAS1-AM1-005", "CAS2-AM1-001", "CAS3-AI2-006", "CAS-WINGS-001"];
+                    let where: Prisma.ProductVersionWhereInput;
+                    if (category.name === "Cascos") {
+                        where = { sku: { in: cascosSkuList } }
+                    } else {
+                        where = { product: { category: { name: category.name } } }
+                    }
+
                     const product_versions = await this.prisma.productVersion.findMany({
-                        where: {
-                            product: {
-                                category_id: category.id
-                            }
-                        },
+                        where,
                         take: 4,
-                        orderBy: { created_at: 'asc' },
+                        orderBy: { color_name: 'asc' },
                         select: {
                             sku: true,
                             product_version_images: {

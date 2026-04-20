@@ -286,6 +286,7 @@ export class SearchProductVersionsDTO {
     @ApiProperty({ description: "SKU del producto", example: "XXXXXX" })
     sku: string;
 };
+export type colorLine = "Linea Basica" | "Linea Especial" | "Linea Flourescente";
 
 export class ProductVersionCardsFiltersDTO {
     @ApiProperty({ description: "pagina" })
@@ -364,6 +365,30 @@ export class ProductVersionCardsFiltersDTO {
     @IsOptional()
     @Type(() => String)
     couponCode?: string;
+
+    @ApiProperty({ description: "Obtener solo productos en stock" })
+    @IsBoolean()
+    @IsOptional()
+    @Type(() => Boolean)
+    onlyInStock?: boolean;
+
+    @ApiProperty({ description: "Rango de precios" })
+    @IsObject()
+    @Type(() => Object)
+    @IsOptional()
+    priceRange?: { min: number, max: number };
+
+    @ApiProperty({ description: "Rango de calificaciones" })
+    @IsNumber()
+    @Type(() => Number)
+    @IsOptional()
+    ratingRange?: number;
+
+    @ApiProperty({ description: "Linea de color" })
+    @IsString()
+    @IsOptional()
+    @Type(() => String)
+    colorLine?: colorLine;
 };
 
 export class SearchCardsDTO {

@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { OrderPipelineStep } from "../interfaces/pipeline-step.interface";
+import { OrderPipelineStepI } from "../interfaces/pipeline-step.interface";
 import { OrderContext } from "../order.context";
 
 @Injectable()
-export class SaveShipmentInfoStep implements OrderPipelineStep {
+export class SaveShipmentInfoStep implements OrderPipelineStepI {
     constructor() { };
 
 
@@ -18,4 +18,4 @@ export class SaveShipmentInfoStep implements OrderPipelineStep {
             }
         });
     };
-};
+}; 4

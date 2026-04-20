@@ -1,9 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { CreateOrderShippingInfo } from "src/customer/customer-addresses/customer-addresses.dto";
-import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
+import { ShoppingCartDTO } from "src/customer/shopping-cart/application/DTO/shopping-cart.dto";
+import { ShoppingCartResumeI } from "src/customer/shopping-cart/application/interfaces/shopping-cart.interface";
 import { OrderRequestFormGuestDTO, OrderValidatedCustomerData } from "src/orders/order.dto";
-import { OrderResume, OrderShoppingCartDTO, PaymentProviders } from "src/orders/payment/payment.dto";
-import { ProductVersionCard } from "src/product-version/product-version.dto";
+import { PaymentProviders } from "src/orders/payment/payment.dto";
+import { ProductI, ProductListI, ProductVersionI, ProductVersionUnitPriceI, ResolvedOfferI } from "src/product-version/application/pipelines/interfaces/get-cards.interface";
+import { OrderShoppingCartI } from "./interfaces/order.interface";
 
 export interface OrderContext {
     // Request
@@ -11,20 +13,29 @@ export interface OrderContext {
     isGuest: boolean;
     guestForm?: OrderRequestFormGuestDTO;
     customerUUID?: string;
+    sessionId: string;
     addressUUID?: string;
-    orderItems: OrderShoppingCartDTO[];
     couponCode?: string;
+    buyNowItem?: ShoppingCartDTO
 
     // Customer
     customer?: OrderValidatedCustomerData;
     shipppingAddress?: CreateOrderShippingInfo
 
     // Cart
-    pvCards?: ProductVersionCard[];
     shoppingCart?: ShoppingCartDTO[];
-    orderResume?: OrderResume;
+    productsList?: ProductListI[];
 
+    //versionData
+    productData?: ProductI[];
+    versionsData?: ProductVersionI[];
+    pricesData?: ProductVersionUnitPriceI[];
+    orderResume?: ShoppingCartResumeI;
+    productVersionOfferMap?: Map<string, ResolvedOfferI>;
     orderId?: string;
+
+    //Build
+    orderShoppingCart?: OrderShoppingCartI[];
 
     // External
     paymentId?: string;
@@ -36,6 +47,7 @@ export interface OrderContext {
 
     // Control
     sagaStepsCompleted?: string[];
+    reservedOfferUsages?: { offerId: string; incrementedBy: number }[];
 
     //Prisma
     tx: Prisma.TransactionClient;

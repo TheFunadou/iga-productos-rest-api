@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Resend } from "resend";
+import { CreateEmailOptions, CreateEmailRequestOptions } from "resend";
 
 @Injectable()
 export class ResendProvider {
@@ -30,14 +31,8 @@ export class ResendProvider {
      * });
      * ```
      */
-    async sendEmail(args: { to: string[], subject: string, html: string, from: string }) {
-        const { to, subject, html, from } = args;
-        const { error } = await this.resend.emails.send({
-            from,
-            to,
-            subject,
-            html,
-        });
+    async sendEmail({ payload, options }: { payload: CreateEmailOptions, options?: CreateEmailRequestOptions }) {
+        const { error } = await this.resend.emails.send(payload, options);
         if (error) {
             this.logger.error("Ocurrio un error al enviar el email");
             this.logger.error(error);

@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CacheService } from 'src/cache/cache.service';
-// import { ProductVersionFindService } from 'src/product-version/product-version.find.service';
 
 @Injectable()
 export class FavoritesService {
@@ -10,7 +9,6 @@ export class FavoritesService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cache: CacheService,
-        // private readonly productVersionFindService: ProductVersionFindService
     ) { };
 
     private async add(args: { tx: any, customer: { id: string, uuid: string }, productVersionId: string }) {
@@ -75,18 +73,5 @@ export class FavoritesService {
                 return favoritesList.map((favorite) => favorite.product_version.sku);
             }
         })
-    }
-
-    // async find({ pagination: { page, limit }, customerUUID }: { pagination: { page: number, limit: number }, customerUUID: string }) {
-    //     return await this.productVersionFindService.searchCards({
-    //         filters: {
-    //             limit,
-    //             page,
-    //             onlyFavorites: true
-    //         },
-    //         customerUUID,
-    //         entity: `customer:favorites:${customerUUID}`,
-    //         scope: "internal"
-    //     })
-    // };
+    };
 };

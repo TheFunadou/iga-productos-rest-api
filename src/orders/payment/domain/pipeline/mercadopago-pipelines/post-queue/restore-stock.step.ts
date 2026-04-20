@@ -10,7 +10,7 @@ export class RestoreStockStep implements IStep<MercadoPagoPaymentContext> {
 
     async execute(context: MercadoPagoPaymentContext): Promise<void> {
         // Solo actúa si la orden fue CANCELADA
-        if (context.orderStatus !== "CANCELLED" || context.skipped) return;
+        if (context.orderStatus === "CANCELLED" || context.orderStatus === "ABANDONED" || context.skipped) return;
         if (!context.orderUUID) throw new Error("RestoreStockStep: orderUUID no disponible en contexto");
 
         await this.prisma.$transaction(async (tx) => {

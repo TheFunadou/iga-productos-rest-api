@@ -4,19 +4,19 @@ import { Job } from "bullmq";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CacheService } from "src/cache/cache.service";
 import { ShippingService } from "src/shipping/shipping.service";
-import { ShoppingCartService } from "src/customer/shopping-cart/shopping-cart.service";
 import { NotificationsService } from "src/notifications/notifications.service";
 import { MercadoPagoPaymentContext } from "../../pipeline/mercadopago-pipelines/payment-context";
 import { MercadoPagoPipeline } from "../../pipeline/mercadopago-pipelines/pipeline.interface";
 import { FetchPaymentDetailsStep } from "../../pipeline/mercadopago-pipelines/post-queue/fetch-payment-details.step";
 import { UpdateOrderStatusStep } from "../../pipeline/mercadopago-pipelines/post-queue/update-order-status.step";
-import { RestoreStockStep } from "../../pipeline/mercadopago-pipelines/post-queue/restore-stock.step";
 import { CreateShippingStep } from "../../pipeline/mercadopago-pipelines/post-queue/create-shipping.step";
 import { SendNotificationStep } from "../../pipeline/mercadopago-pipelines/post-queue/send-notification.step";
 import { InvalidateCacheStep } from "../../pipeline/mercadopago-pipelines/post-queue/invalidate-cache.step";
 import { MercadoPagoProvider } from "src/orders/providers/mercado-pago.provider";
 import { OrderProcessingStatus, ProcessPaymentJob } from "src/orders/payment/payment.interfaces";
-import { PaymentService } from "src/orders/payment/payment.service";
+import { ShoppingCartService } from "src/customer/shopping-cart/domain/services/shopping-cart.service";
+import { GetPaymentDetailsService } from "src/orders/payment/services/get-payment-details.service";
+import { RestoreStockStep } from "../../pipeline/mercadopago-pipelines/post-queue/restore-stock.step";
 
 @Processor("payment-processor", { concurrency: 5 })
 export class MercadoPagoPaymentQueueConsumer extends WorkerHost {
@@ -29,7 +29,7 @@ export class MercadoPagoPaymentQueueConsumer extends WorkerHost {
         private readonly shoppingCart: ShoppingCartService,
         private readonly notifications: NotificationsService,
         private readonly mercadopago: MercadoPagoProvider,
-        private readonly paymentService: PaymentService
+        private readonly paymentService: GetPaymentDetailsService
     ) { super(); }
 
     async process(job: Job<ProcessPaymentJob>): Promise<void> {

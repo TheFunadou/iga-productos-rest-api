@@ -16,7 +16,7 @@ export class OrderShoppingCartBuilder {
     private unitPrice: string = "0.00";
     private finalPrice: string = "0.00";
     private quantity: number = 0;
-    private offer: { isOffer: boolean, discount: number } = { isOffer: false, discount: 0 };
+    private offer: { isOffer: boolean, discount: number, offerIds: string[] } = { isOffer: false, discount: 0, offerIds: [] };
     private subtotal: string = "0.00";
 
     /**
@@ -55,14 +55,18 @@ export class OrderShoppingCartBuilder {
         if (offerData && offerData.finalDiscount > 0) {
             this.offer = {
                 isOffer: true,
-                discount: offerData.finalDiscount
+                discount: offerData.finalDiscount,
+                // Excluimos SHIPPING — su reserva de usos se maneja en un step aparte
+                offerIds: offerData.applicableOffers
+                    .filter(o => o.stackGroup !== 'SHIPPING')
+                    .map(o => o.id)
             };
             const originalPrice = parseFloat(this.unitPrice);
             const discountAmount = originalPrice * (offerData.finalDiscount / 100);
             this.finalPrice = (originalPrice - discountAmount).toFixed(2);
         } else {
             // Aseguramos que siempre haya un objeto de oferta, incluso si no hay descuento
-            this.offer = { isOffer: false, discount: 0 };
+            this.offer = { isOffer: false, discount: 0, offerIds: [] };
             this.finalPrice = this.unitPrice;
         }
         return this;

@@ -43,9 +43,6 @@ export class CustomerPayload {
 export class AuthCustomer {
     @ApiProperty({ description: "Payload del client", type: CustomerPayload })
     payload: CustomerPayload;
-
-    // @ApiProperty({ description: "Token de seguridad", type: String })
-    // csrfToken: string;
 };
 
 export class GoogleAuthDTO {

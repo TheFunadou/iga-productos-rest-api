@@ -1,16 +1,16 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { SagaStep } from "./interfaces/saga-step.interface";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ORDER_PIPELINE_STEPS, ORDER_SAGA_MAP } from "src/orders/tokens";
-import { OrderPipelineStep } from "./interfaces/pipeline-step.interface";
 import { OrderContext } from "./order.context";
+import { SagaStep } from "./interfaces/saga-step.interface";
+import { OrderPipelineStepI } from "./interfaces/pipeline-step.interface";
 
 @Injectable()
 export class OrderPipeline {
     private completedSagaSteps: SagaStep[] = [];
-
+    private readonly logger = new Logger(OrderPipeline.name);
     constructor(
         @Inject(ORDER_PIPELINE_STEPS)
-        private readonly steps: OrderPipelineStep[],
+        private readonly steps: OrderPipelineStepI[],
 
         @Inject(ORDER_SAGA_MAP)
         private readonly sagaMap: Map<Function, SagaStep>
@@ -25,6 +25,7 @@ export class OrderPipeline {
                 if (saga) this.completedSagaSteps.push(saga);
 
             } catch (error) {
+                this.logger.error(`Error en Pipeline [${error.status}]: ${error.message}`, error.stack);
                 await this.rollback(context);
                 throw error;
             }

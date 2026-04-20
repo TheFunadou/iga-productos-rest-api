@@ -1,13 +1,13 @@
-import { OrderPipelineStep } from "../interfaces/pipeline-step.interface";
-import { OrderContext } from "../order.context";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { CacheService } from "src/cache/cache.service";
 import { CreateOrderShippingInfo } from "src/customer/customer-addresses/customer-addresses.dto";
 import { OrderRequestFormGuestDTO } from "src/orders/order.dto";
 import { buildValidatedAuthCustomerData, buildValidatedGuestCustomerData } from "src/orders/orders.helpers";
+import { OrderPipelineStepI } from "../interfaces/pipeline-step.interface";
+import { OrderContext } from "../order.context";
 
 @Injectable()
-export class ValidateCustomerStep implements OrderPipelineStep {
+export class ValidateCustomerStep implements OrderPipelineStepI {
     constructor(
         private readonly cache: CacheService
     ) { };
@@ -28,7 +28,7 @@ export class ValidateCustomerStep implements OrderPipelineStep {
             });
             const validatedData = buildValidatedGuestCustomerData({ guestForm });
             context.customer = validatedData;
-            const { first_name, last_name, consent, ...shippingInfo } = guestForm;
+            const { first_name, last_name, consent, email, ...shippingInfo } = guestForm;
             const shippingAddress: CreateOrderShippingInfo = shippingInfo
             context.shipppingAddress = shippingAddress;
             return;

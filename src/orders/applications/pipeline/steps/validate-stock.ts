@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { OrderPipelineStepI } from "../interfaces/pipeline-step.interface";
-import { OrderContext } from "../order.context-v2";
+import { OrderContext } from "../order.context";
 
 @Injectable()
 export class ValidateStockStep implements OrderPipelineStepI {

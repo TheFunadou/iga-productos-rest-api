@@ -4,11 +4,13 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { SetItemDTO, ShoppingCartDTO } from "../../application/DTO/shopping-cart.dto";
 import { AggregateCardEntitiesService } from "src/product-version/domain/services/search-cards/aggregate-entities.service";
 import { ProductVersionService } from "src/product-version/product-version.service";
-import { LoadShoppingCartI, ShoppingCartItemsResumeI, ShoppingCartQueryI } from "../../application/interfaces/shopping-cart.interface";
+import { LoadShoppingCartI, ShoppingCartQueryI } from "../../application/interfaces/shopping-cart.interface";
 import { calcResume } from "src/orders/helpers/order.helpers";
+import { OrderCheckoutItemI } from "src/orders/applications/pipeline/interfaces/order.interface";
+import { toShoppingCartItemsResumeI } from "../../helpers";
 
 @Injectable()
-export class ShoppingCartServiceV2 {
+export class ShoppingCartService {
     public readonly queryEntity: string = "client:shopping-cart";
     constructor(
         private readonly aggCardService: AggregateCardEntitiesService,
@@ -86,7 +88,7 @@ export class ShoppingCartServiceV2 {
         throw new Error("No se proporciono un cliente");
     };
 
-    private async resolveStock({ sku, quantity }: { sku: string, quantity: number }) {
+    async resolveStock({ sku, quantity }: { sku: string, quantity: number }) {
         const stock = await this.aggCardService.aggregateProductVersionStock({ skuList: [sku] });
         if (quantity > stock[0].stock) return stock[0].stock;
         return quantity;
@@ -396,31 +398,23 @@ export class ShoppingCartServiceV2 {
             }
             map.get(productUUID)!.push(sku);
         };
-
         const productsList = Array.from(map, ([productUUID, sku]) => ({
             productUUID,
             sku
         }));
         const cards = await this.productVersionService.getCards({ customerUUID, productsList, scope: "internal" });
-
-        const items: ShoppingCartItemsResumeI[] = shoppingCart.reduce((acc, sc) => {
-            if (!sc.isChecked) return acc;
-
-            const data = cards.data.find(card => card.sku === sc.item.sku);
-            if (!data) return acc;
-
-            acc.push({
-                sku: sc.item.sku,
-                quantity: sc.quantity,
-                unitPrice: data.unitPrice,
-                finalPrice: data.finalPrice,
-                isOffer: data.offer.isOffer
-            });
-
-            return acc;
-        }, [] as ShoppingCartItemsResumeI[]);
+        const items = toShoppingCartItemsResumeI({ cards: cards.data, shoppingCart });
         const resume = calcResume({ items });
         return { cards: cards.data, shoppingCart, resume };
+    };
+
+
+    async updateShoppingCartByApprovedOrder({ customerUUID, sessionId, orderItems }: { customerUUID?: string, sessionId: string, orderItems: OrderCheckoutItemI[] }) {
+        const { clientUUID, isCustomer } = this.resolveClient({ customerUUID, sessionId });
+        const shoppingCart = await this.getShoppingCart({ clientUUID, isCustomer });
+        const orderItemsMap = new Map(orderItems.map(i => [i.sku, i.sku]));
+        const updatedCart = shoppingCart.filter(i => !orderItemsMap.has(i.item.sku));
+        await this.cache.setData<ShoppingCartDTO[]>({ entity: this.queryEntity, query: { uuid: customerUUID }, data: updatedCart });
     };
 
 };

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
-import { GetPaidOrderDetails, MercadoPagoWebhook } from './payment.dto';
+import { MercadoPagoWebhook } from './payment.dto';
 import { OrderAndPaymentStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { CommandBus } from '@nestjs/cqrs';
@@ -65,12 +65,6 @@ export class PaymentService {
             throw new BadRequestException("Error al obtener el status de la orden");
         });
         return status || null;
-    };
-
-
-    async getOrderStatusWithDetails(args: { orderUUID: string, customerUUID?: string, requiredStatus: OrderAndPaymentStatus[] }): Promise<GetPaidOrderDetails> {
-        const { orderUUID, customerUUID, requiredStatus } = args;
-        return await this.getPaymentDetails.execute({ orderUUID, requiredStatus, customerUUID });
     };
 
     async getDetails(args: { orderUUID: string, requiredStatus: OrderAndPaymentStatus[] }): Promise<PaymentDetailsI> {

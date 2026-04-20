@@ -184,6 +184,7 @@ model Category {
   uuid          String          @unique @default(cuid())
   name          String          @unique
   created_at    DateTime        @default(now())
+  priority      Int             @default(0)
   updated_at    DateTime        @updatedAt
   subcategories Subcategories[] @relation("subcategories:category")
   products      Product[]       @relation("product:category")

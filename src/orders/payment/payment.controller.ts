@@ -47,19 +47,6 @@ export class PaymentController {
         };
     };
 
-    @Get("order/status/:uuid")
-    @UseGuards(OptionalCustomerAuthGuard)
-    @ApiOperation({ summary: "Obtiene el estado de una orden por UUID" })
-    @ApiParam({ name: 'uuid', description: 'UUID de la orden' })
-    @ApiResponse({ status: 200, description: "Estado de la orden", type: Object })
-    async getOrderStatusWithDetails(
-        @OptionalCustomer() customer: CustomerPayload,
-        @Param('uuid') uuid: string,
-        @Query("status") requiredStatus: OrderAndPaymentStatus[]
-    ): Promise<GetPaidOrderDetails> {
-        const status = await this.paymentService.getOrderStatusWithDetails({ orderUUID: uuid, requiredStatus: Array.isArray(requiredStatus) ? requiredStatus : [requiredStatus], customerUUID: customer?.uuid });
-        return status;
-    };
 
     @Get("order/details/:uuid")
     @ApiOperation({ summary: "Obtiene el estado de una orden por UUID" })

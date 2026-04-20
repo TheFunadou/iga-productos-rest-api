@@ -21,6 +21,7 @@ export interface SafeParentDetailedI extends Omit<ParentBaseI, "id"> {
 export interface ProductVersionDetailedData {
     techSheetUrl: string;
     status: string;
+    description: string;
     specs: string;
     applications: string;
     recommendations: string;
@@ -31,6 +32,7 @@ export interface ProductVersionDetailedData {
 };
 
 export interface ProductVersionDetailsI {
+    productUUID: string
     name: string;
     category: { uuid: string, name: string };
     subcategories: { uuid: string, name: string }[];

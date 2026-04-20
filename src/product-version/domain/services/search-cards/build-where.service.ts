@@ -2,6 +2,8 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { PRODUCT_VERSION_CARD_BASE_SELECT } from "src/product-version/helpers";
 import { SearchCardsCacheQuery, ProductVersionCardsFiltersDTO as SearchCardsFiltersDTO } from "src/product-version/product-version.dto";
+import { CardsWhereBuilder, CardsWhereDirector } from "src/product-version/application/builders/cards-where.builder";
+
 
 
 @Injectable()
@@ -30,7 +32,12 @@ export class SearchCardsBuildWhereService {
 
     private async getRandomSKU({ tx, limit }: { tx: Prisma.TransactionClient, limit: number }): Promise<string[]> {
         const list = await tx.$queryRaw<{ sku: string }[]>`
-            SELECT sku FROM "product_version" ORDER BY RANDOM() LIMIT ${limit};
+            SELECT pv.sku
+            FROM "product_version" pv
+            JOIN "product" p ON p.id = pv.product_id
+            JOIN "category" c ON c.id = p.category_id
+            ORDER BY c.priority ASC, RANDOM()
+            LIMIT ${limit};
             `;
         return list.map(arr => arr.sku);
     };
@@ -49,6 +56,8 @@ export class SearchCardsBuildWhereService {
         verifiedLimit: number;
     }): Promise<{ where: Prisma.ProductVersionWhereInput }> {
         const { tx, filters, customerUUID, verifiedLimit } = args;
+
+        /*
         const where: Prisma.ProductVersionWhereInput = {};
         if (filters.category) where.product = { category: { name: { equals: filters.category, mode: "insensitive" } } };
         if (filters.subcategoryPath?.length) {
@@ -73,9 +82,18 @@ export class SearchCardsBuildWhereService {
             if (filters.random) throw new BadRequestException("Los parametros random y skuList son incompatibles entre si para realizar esta operación.");
             where.sku = { in: filters.skuList };
         };
+        */
+
+        const where = await CardsWhereDirector.createWhere(
+            new CardsWhereBuilder(),
+            { ...filters, limit: verifiedLimit }, // Usamos verifiedLimit calculado en el servicio
+            tx,
+            customerUUID
+        );
 
         return { where };
     }
+
 
     buildOrderBy({ filters }: { filters: SearchCardsFiltersDTO }): Prisma.ProductVersionOrderByWithRelationInput[] {
         const { moreExpensive } = filters;
@@ -88,7 +106,7 @@ export class SearchCardsBuildWhereService {
         if (isStandardQuery) {
             return [
                 // 1. Prioridad de Categoría: Cascos se posicionará en su lugar alfabético estable
-                { product: { category: { name: 'asc' } } },
+                { product: { category: { priority: 'asc' } } },
 
                 // 2. Orden por Familia/Producto: Esto agrupa las subcategorías (Coraza, Hit, Plagosur)
                 { product: { product_name: 'asc' } },

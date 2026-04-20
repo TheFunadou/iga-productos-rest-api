@@ -1,15 +1,17 @@
+import { ShoppingCartDTO } from "src/customer/shopping-cart/application/DTO/shopping-cart.dto";
 import { OrderRequestFormGuestDTO } from "src/orders/order.dto";
-import { OrderShoppingCartDTO, PaymentProviders } from "src/orders/payment/payment.dto";
+import { PaymentProviders } from "src/orders/payment/payment.dto";
 
 export class CreateOrderCommand {
     constructor(
-        public readonly orderItems: OrderShoppingCartDTO[],
         public readonly frontendUrl: string,
         public readonly notificationUrl: string,
         public readonly paymentProvider: PaymentProviders,
+        public readonly sessionId: string,
         public readonly customerUUID?: string,
         public readonly addressUUID?: string,
         public readonly couponCode?: string,
         public readonly guestForm?: OrderRequestFormGuestDTO,
+        public readonly buyNowItem?: ShoppingCartDTO
     ) { }
 };

@@ -1,18 +1,18 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { OrderPipelineStep } from "../interfaces/pipeline-step.interface";
 import { OrderContext } from "../order.context";
+import { OrderPipelineStepI } from "../interfaces/pipeline-step.interface";
 
 @Injectable()
-export class ReserveStockStep implements OrderPipelineStep {
+export class ReserveStockStep implements OrderPipelineStepI {
     constructor() { };
 
     async execute(context: OrderContext): Promise<void> {
-        const { tx, shoppingCart } = context;
-        if (!shoppingCart) throw new BadRequestException("Error al crear orden, no se encontro el carrito de compras");
+        const { tx, orderShoppingCart } = context;
+        if (!orderShoppingCart) throw new BadRequestException("Error al crear orden, no se encontro el carrito de compras");
 
-        for (const item of shoppingCart) {
+        for (const item of orderShoppingCart) {
             await tx.productVersion.update({
-                where: { sku: item.product_version.sku },
+                where: { sku: item.sku },
                 data: { stock: { decrement: item.quantity } }
             })
         }
