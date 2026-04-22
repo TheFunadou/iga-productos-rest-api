@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCategoryDTO, SummaryCategories, GetCategories, PatchCategoryDTO } from './categories.dto';
+import { CreateCategoryDTO, PatchCategoryDTO } from './application/DTO/categories.dto';
 import { UserLogEvent } from 'src/audit/user-log.event';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
+import { CategoriesSummary, CategorieI } from './application/interfaces/categories.interfaces';
 
 @Injectable()
 export class CategoriesService {
@@ -20,7 +21,7 @@ export class CategoriesService {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
     };
 
-    async create({ data, userUUID }: { data: CreateCategoryDTO, userUUID: string }): Promise<GetCategories> {
+    async create({ data, userUUID }: { data: CreateCategoryDTO, userUUID: string }): Promise<CategorieI> {
         const category = await this.prisma.category.create({ data: data, omit: { id: true } }).catch((error) => {
             if (this.nodeEnv === "DEV") this.logger.error(error);
             this.logger.error("Error al actualizar la oferta");
@@ -37,11 +38,16 @@ export class CategoriesService {
             { category_name: category.name },
             userUUID
         ));
-        return category;
+        return {
+            uuid: category.uuid,
+            name: category.name,
+            createdAt: category.created_at,
+            updatedAt: category.updated_at
+        };
     };
 
-    async findAll(): Promise<GetCategories[]> {
-        return await this.cacheService.remember<GetCategories[]>({
+    async findAll(): Promise<CategorieI[]> {
+        return await this.cacheService.remember<CategorieI[]>({
             method: "staleWhileRevalidateWithLock",
             entity: "categories",
             query: { all: true },
@@ -50,12 +56,18 @@ export class CategoriesService {
                 staleTimeMilliseconds: 1000 * 60 * 50
             },
             fallback: async () => {
-                return await this.prisma.category.findMany({ omit: { id: true } });
+                const categories = await this.prisma.category.findMany({ omit: { id: true } });
+                return categories.map(category => ({
+                    uuid: category.uuid,
+                    name: category.name,
+                    createdAt: category.created_at,
+                    updatedAt: category.updated_at
+                }));
             }
         });
     };
 
-    async patch({ data, userUUID }: { data: PatchCategoryDTO, userUUID: string }): Promise<GetCategories> {
+    async patch({ data, userUUID }: { data: PatchCategoryDTO, userUUID: string }): Promise<CategorieI> {
         const updated = await this.prisma.category.update({
             where: { uuid: data.uuid }, data
         }).catch((error) => {
@@ -74,7 +86,12 @@ export class CategoriesService {
             { category_name: updated.name },
             userUUID
         ));
-        return updated;
+        return {
+            uuid: updated.uuid,
+            name: updated.name,
+            createdAt: updated.created_at,
+            updatedAt: updated.updated_at
+        };
     };
 
     async delete({ uuid, userUUID }: { uuid: string, userUUID: string }): Promise<string> {
@@ -98,8 +115,8 @@ export class CategoriesService {
     };
 
 
-    async summaryCategories(): Promise<SummaryCategories[]> {
-        return await this.cacheService.remember<SummaryCategories[]>({
+    async summaryCategories(): Promise<CategoriesSummary[]> {
+        return await this.cacheService.remember<CategoriesSummary[]>({
             method: "staleWhileRevalidateWithLock",
             entity: "categories:summary",
             fallback: async () => {
@@ -107,7 +124,7 @@ export class CategoriesService {
                     select: { id: true, name: true }
                 });
 
-                const result: SummaryCategories[] = [];
+                const result: CategoriesSummary[] = [];
 
                 for (const category of categories) {
 

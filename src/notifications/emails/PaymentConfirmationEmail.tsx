@@ -9,7 +9,7 @@ import {
     Section,
     Link,
 } from "@react-email/components";
-import { PaymentDetailsI } from "../../orders/payment/domain/interfaces/payment.interfaces";
+import { PaymentDetailsI } from "../../orders/payment/application/interfaces/payment.interfaces";
 
 const baseUrl = "https://igaproductos.com";
 const IgaLogo =

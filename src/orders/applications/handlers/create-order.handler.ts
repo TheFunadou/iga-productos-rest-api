@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { PrismaService } from "src/prisma/prisma.service";
 import { OrderPipeline } from "../pipeline/pipeline";
 import { OrderContext } from "../pipeline/order.context";
-import { CreatedOrder } from "src/orders/order.dto";
+import { CreatedOrder } from "src/orders/payment/application/DTO/order.dto";
 import { CreateOrderCommand } from "../commands/create-order.command";
 
 @CommandHandler(CreateOrderCommand)

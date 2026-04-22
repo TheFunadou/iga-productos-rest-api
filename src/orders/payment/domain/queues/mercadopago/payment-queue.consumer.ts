@@ -41,9 +41,9 @@ export class MercadoPagoPaymentQueueConsumer extends WorkerHost {
                 .pipe(new FetchPaymentDetailsStep(this.mercadopago))
                 .pipe(new UpdateOrderStatusStep(this.prisma))
                 .pipe(new RestoreStockStep(this.prisma))
-                .pipe(new CreateShippingStep(this.shipping, this.prisma))
                 .pipe(new SendNotificationStep(this.notifications, this.paymentService))
-                .pipe(new InvalidateCacheStep(this.cache, this.shoppingCart))
+                .pipe(new CreateShippingStep(this.shipping, this.prisma))
+                .pipe(new InvalidateCacheStep(this.cache, this.shoppingCart, this.prisma))
                 .run(context);
 
             context.conditionalLog("Proceso de pago completado con éxito");

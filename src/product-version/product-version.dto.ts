@@ -1,8 +1,8 @@
 import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
 import { Decimal } from "@prisma/client/runtime/index-browser";
 import { Transform, Type } from "class-transformer";
-import { IsArray, IsBoolean, IsDate, IsDecimal, IsEnum, IsInt, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
-import { PaginationDTO } from "src/common/DTO/pagination.dto";
+import { IsArray, IsBoolean, IsDate, IsDecimal, IsInt, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
+import { PaginationDTO } from "src/common/DTO/common.dto";
 import { ProductAttributesWithUUID } from "src/product/product.dto";
 import { ProductVersionCardI } from "./application/pipelines/interfaces/product-version-card.interface";
 
@@ -433,12 +433,6 @@ export class GetProductVersionCardsRandomOptionsDTO {
 };
 
 export class StockDashboardParams extends PaginationDTO {
-    @ApiProperty({ description: "Ordenamiento" })
-    @IsString()
-    @IsOptional()
-    @Type(() => String)
-    orderBy?: "asc" | "desc";
-
     @ApiProperty({ description: "Tipo de busqueda", enum: ["product", "version"] })
     @IsString()
     @IsOptional()

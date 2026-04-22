@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { CreateProviderOrderStrategyArgs } from "src/orders/order.dto";
+import { CreateProviderOrderStrategyArgs } from "src/orders/payment/application/DTO/order.dto";
 import { buildMercadoPagoOrderItems, buildMercadoPagoPreferenceBody, buildOrderVigency } from "src/orders/helpers/mercadopago.helpers";
 import { MercadoPagoProvider } from "src/orders/providers/mercado-pago.provider";
 

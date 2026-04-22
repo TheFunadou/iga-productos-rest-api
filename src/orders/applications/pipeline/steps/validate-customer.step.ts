@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { CacheService } from "src/cache/cache.service";
 import { CreateOrderShippingInfo } from "src/customer/customer-addresses/customer-addresses.dto";
-import { OrderRequestFormGuestDTO } from "src/orders/order.dto";
+import { OrderRequestFormGuestDTO } from "src/orders/payment/application/DTO/order.dto";
 import { buildValidatedAuthCustomerData, buildValidatedGuestCustomerData } from "src/orders/orders.helpers";
 import { OrderPipelineStepI } from "../interfaces/pipeline-step.interface";
 import { OrderContext } from "../order.context";

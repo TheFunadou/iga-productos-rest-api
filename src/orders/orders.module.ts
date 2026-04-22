@@ -33,15 +33,15 @@ import { ReleaseDiscountSaga } from './saga/compensations/release-discount.saga'
 
 const ORDER_PIPELINE_STEPS_PROVIDERS = [
   ValidateCustomerStep,
-  GetShoppingCartStep, // <-- GetShoppingCartStep
-  GetProductsDataStep, // <--- Se elimina
+  GetShoppingCartStep,
+  GetProductsDataStep,
   BuildOrderShoppingCartStep,
-  ReserveDiscountStep,       // Debe correr justo después del build, dentro del tx
+  ReserveDiscountStep,
   CalcOrderResumeStep,
   CreatePaymentStep,
   ValidateStockStep,
   ReserveStockStep,
-  CreateOrderStep, // <--validate-stock-v2
+  CreateOrderStep,
   AddItemsStep,
   SaveShipmentInfoStep
 ];

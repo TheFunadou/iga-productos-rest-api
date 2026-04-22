@@ -1,13 +1,12 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
-import { MercadoPagoWebhook } from './payment.dto';
-import { OrderAndPaymentStatus } from '@prisma/client';
+import { GetPaymentDetailsQueryDTO, MercadoPagoWebhook } from './payment.dto';
 import { ConfigService } from '@nestjs/config';
 import { CommandBus } from '@nestjs/cqrs';
 import { MercadoPagoProcessWebhookCommand } from './domain/commands/mercadopago-proccess-webhook/process-webhook.command';
 import { OrderProcessingStatus } from './payment.interfaces';
 import { GetPaymentDetailsService } from './services/get-payment-details.service';
-import { PaymentDetailsI } from './domain/interfaces/payment.interfaces';
+import { PaymentDetailsI } from './application/interfaces/payment.interfaces';
 
 @Injectable()
 export class PaymentService {
@@ -67,9 +66,9 @@ export class PaymentService {
         return status || null;
     };
 
-    async getDetails(args: { orderUUID: string, requiredStatus: OrderAndPaymentStatus[] }): Promise<PaymentDetailsI> {
-        const { orderUUID, requiredStatus } = args;
-        return await this.getPaymentDetails.executeV2({ orderUUID, requiredStatus });
+    async getDetails(args: { orderUUID: string, query: GetPaymentDetailsQueryDTO, customerUUID?: string }): Promise<PaymentDetailsI> {
+        const { orderUUID, query, customerUUID } = args;
+        return await this.getPaymentDetails.executeV2({ orderUUID, query, customerUUID });
     };
 
 

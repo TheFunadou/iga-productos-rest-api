@@ -2,7 +2,7 @@ import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateIf, ValidateNested } from "class-validator";
 import { OfferStatus, OfferTargetType, OfferType } from "@prisma/client";
-import { PaginationDTO } from "src/common/DTO/pagination.dto";
+import { PaginationDTO } from "src/common/DTO/common.dto";
 
 export class Offer {
     @ApiProperty({ description: "Id de la oferta" })
@@ -133,13 +133,7 @@ export class GetOffers {
 };
 
 
-export class OffersDashboardParams extends PaginationDTO {
-    @ApiProperty({ description: "Ordenamiento (asc por defecto)", enum: ["asc", "desc"] })
-    @IsString()
-    @IsOptional()
-    @Type(() => String)
-    orderby?: "asc" | "desc";
-
+export class OffersDashboardQueryDTO extends PaginationDTO {
     @ApiProperty({ description: "Tipo de oferta (si no se especifica ninguna se busca por todos en general)", enum: OfferTargetType })
     @IsString()
     @IsOptional()

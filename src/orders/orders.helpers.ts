@@ -1,10 +1,8 @@
 import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
-import { OrderRequestFormGuestDTO, OrderValidatedCustomerData } from "./order.dto";
-import { ProductVersionCard } from "src/product-version/product-version.dto";
-import { OrderResume, OrderShoppingCartDTO } from "./payment/payment.dto";
-import { OrderShoppingCartI } from "./applications/pipeline/interfaces/order.interface";
+import { OrderRequestFormGuestDTO, OrderValidatedCustomerData } from "./payment/application/DTO/order.dto";
+import { OrderResume } from "./payment/payment.dto";
 import { IVA, SHIPPING_COST, MAX_ITEMS_PER_BOX } from "./helpers/order.helpers";
-import { ShoppingCartResumeI } from "src/customer/shopping-cart/application/interfaces/shopping-cart.interface";
+import { OrderCheckoutItemI, PrismaOrderItemI } from "./applications/pipeline/interfaces/order.interface";
 
 
 export const buildValidatedAuthCustomerData = (args: {
@@ -67,29 +65,6 @@ export const buildValidatedGuestCustomerData = ({ guestForm }: {
 };
 
 
-export const buildShoppingCart = (args: { productVersionCards: ProductVersionCard[], orderItems: OrderShoppingCartDTO[] }): ShoppingCartDTO[] => {
-    return args.productVersionCards.map((card: ProductVersionCard) => ({
-        product_name: card.product_name,
-        category: card.category,
-        subcategories: card.subcategories,
-        product_version: {
-            sku: card.product_version.sku,
-            color_code: card.product_version.color_code,
-            color_line: card.product_version.color_line,
-            color_name: card.product_version.color_name,
-            stock: card.product_version.stock,
-            unit_price: card.product_version.unit_price,
-            unit_price_with_discount: card.product_version.unit_price_with_discount
-        },
-        product_images: card.product_images,
-        isChecked: true,
-        quantity: args.orderItems.find((cart) => cart.sku === card.product_version.sku)?.quantity!,
-        isOffer: card.isOffer,
-        discount: card.discount,
-        isFavorite: card.isFavorite
-    }));
-};
-
 export const calcShoppingCartOrderResume = (args: { shoppingCart: ShoppingCartDTO[] }): OrderResume => {
     const onlyCheckedItems = args.shoppingCart.filter((item) => item.isChecked);
     const itemsQty = onlyCheckedItems.reduce((acc, item) => {
@@ -127,4 +102,30 @@ export const calcShoppingCartOrderResume = (args: { shoppingCart: ShoppingCartDT
     };
 
     return response;
+};
+
+export const toOrderCheckoutItemI = ({ data }: { data: PrismaOrderItemI[] }): OrderCheckoutItemI[] => {
+    return data.map((items) => ({
+        name: items.product_version.product.product_name,
+        category: items.product_version.product.category.name,
+        subcategories: items.product_version.product.subcategories.map(sub => ({ uuid: sub.subcategories.uuid, name: sub.subcategories.description })),
+        sku: items.product_version.sku,
+        color: {
+            line: items.product_version.color_line,
+            name: items.product_version.color_name,
+            code: items.product_version.color_code,
+        },
+        unitPrice: items.unit_price.toString(),
+        finalPrice: items.final_price.toString(),
+        quantity: items.quantity,
+        offer: {
+            isOffer: items.isOffer,
+            discount: items.discount,
+        },
+        subtotal: items.subtotal.toString(),
+        images: items.product_version.product_version_images.map((image) => ({
+            url: image.image_url,
+            mainImage: image.main_image,
+        })),
+    }))
 };

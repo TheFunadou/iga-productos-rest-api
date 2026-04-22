@@ -1,13 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import { OrderAndPaymentStatus } from "@prisma/client";
 import { Order } from "mercadopago";
 import { GetCustomerAddressPayment } from "src/customer/customer-addresses/customer-addresses.dto";
 import { CustomerAttributes } from "src/customer/customer.dto";
 import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
-import { SafeOrder, SafePaymentDetails } from "../order.dto";
-import { Decimal } from "@prisma/client/runtime/library";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
+import { SafeOrder, SafePaymentDetails } from "./application/DTO/order.dto";
 
 export type PaymentProviders = "mercado_pago" | "paypal";
 export type MercadoPagoPaymentStatus = "approved" | "rejected" | "in_process" | "cancelled" | "authorized" | "pending" | "in_mediation" | "refunded" | "charged_back"
@@ -114,86 +113,7 @@ export class CustomerPaymentData extends CustomerAttributes {
     customer_addresses: GetCustomerAddressPayment[];
 };
 
-export interface PaymentDetails {
-    uuid: string;
-    is_guest_order: boolean;
-    payment_provider: string;
-    buyer_name: string | null;
-    buyer_surname: string | null;
-    buyer_email: string | null;
-    buyer_phone: string | null;
-    total_amount: Decimal;
-    exchange: string;
-    aditional_resource_url: string | null;
-    coupon_code: string | null;
-    created_at: Date;
-    updated_at: Date;
-    payment_details: {
-        created_at: Date;
-        updated_at: Date;
-        last_four_digits: string;
-        payment_class: string;
-        payment_method: string;
-        customer_paid_amount: Decimal;
-        customer_installment_amount: Decimal;
-        installments: number;
-        payment_status: OrderAndPaymentStatus;
-    }[];
-    order_items: {
-        quantity: number;
-        unit_price: Decimal;
-        subtotal: Decimal,
-        discount: number,
-        product_version: {
-            unit_price: Decimal,
-            sku: string,
-            color_line: string,
-            color_name: string,
-            color_code: string,
-            stock: number,
-            product_version_images: {
-                main_image: boolean,
-                image_url: string
-            }[],
-            product: {
-                id: string,
-                category_id: string,
-                product_name: string,
-                category: {
-                    name: string
-                },
-                subcategories: {
-                    subcategories: {
-                        uuid: string,
-                        description: string
-                    }
-                }[]
-            }
-        }
-    }[],
-    shipping: {
-        boxes_count: number,
-        shipping_amount: Decimal
-    }[],
-    shipping_info: {
-        recipient_name: string;
-        recipient_last_name: string;
-        country: string;
-        state: string;
-        locality: string;
-        city: string;
-        street_name: string;
-        neighborhood: string;
-        zip_code: string;
-        address_type: string;
-        floor?: string | null;
-        number: string;
-        aditional_number?: string | null;
-        references_or_comments?: string | null;
-        country_phone_code: string
-        contact_number: string;
-    } | null
-}
+
 
 export interface MercadoPagoWebhook {
     xSignature: string;
@@ -222,3 +142,28 @@ export class BuyNowItemDTO {
     @Type(() => String)
     quantity: number;
 };
+
+
+
+export class GetPaymentDetailsQueryDTO {
+    @ApiProperty({ description: "Activar polling" })
+    @IsBoolean()
+    @IsNotEmpty()
+    @Type(() => Boolean)
+    enablePolling: boolean;
+
+    @ApiProperty({
+        description: "Lista de estados permitidos para la consulta",
+        enum: OrderAndPaymentStatus,
+        isArray: true,
+        required: false
+    })
+    @IsOptional()
+    @Transform(({ value }) => {
+        if (typeof value === 'string') return value.split(',');
+        return Array.isArray(value) ? value : [value];
+    })
+    @IsArray()
+    @IsEnum(OrderAndPaymentStatus, { each: true })
+    requiredStatus?: OrderAndPaymentStatus[];
+}

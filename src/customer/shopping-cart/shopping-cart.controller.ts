@@ -17,6 +17,7 @@ export class ShoppingCartController {
 
     @Get('v2')
     @ApiOperation({ summary: "Recuperar el carrito de compras (V2 - Redis/DB)" })
+    @UseGuards(OptionalCustomerAuthGuard)
     @ApiResponse({ status: 200, type: ShoppingCartDTO, isArray: true })
     async recoverShoppingCartV2(
         @OptionalCustomer() customer: CustomerPayload,
@@ -28,6 +29,7 @@ export class ShoppingCartController {
         });
     };
     @Post('v2/item')
+    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Añadir o actualizar cantidad de un producto (V2)" })
     @ApiResponse({ status: 200, type: ShoppingCartDTO, isArray: true })
     async setItem(
@@ -57,6 +59,7 @@ export class ShoppingCartController {
 
 
     @Delete('v2/:sku')
+    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Eliminar un producto del carrito (V2)" })
     @ApiResponse({ status: 200, type: ShoppingCartDTO, isArray: true })
     async removeItemV2(
@@ -71,6 +74,7 @@ export class ShoppingCartController {
         });
     };
     @Put('v2/check/toggle')
+    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Seleccionar/Deseleccionar un producto (V2)" })
     @ApiResponse({ status: 200, type: ShoppingCartDTO, isArray: true })
     async toggleCheckV2(
@@ -85,6 +89,7 @@ export class ShoppingCartController {
         });
     };
     @Put('v2/check/all')
+    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Seleccionar todos los productos (V2)" })
     @ApiResponse({ status: 200, type: ShoppingCartDTO, isArray: true })
     async checkAllV2(
@@ -97,6 +102,7 @@ export class ShoppingCartController {
         });
     };
     @Put('v2/uncheck/all')
+    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Deseleccionar todos los productos (V2)" })
     @ApiResponse({ status: 200, type: ShoppingCartDTO, isArray: true })
     async uncheckAllV2(
@@ -109,6 +115,7 @@ export class ShoppingCartController {
         });
     };
     @Post('v2')
+    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Crear carrito en base de datos desde sesión (V2)" })
     @ApiResponse({ status: 201, type: ShoppingCartDTO, isArray: true })
     async createShoppingCartV2(
@@ -121,6 +128,7 @@ export class ShoppingCartController {
         });
     };
     @Post('v2/merge')
+    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Fusionar carrito de sesión con carrito de cliente (V2)" })
     @ApiResponse({ status: 201, type: ShoppingCartDTO, isArray: true })
     async mergeShoppingCartV2(
@@ -133,6 +141,7 @@ export class ShoppingCartController {
         });
     };
     @Post('v2/save')
+    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Persistir carrito actual a la base de datos (V2)" })
     @ApiResponse({ status: 201, type: ShoppingCartDTO, isArray: true })
     async saveShoppingCartV2(
@@ -144,6 +153,7 @@ export class ShoppingCartController {
     };
 
     @Get("v2/load")
+    @UseGuards(OptionalCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Cargar tarjetas del carrito de compras" })
     @ApiResponse({ status: 200, type: ShoppingCartDTO, isArray: true })
     async loadCards(

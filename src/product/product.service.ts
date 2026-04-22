@@ -3,7 +3,7 @@ import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductDTO, GetDashboardReviews, GetProductReviewResume, GetProductReviews, PatchProductDTO, ProductDetail, SearchedProducts } from './product.dto';
 import { ConfigService } from '@nestjs/config';
-import { PaginationDTO } from 'src/common/DTO/pagination.dto';
+import { PaginationDTO } from 'src/common/DTO/common.dto';
 import { CustomerReviewDTO } from 'src/customer/customer.dto';
 import { StockDashboardParams } from 'src/product-version/product-version.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';

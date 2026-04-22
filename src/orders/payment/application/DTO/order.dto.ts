@@ -1,15 +1,14 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsEnum, IsIn, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
-import { OrderItems, OrderResume, OrderShoppingCartDTO, PaymentProviders } from "./payment/payment.dto";
+import { IsArray, IsBoolean, IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
 import { GetCustomerAddressOrder, GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
 import { CustomerAttributes } from "src/customer/customer.dto";
 import { OrderAndPaymentStatus, Prisma, ShippingStatus } from "@prisma/client";
-import { PaginationDTO } from "src/common/DTO/pagination.dto";
-import { CustomerOrderShippingDetails } from "src/shipping/shipping.dto";
+import { PaginationDTO } from "src/common/DTO/common.dto";
 import { Items as MercadoPagoItems } from "mercadopago/dist/clients/commonTypes";
 import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
 import { ProductVersionCard } from "src/product-version/product-version.dto";
+import { OrderItems, OrderResume, OrderShoppingCartDTO, PaymentProviders } from "../../payment.dto";
 
 
 export class Order {
@@ -255,46 +254,24 @@ export class GetOrders {
     totalRecords: number;
 };
 
-export class OrderMoreDetails {
-    @ApiProperty({ description: "Detalle de la orden", type: Order })
-    order: SafeOrder;
 
-    @ApiProperty({ description: "Detalles de pago", type: [SafePaymentDetails], isArray: true })
-    payments_details: SafePaymentDetails[];
+export class GetOrdersQueryDTO {
+    @ApiProperty({ description: "Limite de registros", type: Number })
+    @IsNumber()
+    @IsOptional()
+    @Type(() => Number)
+    limit?: number;
 
-    @ApiProperty({ description: "Detalle de envio", type: CustomerOrderShippingDetails })
-    shipping?: CustomerOrderShippingDetails | null;
+    @ApiProperty({ description: "Pagina", type: Number })
+    @IsNumber()
+    @IsOptional()
+    @Type(() => Number)
+    page?: number;
 
-    @ApiProperty({ description: "Resumen de la orden", type: OrderResume })
-    resume: OrderResume;
-};
-
-
-
-export class OrderDetails {
-    @ApiProperty({ description: "Dirección de envio del destinatario", type: GetCustomerAddressOrder })
-    address: GetCustomerAddressOrder;
-
-    @ApiProperty({ description: "Items de la orden", type: [OrderItems] as const })
-    items: OrderItems[];
-
-    @ApiProperty({ description: "Cliente", type: CustomerAttributes })
-    customer?: CustomerAttributes;
-
-    @ApiProperty({ description: "Detalle de la orden", type: OrderDetails })
-    details: OrderMoreDetails;
-};
-
-export class GetOrderDetails {
-    status: OrderAndPaymentStatus;
-    order?: OrderDetails;
-};
-
-
-export class GetOrdersQuery extends PaginationDTO {
+    @ApiProperty({ description: "Ordenamiento", enum: ['recent', 'oldest'] })
     @IsOptional()
     @IsIn(['recent', 'oldest'])
-    orderBy: 'recent' | 'oldest';
+    orderBy?: 'recent' | 'oldest';
 };
 
 export class OrdersDashboardParams extends PaginationDTO {
@@ -343,6 +320,24 @@ export class CreatedOrder {
     orderUUID: string;
     @ApiProperty({ description: "Proveedor de pago", type: String })
     paymentProvider: PaymentProviders;
+};
+
+export class LinkGuestOrderToCustomerDTO {
+    @ApiProperty({ description: "UUID de la orden", type: String })
+    @IsString()
+    @IsNotEmpty()
+    orderUUID: string;
+};
+
+export class CancelOrAbandonOrderDTO {
+    @ApiProperty({ description: "UUID de la orden", type: String })
+    @IsString()
+    @IsNotEmpty()
+    orderUUID: string;
+
+    @ApiProperty({ description: "Tipo de orden", enum: ["ABANDONED", "CANCELLED"] })
+    @IsEnum(["ABANDONED", "CANCELLED"])
+    type: "ABANDONED" | "CANCELLED";
 };
 
 export interface MercadoPagoPreferenceBody {

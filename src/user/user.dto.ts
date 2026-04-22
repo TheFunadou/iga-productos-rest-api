@@ -2,7 +2,7 @@ import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsOptional, IsString, ValidateNested } from "class-validator";
 import { UserRoles } from "@prisma/client";
-import { PaginationDTO } from "src/common/DTO/pagination.dto";
+import { PaginationDTO } from "src/common/DTO/common.dto";
 import { UserPermissions, type Modules, type Permissions } from "src/user_auth/user_auth.dto";
 
 export class User {

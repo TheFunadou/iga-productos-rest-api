@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PartialType, PickType } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
 import { ArrayNotEmpty, IsArray, IsDate, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from "class-validator";
-import { SafeCategory } from "src/categories/categories.dto";
+import { CategorieI } from "src/categories/application/interfaces/categories.interfaces";
 import { GetProductVersion, ProductVersion, SafeTinyProductVersionImages } from "src/product-version/product-version.dto";
 import { SafeSubcategories } from "src/subcategories/subcategories.dto";
 
@@ -109,13 +109,7 @@ export class PatchProductDTO extends PartialType(ProductAttributes) {
     subcategories_path?: string[];
 };
 
-export class FatherProductUpdatedDto extends SafeProduct {
-    @ApiProperty({ description: "Categoria del producto", type: SafeCategory })
-    category: SafeCategory;
 
-    @ApiProperty({ description: "Obtener subcategorias de un producto", type: [SafeCategory], isArray: true })
-    subcategories: SafeSubcategories[];
-};
 
 export class SearchedProducts {
     @ApiProperty({ example: "1", description: "UUID del producto" })

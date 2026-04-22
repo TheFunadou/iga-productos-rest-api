@@ -13,7 +13,7 @@ import { CustomerReviewDTO } from 'src/customer/customer.dto';
 import { AuthenticatedCustomer } from 'src/customer_auth/customer_auth.current.decorator';
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 import { CustomerCsrfAuthGuard } from 'src/customer_auth/customer_auth.csrf';
-import { PaginationDTO } from 'src/common/DTO/pagination.dto';
+import { PaginationDTO } from 'src/common/DTO/common.dto';
 import { StockDashboardParams } from 'src/product-version/product-version.dto';
 
 @Controller('product')

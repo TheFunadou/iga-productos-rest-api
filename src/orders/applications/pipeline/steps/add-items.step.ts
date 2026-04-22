@@ -1,5 +1,5 @@
 import { OrderContext } from "../order.context";
-import { AddItemsToOrderOrderItems } from "src/orders/order.dto";
+import { AddItemsToOrderOrderItems } from "src/orders/payment/application/DTO/order.dto";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { OrderPipelineStepI } from "../interfaces/pipeline-step.interface";
 import { OrderShoppingCartI } from "../interfaces/order.interface";

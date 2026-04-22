@@ -1,12 +1,11 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateShippingDTO, GetShippingDashboard, UpdateShippingDTO } from './shipping.dto';
-import { Decimal } from '@prisma/client/runtime/client';
-import { OrdersDashboardParams } from 'src/orders/order.dto';
+import { CreateShippingDTO, UpdateShippingDTO } from './application/DTO/shipping.dto';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
-import { SHIPPING_COST } from 'src/orders/helpers/order.helpers';
+import { CreateShippingByApprovedOrderI, ShippingDashboardI } from './application/interfaces/shipping.interfaces';
+import { OrdersDashboardParams } from 'src/orders/payment/application/DTO/order.dto';
 
 @Injectable()
 export class ShippingService {
@@ -20,32 +19,47 @@ export class ShippingService {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
     };
 
-    async createShippingByApprovedOrder(args: { tx: Prisma.TransactionClient, orderId: string, dto: CreateShippingDTO, shippingInfoId: string }) {
-        const { tx, shippingInfoId } = args;
-        const order = await tx.order.findUnique({
-            where: { id: args.orderId },
-            select: { id: true, order_items: { select: { quantity: true } } }
+    async create({ dto }: { dto: CreateShippingDTO }) {
+        const { orderUUID } = dto;
+
+    };
+
+
+    async createShippingByApprovedOrder(args: { tx: Prisma.TransactionClient, orderId: string, dto: CreateShippingByApprovedOrderI }) {
+        const { tx, dto, orderId } = args;
+        const shippingInfo = await tx.orderShippingInfo.findUnique({
+            where: { order_id: orderId },
+            select: { id: true }
         });
-        if (!order) throw new NotFoundException("Orden no encontrada");
-        const totalItems = order.order_items.reduce((acc, item) => acc + item.quantity, 0);
-        const boxesQty = Math.ceil(totalItems / 10);
-        const shipping_amount = new Decimal(SHIPPING_COST * boxesQty)
+        if (!shippingInfo) throw new NotFoundException("No se encontro la informacion de envio de esta orden");
+
+
         await tx.shipping.create({
-            data: { order_id: order.id, ...args.dto, boxes_count: boxesQty, shipping_amount, order_shipping_info_id: shippingInfoId }
+            data: {
+                order_id: orderId,
+                order_shipping_info_id: shippingInfo.id,
+                concept: dto.concept,
+                boxes_count: dto.boxesCount,
+                shipping_status: dto.shippingStatus,
+                shipping_amount: dto.shippingAmount,
+            }
         });
     };
 
 
-    async dashboard({ query: { limit, page, orderby, uuid } }: { query: OrdersDashboardParams }) {
+    async dashboard({ query }: { query: OrdersDashboardParams }) {
+        const page = query.page ?? 1;
+        const limit = query.limit ?? 10;
+        const orderBy = query.orderby ?? "asc";
+        const uuid = query.uuid;
         const skip = (page - 1) * limit;
-        const orderBy = orderby || "asc";
-        let where = {};
+        let where: Prisma.ShippingWhereInput = {};
         if (uuid) where = { order: { uuid } };
 
         return await this.cache.remember({
             method: "staleWhileRevalidateWithLock",
             entity: "shipping:dashboard",
-            query: uuid ? { limit, page, orderby, uuid } : { limit, page, orderby },
+            query: uuid ? { limit, page, orderBy, uuid } : { limit, page, orderBy },
             aditionalOptions: {
                 ttlMilliseconds: 1000 * 60 * 15,
                 staleTimeMilliseconds: 1000 * 60 * 12
@@ -61,21 +75,31 @@ export class ShippingService {
                         order_id: true,
                     },
                     include: {
-                        order: { select: { uuid: true } }
+                        order: { select: { uuid: true } },
                     }
                 });
 
                 const totalRecords = await this.prisma.shipping.count({ where });
                 const totalPages = Math.ceil(totalRecords / limit);
-                const response: GetShippingDashboard = {
+                const response: ShippingDashboardI = {
                     data: data.map((shipping) => ({
-                        ...shipping,
-                        order_uuid: shipping.order.uuid,
-                        shipping_amount: shipping.shipping_amount.toString(),
-                        insurance_amount: shipping.insurance_amount?.toString()
+                        uuid: shipping.uuid,
+                        orderUUID: shipping.order.uuid,
+                        shippingStatus: shipping.shipping_status,
+                        concept: shipping.concept,
+                        carrier: shipping.carrier,
+                        trackingNumber: shipping.tracking_number,
+                        shippingAmount: shipping.shipping_amount.toString(),
+                        insuranceAmount: shipping.insurance_amount?.toString(),
+                        boxesCount: shipping.boxes_count,
+                        shippedAt: shipping.shipped_at,
+                        deliveredAt: shipping.delivered_at,
+                        createdAt: shipping.created_at,
+                        updatedAt: shipping.updated_at
                     })),
                     totalRecords,
-                    totalPages
+                    totalPages,
+                    currentPage: page
                 };
                 return response;
             }
@@ -84,18 +108,16 @@ export class ShippingService {
 
     async updateShipping({ dto }: { dto: UpdateShippingDTO }) {
         const { uuid, ...data } = dto;
-        const shippingOrder = this.prisma.shipping.findMany({ where: { uuid } });
-        if (!shippingOrder) throw new NotFoundException("Orden de envio no encontrada");
-
-        await this.prisma.shipping.update({
-            where: { uuid: dto.uuid }, data
-        }).catch((error) => {
+        try {
+            await this.prisma.shipping.update({ where: { uuid }, data });
+        } catch (error) {
             if (this.nodeEnv === "DEV") this.logger.error(error);
             this.logger.error("Error al actualizar la orden de envio");
             throw new BadRequestException("Error al actualizar la orden de envio");
-        });
+        }
 
         return `Orden de envio ${uuid} actualizada satisfactoriamente`;
     };
+
 
 };

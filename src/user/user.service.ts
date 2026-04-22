@@ -4,7 +4,7 @@ import { CreateUserDTO, GetUserDashboard, UpdateUserDTO, UserDashboardParams } f
 import * as bcrypt from 'bcrypt';
 import { CacheService } from 'src/cache/cache.service';
 import { ConfigService } from '@nestjs/config';
-import { Permission, UserModules } from '@prisma/client';
+import { Permission, Prisma, UserModules } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserLogEvent } from 'src/audit/user-log.event';
 
@@ -87,11 +87,15 @@ export class UserService {
     };
 
 
-    async dashboard({ query: { limit, page, orderby, user } }: { query: UserDashboardParams }): Promise<GetUserDashboard> {
+    async dashboard({ query }: { query: UserDashboardParams }): Promise<GetUserDashboard> {
+        const page = query.page || 1;
+        const limit = query.limit || 10;
+        const orderBy = query.orderby || "asc";
+        const user = query.user;
         const skip = (page - 1) * limit;
-        const orderBy = orderby || "asc";
-        let where = {};
+        let where: Prisma.UserWhereInput = {};
         if (user) where = { OR: [{ username: user }, { email: user }] };
+
         return await this.cache.remember<GetUserDashboard>({
             method: "staleWhileRevalidateWithLock",
             entity: "users:dashboard",

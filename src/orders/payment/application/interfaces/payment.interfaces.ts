@@ -16,6 +16,7 @@ export interface PaymentDescriptionI {
 
 export interface OrderDescriptionI {
     orderUUID: string;
+    status: OrderAndPaymentStatus;
     isGuestOrder: boolean;
     paymentProvider: string;
     buyer: { name: string, surname: string, email: string, phone?: string | null };

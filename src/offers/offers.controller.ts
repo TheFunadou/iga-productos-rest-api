@@ -5,7 +5,7 @@ import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
 import { UserCsrfAuthGuard } from 'src/user_auth/user_auth.csrf';
 import { UserModulePermissionsGuard } from 'src/user_auth/user_auth.module.permissions.guard';
 import { RequirePermissions } from 'src/user_auth/user_auth.module.permissions.decorator';
-import { CreateOfferDTO, GetOffers, OffersDashboardParams, UpdateOfferDTO } from './offers.dto';
+import { CreateOfferDTO, GetOffers, OffersDashboardQueryDTO, UpdateOfferDTO } from './offers.dto';
 import { AuthenticatedUser } from 'src/user_auth/user_auth.current_user.decorator';
 import { UserPayload } from 'src/user_auth/user_auth.dto';
 
@@ -26,7 +26,7 @@ export class OffersController {
     @ApiQuery({ name: 'limit', required: true, type: Number })
     @ApiQuery({ name: 'orderby', required: false, type: Number })
     @ApiQuery({ name: 'type', required: false, type: Number })
-    async dashboard(@Query() query: OffersDashboardParams): Promise<GetOffers> {
+    async dashboard(@Query() query: OffersDashboardQueryDTO): Promise<GetOffers> {
         return await this.offersService.dashboard({ query });
     };
 

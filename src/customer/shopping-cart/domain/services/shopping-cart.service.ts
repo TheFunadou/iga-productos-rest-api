@@ -384,7 +384,11 @@ export class ShoppingCartService {
 
 
     async loadShoppingCart({ customerUUID, sessionId }: { customerUUID?: string, sessionId: string }): Promise<LoadShoppingCartI> {
+        console.log("customerUUID", customerUUID);
+        console.log("sessionId", sessionId);
         const { clientUUID, isCustomer } = this.resolveClient({ customerUUID, sessionId });
+        console.log("clientUUID", clientUUID);
+        console.log("isCustomer", isCustomer);
         const shoppingCart = await this.getShoppingCart({ clientUUID, isCustomer });
         if (!shoppingCart || shoppingCart.length === 0) return {
             cards: [],
@@ -409,7 +413,7 @@ export class ShoppingCartService {
     };
 
 
-    async updateShoppingCartByApprovedOrder({ customerUUID, sessionId, orderItems }: { customerUUID?: string, sessionId: string, orderItems: OrderCheckoutItemI[] }) {
+    async updateShoppingCartByApprovedOrder({ customerUUID, sessionId, orderItems }: { customerUUID?: string, sessionId?: string, orderItems: OrderCheckoutItemI[] }) {
         const { clientUUID, isCustomer } = this.resolveClient({ customerUUID, sessionId });
         const shoppingCart = await this.getShoppingCart({ clientUUID, isCustomer });
         const orderItemsMap = new Map(orderItems.map(i => [i.sku, i.sku]));

@@ -360,7 +360,8 @@ model Order {
   buyer_email   String  @default("N/A")
   buyer_phone   String?
 
-  external_order_id String @unique
+  external_order_id String  @unique
+  session_id        String?
 
   // Usuario registrado (opcional)
   customer_id String?

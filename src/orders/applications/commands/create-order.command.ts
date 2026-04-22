@@ -1,5 +1,5 @@
 import { ShoppingCartDTO } from "src/customer/shopping-cart/application/DTO/shopping-cart.dto";
-import { OrderRequestFormGuestDTO } from "src/orders/order.dto";
+import { OrderRequestFormGuestDTO } from "src/orders/payment/application/DTO/order.dto";
 import { PaymentProviders } from "src/orders/payment/payment.dto";
 
 export class CreateOrderCommand {

@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { CacheService } from "src/cache/cache.service";
 import { PrismaService } from "src/prisma/prisma.service";
-import { GetUserLogsDashboard } from "./audit.dto";
-import { UserDashboardParams } from "src/user/user.dto";
+import { DashboardCommonQueryDTO } from "src/common/DTO/common.dto";
+import { Prisma } from "@prisma/client";
+import { UserLogsDashboard } from "./application/interfaces/audit.interface";
 
 @Injectable()
 export class AuditService {
@@ -12,16 +13,20 @@ export class AuditService {
     ) { };
 
 
-    async dashboard({ query: { limit, page, orderby, user } }: { query: UserDashboardParams }): Promise<GetUserLogsDashboard> {
+    async dashboard({ query }: { query: DashboardCommonQueryDTO }): Promise<UserLogsDashboard> {
+        const page = query.page ?? 1;
+        const limit = query.limit ?? 15;
+        const orderBy = query.orderBy ?? "asc";
+        const user = query.target;
+
         const skip = (page - 1) * limit;
-        const orderBy = orderby || "asc";
-        let where = {};
+        let where: Prisma.UserLogsWhereInput = {};
         if (user) where = { user: { OR: [{ uuid: user }, { username: { equals: user, mode: "insensitive" } }] } };
 
-        return await this.cache.remember<GetUserLogsDashboard>({
+        return await this.cache.remember<UserLogsDashboard>({
             method: "staleWhileRevalidateWithLock",
             entity: "user:logs",
-            query: user ? { limit, page, orderby, user } : { limit, page, orderby },
+            query: user ? { limit, page, orderBy, user } : { limit, page, orderBy },
             aditionalOptions: {
                 ttlMilliseconds: 1000 * 60 * 15,
                 staleTimeMilliseconds: 1000 * 60 * 12
@@ -32,28 +37,24 @@ export class AuditService {
                     skip,
                     where,
                     orderBy: { created_at: orderBy },
-                    omit: {
-                        id: true,
-                        user_id: true,
-                        entity_id: true,
-                    },
+                    omit: { id: true, user_id: true, entity_id: true, },
                     include: {
-                        user: { select: { uuid: true, username: true } }
+                        user: { select: { uuid: true, username: true, name: true, last_name: true } }
                     }
                 });
-
                 const totalRecords = await this.prisma.userLogs.count({ where });
                 const totalPages = Math.ceil(totalRecords / limit);
-                const response: GetUserLogsDashboard = {
+                return {
                     data: data.map((logs) => ({
-                        ...logs,
-                        user_uuid: logs.user?.uuid,
-                        username: logs.user?.username,
+                        user: { name: logs.user?.name, surname: logs.user?.last_name, username: logs.user?.username },
+                        entity: logs.entity,
+                        action: logs.action,
+                        metadata: logs.metadata,
                     })),
                     totalRecords,
                     totalPages,
-                };
-                return response;
+                    currentPage: page
+                } satisfies UserLogsDashboard;
             }
         })
 

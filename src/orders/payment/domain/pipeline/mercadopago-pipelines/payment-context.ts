@@ -1,8 +1,8 @@
 import { Logger } from "@nestjs/common";
 import { OrderAndPaymentStatus } from "@prisma/client";
 import { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
+import { ShoppingCartResumeI } from "src/customer/shopping-cart/application/interfaces/shopping-cart.interface";
 import { OrderCheckoutItemI } from "src/orders/applications/pipeline/interfaces/order.interface";
-import { OrderItems } from "src/orders/payment/payment.dto";
 
 export class MercadoPagoPaymentContext {
     private readonly logger = new Logger("MercadoPagoWebhookQueue")
@@ -15,6 +15,8 @@ export class MercadoPagoPaymentContext {
     public customerUUID: string | null = null;
     public skipped: boolean = false; // true si el pago ya estaba procesado (idempotencia)
     public orderItems?: OrderCheckoutItemI[];
+    public isGuest: boolean = false;
+    public orderResume: ShoppingCartResumeI | null = null;
 
     constructor(args: { paymentId: string, nodeEnv: string }) {
         this.paymentId = args.paymentId;

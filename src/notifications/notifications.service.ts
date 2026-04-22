@@ -3,7 +3,7 @@ import { render } from '@react-email/components';
 import VerificationTokenEmail from './emails/TokenVerificationEmial';
 import { ResendProvider } from './providers/resend.provider';
 import PaymentConfirmationEmail from './emails/PaymentConfirmationEmail';
-import { PaymentDetailsI } from 'src/orders/payment/domain/interfaces/payment.interfaces';
+import { PaymentDetailsI } from 'src/orders/payment/application/interfaces/payment.interfaces';
 
 @Injectable()
 export class NotificationsService {

@@ -2,7 +2,6 @@ import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@ne
 import { OrdersService } from './orders.service';
 import { RequiredCustomerAuthGuard } from 'src/customer_auth/customer_auth.required.guard';
 import { CustomerCsrfAuthGuard } from 'src/customer_auth/customer_auth.csrf';
-import { CreatedOrder, GetOrdersQuery, OrderRequestDTO, OrderRequestV2DTO, OrdersDashboardParams, UpdateOrderStatusDTO } from './order.dto';
 import { AuthenticatedCustomer } from 'src/customer_auth/customer_auth.current.decorator';
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 import { ApiBody, ApiHeader, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -15,6 +14,8 @@ import { OptionalCustomer } from 'src/customer_auth/customer_auth.optional.decor
 import { Cookie } from 'src/common/decorators/cookie.decorator';
 import { BuyNowItemDTO } from './payment/payment.dto';
 import { LoadShoppingCartI } from 'src/customer/shopping-cart/application/interfaces/shopping-cart.interface';
+import { GetOrdersSummaryI } from './applications/pipeline/interfaces/order.interface';
+import { CancelOrAbandonOrderDTO, CreatedOrder, GetOrdersQueryDTO, LinkGuestOrderToCustomerDTO, OrderRequestV2DTO, OrdersDashboardParams, UpdateOrderStatusDTO } from './payment/application/DTO/order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -46,20 +47,10 @@ export class OrdersController {
     @ApiResponse({ status: 403, description: "No se proporciono un token CSRF valido" })
     @ApiResponse({ status: 404, description: "No se encontro al cliente" })
     @ApiResponse({ status: 500, description: "Error inesperado al obtener las ordenes" })
-    async getOrders(@AuthenticatedCustomer() customer: CustomerPayload, @Query() query: GetOrdersQuery) {
+    async getOrders(@AuthenticatedCustomer() customer: CustomerPayload, @Query() query: GetOrdersQueryDTO): Promise<GetOrdersSummaryI> {
         return await this.ordersService.getOrders({ customerUUID: customer.uuid, query });
     };
 
-    @Get("checkout/:uuid")
-    @UseGuards(OptionalCustomerAuthGuard)
-    @ApiOperation({ summary: "Obtiene los detalles de una orden" })
-    @ApiResponse({ status: 200, description: "Items obtenidos exitosamente" })
-    @ApiResponse({ status: 400, description: "Error al obtener los items de la orden" })
-    @ApiResponse({ status: 404, description: "No se encontro la orden" })
-    @ApiResponse({ status: 500, description: "Error inesperado al obtener los items de la orden" })
-    async getCheckoutOrder(@OptionalCustomer() customer: CustomerPayload, @Param("uuid") uuid: string) {
-        return await this.ordersService.getCheckoutOrder({ orderUUID: uuid, customerUUID: customer?.uuid });
-    };
 
     @Get("checkout/v2/:uuid")
     @ApiOperation({ summary: "Obtiene los detalles de una orden" })
@@ -71,31 +62,7 @@ export class OrdersController {
         return await this.ordersService.getCheckoutOrderV2({ orderUUID: uuid });
     };
 
-    @Get("details/:uuid")
-    @UseGuards(RequiredCustomerAuthGuard)
-    @ApiOperation({ summary: "Obtiene los detalles de una orden" })
-    @ApiResponse({ status: 200, description: "Items obtenidos exitosamente" })
-    @ApiResponse({ status: 400, description: "Error al obtener los items de la orden" })
-    @ApiResponse({ status: 404, description: "No se encontro la orden" })
-    @ApiResponse({ status: 500, description: "Error inesperado al obtener los items de la orden" })
-    async getDetailsCustomer(@AuthenticatedCustomer() { uuid: customerUUID }: CustomerPayload, @Param("uuid") orderUUID: string) {
-        return await this.ordersService.getOrderDetailsByOrderUUID({ orderUUID, customerUUID });
-    };
-
-    @Get("details/:customer_uuid/:order_uuid")
-    @UseGuards(RequiredUserAuthGuard, UserModulePermissionsGuard)
-    @RequirePermissions({ ORDERS: ["READ"] })
-    @ApiOperation({ summary: "Obtiene los detalles de una orden" })
-    @ApiResponse({ status: 200, description: "Items obtenidos exitosamente" })
-    @ApiResponse({ status: 400, description: "Error al obtener los items de la orden" })
-    @ApiResponse({ status: 404, description: "No se encontro la orden" })
-    @ApiResponse({ status: 500, description: "Error inesperado al obtener los items de la orden" })
-    async getDetailsAdminPanel(@Param("customer_uuid") customerUUID: string, @Param("order_uuid") orderUUID: string) {
-        return await this.ordersService.getOrderDetailsByOrderUUID({ orderUUID, customerUUID });
-    };
-
-
-    @Post("cancel/:uuid")
+    @Post("cancel")
     @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
     @ApiOperation({ summary: "Cancela una orden" })
     @ApiResponse({ status: 200, description: "Orden cancelada exitosamente" })
@@ -104,8 +71,8 @@ export class OrdersController {
     @ApiResponse({ status: 403, description: "No se proporciono un token CSRF valido" })
     @ApiResponse({ status: 404, description: "No se encontro la orden" })
     @ApiResponse({ status: 500, description: "Error inesperado al cancelar la orden" })
-    async cancelOrder(@Param("uuid") uuid: string) {
-        return await this.ordersService.cancelOrder({ orderUUID: uuid });
+    async cancelOrder(@Body() dto: CancelOrAbandonOrderDTO) {
+        return await this.ordersService.cancelOrder({ orderUUID: dto.orderUUID });
     };
 
     @Get("buy-now")
@@ -144,5 +111,19 @@ export class OrdersController {
     @ApiBody({ type: UpdateOrderStatusDTO })
     async updateOrderStatus(@Body() { orderUUID, status }: UpdateOrderStatusDTO) {
         return await this.ordersService.updateOrderStatus({ orderUUID, status });
+    };
+
+    @Patch("link-to-customer")
+    @UseGuards(RequiredCustomerAuthGuard, CustomerCsrfAuthGuard)
+    @ApiOperation({ summary: "Vincula una orden de cliente invitado a un cliente autenticado" })
+    @ApiResponse({ status: 200, description: "Orden de cliente invitado vinculada exitosamente" })
+    @ApiResponse({ status: 400, description: "Error al vincular la orden de cliente invitado" })
+    @ApiResponse({ status: 401, description: "No se proporciono un token de autenticacion" })
+    @ApiResponse({ status: 403, description: "No se proporciono un token CSRF valido" })
+    @ApiResponse({ status: 404, description: "No se encontro la orden" })
+    @ApiResponse({ status: 500, description: "Error inesperado al vincular la orden de cliente invitado" })
+    @ApiBody({ type: LinkGuestOrderToCustomerDTO })
+    async linkGuestOrderToCustomer(@AuthenticatedCustomer() customer: CustomerPayload, @Body() { orderUUID }: LinkGuestOrderToCustomerDTO) {
+        return await this.ordersService.linkGuestOrderToCustomer({ orderUUID, customerUUID: customer.uuid });
     };
 };

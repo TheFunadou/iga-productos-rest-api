@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { CreateOrderShippingInfo } from "src/customer/customer-addresses/customer-addresses.dto";
 import { ShoppingCartDTO } from "src/customer/shopping-cart/application/DTO/shopping-cart.dto";
 import { ShoppingCartResumeI } from "src/customer/shopping-cart/application/interfaces/shopping-cart.interface";
-import { OrderRequestFormGuestDTO, OrderValidatedCustomerData } from "src/orders/order.dto";
+import { OrderRequestFormGuestDTO, OrderValidatedCustomerData } from "src/orders/payment/application/DTO/order.dto";
 import { PaymentProviders } from "src/orders/payment/payment.dto";
 import { ProductI, ProductListI, ProductVersionI, ProductVersionUnitPriceI, ResolvedOfferI } from "src/product-version/application/pipelines/interfaces/get-cards.interface";
 import { OrderShoppingCartI } from "./interfaces/order.interface";

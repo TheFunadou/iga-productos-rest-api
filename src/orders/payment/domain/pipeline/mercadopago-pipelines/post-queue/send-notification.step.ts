@@ -13,21 +13,23 @@ export class SendNotificationStep implements IStep<MercadoPagoPaymentContext> {
     ) { }
 
     async execute(context: MercadoPagoPaymentContext): Promise<void> {
-        if (context.orderStatus !== "APPROVED" || context.skipped) return;
-        if (!context.orderId || !context.payment) throw new Error("SendNotificationStep: orderId o payment no disponible en contexto");
-        const { orderUUID } = context;
+        const { orderStatus, skipped, payment, orderId, orderUUID } = context;
+        if (orderStatus !== "APPROVED" || skipped) return;
+        if (!orderId || !payment) throw new Error("SendNotificationStep: orderId o payment no disponible en contexto");
         if (!orderUUID) throw new Error("No se encontro el folio de la orden");
 
         const paymentSummary = await this.payment.executeV2({
-            orderUUID, requiredStatus: ["APPROVED"]
+            orderUUID, query: { enablePolling: false }
         });
         if (paymentSummary.status !== "APPROVED") return;
         if (!paymentSummary.order) return;
-        const emailTo = context.payment.payer?.email;
+        const emailTo = payment.payer?.email;
         if (!emailTo) throw new Error("No se encontro un email para este pago");
         this.notifications.sendPaymentApproved({ to: emailTo, data: paymentSummary }).catch((err) => {
             this.logger.error(`Error enviando email de orden aprobada ${orderUUID}: ${err}`);
         });
         context.orderItems = paymentSummary.order.items;
+        context.isGuest = paymentSummary.order.isGuestOrder;
+        context.orderResume = paymentSummary.order.paymentResume;
     }
 }

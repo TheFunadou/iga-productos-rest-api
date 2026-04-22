@@ -1,13 +1,12 @@
 import { Controller, Post, Query, Headers, Get, Param, UseGuards } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { GetPaidOrderDetails } from './payment.dto';
-import { OrderAndPaymentStatus } from '@prisma/client';
 import { OrderProcessingStatus } from './payment.interfaces';
+import { PaymentDetailsI } from './application/interfaces/payment.interfaces';
+import { GetPaymentDetailsQueryDTO } from './payment.dto';
 import { OptionalCustomerAuthGuard } from 'src/customer_auth/customer_auth.optional.guard';
-import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 import { OptionalCustomer } from 'src/customer_auth/customer_auth.optional.decorator';
-import { PaymentDetailsI } from './domain/interfaces/payment.interfaces';
+import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
 
 @Controller('payment')
 export class PaymentController {
@@ -21,7 +20,6 @@ export class PaymentController {
         @Headers('x-signature') xSignature: string,
         @Headers('x-request-id') xRequestId: string,
     ) {
-        console.log("handleMercadoPagoWebhookV2", dataId, type, xSignature, xRequestId);
         await this.paymentService.processMercadoPagoWebhook({
             xSignature,
             xRequestId,
@@ -49,15 +47,16 @@ export class PaymentController {
 
 
     @Get("order/details/:uuid")
+    @UseGuards(OptionalCustomerAuthGuard)
     @ApiOperation({ summary: "Obtiene el estado de una orden por UUID" })
     @ApiParam({ name: 'uuid', description: 'UUID de la orden' })
     @ApiResponse({ status: 200, description: "Estado de la orden", type: Object })
     async getOrderDetails(
+        @OptionalCustomer() customer: CustomerPayload,
         @Param('uuid') uuid: string,
-        @Query("status") requiredStatus: OrderAndPaymentStatus[]
+        @Query() query: GetPaymentDetailsQueryDTO
     ): Promise<PaymentDetailsI> {
-        const status = await this.paymentService.getDetails({ orderUUID: uuid, requiredStatus: Array.isArray(requiredStatus) ? requiredStatus : [requiredStatus] });
-        return status;
+        return await this.paymentService.getDetails({ orderUUID: uuid, query, customerUUID: customer?.uuid });
     };
 
 };

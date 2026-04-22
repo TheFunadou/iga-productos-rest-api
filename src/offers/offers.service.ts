@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateOfferDTO, GetOffers, OffersDashboardParams, OfferTargetDTO, UpdateOfferDTO } from './offers.dto';
+import { CreateOfferDTO, GetOffers, OffersDashboardQueryDTO, OfferTargetDTO, UpdateOfferDTO } from './offers.dto';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserLogEvent } from 'src/audit/user-log.event';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class OffersService {
@@ -149,15 +150,19 @@ export class OffersService {
         return `Oferta eliminada exitosamente`;
     };
 
-    async dashboard({ query: { limit, page, orderby, type } }: { query: OffersDashboardParams }): Promise<GetOffers> {
+    async dashboard({ query }: { query: OffersDashboardQueryDTO }): Promise<GetOffers> {
+        const page = query.page ?? 1;
+        const limit = query.limit ?? 10;
+        const orderBy = query.orderBy ?? "asc";
+        const targetType = query.type;
+
         const skip = (page - 1) * limit;
-        const orderBy = orderby || "asc";
-        let where = {};
-        if (type) where = { target_type: type };
+        let where: Prisma.OfferTargetWhereInput = {};
+        if (targetType) where = { target_type: targetType };
         return await this.cache.remember<GetOffers>({
             method: "staleWhileRevalidateWithLock",
             entity: "offers:dashboard",
-            query: type ? { limit, page, orderBy, type } : { limit, page, orderBy },
+            query: query.type ? { limit, page, orderBy, type: query.type } : { limit, page, orderBy },
             aditionalOptions: {
                 ttlMilliseconds: 1000 * 60 * 15,
                 staleTimeMilliseconds: 1000 * 60 * 12
