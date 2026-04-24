@@ -3,7 +3,6 @@ import { ProductVersionController } from './product-version.controller';
 import { ProductVersionService } from './product-version.service';
 import { CacheModule } from 'src/cache/cache.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { ProductVersionUtilsService } from './product-version.utils.service';
 import { OffersModule } from 'src/offers/offers.module';
 import { CqrsModule } from '@nestjs/cqrs';
 import { SearchCardsBuildWhereService } from './domain/services/search-cards/build-where.service';
@@ -49,7 +48,6 @@ const GET_DETAILS_STEPS_PROVIDERS = [
   providers: [
     // Servicios existentes
     ProductVersionService,
-    ProductVersionUtilsService,
     SearchCardsBuildWhereService,
     AggregateCardEntitiesService,
     AggregateDetailsEntitiesService,

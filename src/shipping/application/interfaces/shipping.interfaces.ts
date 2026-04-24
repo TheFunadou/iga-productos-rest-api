@@ -16,6 +16,10 @@ export interface ShippingI {
     updatedAt: Date;
 };
 
+export interface ExtendedShippingI extends ShippingI {
+    shippingInfoId: string;
+};
+
 export interface ShippingDashboardI {
     data: ShippingI[],
     totalPages: number;
@@ -37,4 +41,4 @@ export interface CreateShippingByApprovedOrderI {
     boxesCount: number;
     shippingStatus: ShippingStatus;
     shippingAmount: string;
-}
+};

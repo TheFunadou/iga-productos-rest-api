@@ -1,8 +1,27 @@
+import { Decimal } from "@prisma/client/runtime/library";
 import { ShoppingCartItemsResumeI, ShoppingCartResumeI } from "src/customer/shopping-cart/application/interfaces/shopping-cart.interface";
 
 export const SHIPPING_COST = 264.00; // IVA incluido
 export const IVA = 0.16;
 export const MAX_ITEMS_PER_BOX = 10;
+
+export const formatPrice = (args: { val: number | string | Decimal, currency: "MXN" | "USD" }) => {
+    const { val, currency } = args;
+    let finalValue: number;
+    if (typeof val === "string") {
+        finalValue = parseFloat(val);
+    } else if (val instanceof Decimal) {
+        finalValue = parseFloat(val.toString());
+    } else {
+        finalValue = val;
+    };
+
+    const localCurrency = currency === "MXN" ? "es-MX" : "en-US";
+    return finalValue.toLocaleString(localCurrency, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+};
 
 export const calcResume = ({ items }: { items: ShoppingCartItemsResumeI[] }): ShoppingCartResumeI => {
     const IVA_DIVISOR = 1 + IVA;
@@ -66,21 +85,16 @@ export const calcResume = ({ items }: { items: ShoppingCartItemsResumeI[] }): Sh
     // =============================
     // 8. FORMAT
     // =============================
-    const format = (val: number) =>
-        val.toLocaleString("es-MX", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
 
     return {
-        itemsSubtotal: format(grossItemsSubtotal), // con IVA
-        itemsSubtotalBeforeTaxes: format(netItems), // sin IVA
-        shippingCost: format(grossShipping),
-        shippingCostBeforeTaxes: format(netShipping),
+        itemsSubtotal: formatPrice({ val: grossItemsSubtotal, currency: "MXN" }), // con IVA
+        itemsSubtotalBeforeTaxes: formatPrice({ val: netItems, currency: "MXN" }), // sin IVA
+        shippingCost: formatPrice({ val: grossShipping, currency: "MXN" }),
+        shippingCostBeforeTaxes: formatPrice({ val: netShipping, currency: "MXN" }),
         boxesCount,
-        iva: format(totalIVA),
-        subtotal: format(subtotal), // sin IVA
-        discount: format(netDiscount), // sin IVA
-        total: format(total) // con IVA
+        iva: formatPrice({ val: totalIVA, currency: "MXN" }),
+        subtotal: formatPrice({ val: subtotal, currency: "MXN" }), // sin IVA
+        discount: formatPrice({ val: netDiscount, currency: "MXN" }), // sin IVA
+        total: formatPrice({ val: total, currency: "MXN" }) // con IVA
     };
 };

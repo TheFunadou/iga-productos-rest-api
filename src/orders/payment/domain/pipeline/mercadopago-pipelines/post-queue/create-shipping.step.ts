@@ -1,4 +1,4 @@
-import { BadRequestException, Logger, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Logger } from "@nestjs/common";
 import { ShippingService } from "src/shipping/shipping.service";
 import { MercadoPagoPaymentContext } from "../payment-context";
 import { IStep } from "../pipeline.interface";

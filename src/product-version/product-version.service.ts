@@ -59,17 +59,17 @@ export class ProductVersionService {
         if (args.tx) {
             return await args.tx.productVersionImages.createMany({
                 data: args.versionImages.map((img) => ({
-                    product_version_id: args.productVersionId,
-                    image_url: img.image_url,
-                    main_image: img.main_image
+                    productVersionId: args.productVersionId,
+                    imageUrl: img.image_url,
+                    mainImage: img.main_image
                 }))
             });
         };
         return await this.prisma.productVersionImages.createMany({
             data: args.versionImages.map((img) => ({
-                product_version_id: args.productVersionId,
-                image_url: img.image_url,
-                main_image: img.main_image
+                productVersionId: args.productVersionId,
+                imageUrl: img.image_url,
+                mainImage: img.main_image
             }))
         });
     };
@@ -98,7 +98,7 @@ export class ProductVersionService {
             });
             this.logger.log(`Version ${udpated.sku} actualizada`);
             if (version_images) {
-                await tx.productVersionImages.deleteMany({ where: { product_version_id: udpated.id } });
+                await tx.productVersionImages.deleteMany({ where: { productVersionId: udpated.id } });
                 await this.createVersionImages({ tx, versionImages: version_images, productVersionId: udpated.id });
                 this.logger.log(`Imagenes de version ${udpated.sku} actualizadas`);
             };
@@ -134,7 +134,7 @@ export class ProductVersionService {
                 { entity: "product-version:search:cards" },
                 { entity: "product-version:show-details" }
             ])
-            await tx.productVersionImages.deleteMany({ where: { product_version_id: deleted.id } });
+            await tx.productVersionImages.deleteMany({ where: { productVersionId: deleted.id } });
 
             this.eventEmmiter.emit("user.log", new UserLogEvent(
                 "PRODUCT_VERSION",
@@ -208,9 +208,9 @@ export class ProductVersionService {
                         color_code: true,
                         stock: true,
                         product_version_images: {
-                            where: { main_image: true },
+                            where: { mainImage: true },
                             take: 1,
-                            select: { image_url: true }
+                            select: { imageUrl: true }
                         }
                     },
 
@@ -228,7 +228,7 @@ export class ProductVersionService {
                         color_code: pv.color_code,
                         color_line: pv.color_line,
                         stock: pv.stock,
-                        product_version_images: pv.product_version_images[0]?.image_url || "",
+                        product_version_images: pv.product_version_images[0]?.imageUrl || "",
                     })),
                     totalPages,
                     totalRecords

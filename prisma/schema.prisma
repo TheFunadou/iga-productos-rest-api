@@ -92,17 +92,17 @@ model UserPermissions {
 }
 
 model UserLogs {
-  id         String   @id @default(cuid())
-  user_id    String?
-  entity     String
-  entity_id  String
-  action     String
-  metadata   Json?
-  created_at DateTime @default(now())
-  user       User?    @relation("user_logs:user", fields: [user_id], references: [id], onDelete: SetNull)
+  id        String   @id @default(cuid())
+  userId    String?  @map("user_id")
+  entity    String
+  entityId  String   @map("entity_id")
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User?    @relation("user_logs:user", fields: [userId], references: [id], onDelete: SetNull)
 
-  @@index([user_id]) // Buscar logs de un usuario
-  @@index([created_at]) // Ordenar logs por fecha
+  @@index([userId]) // Buscar logs de un usuario
+  @@index([createdAt]) // Ordenar logs por fecha
   @@map("user_logs")
 }
 
@@ -110,12 +110,12 @@ model Verification {
   id         String   @id @default(cuid())
   identifier String
   value      String
-  expires_at DateTime
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@unique([identifier, value])
-  @@index([expires_at]) // Limpiar verificaciones expiradas
+  @@index([expiresAt]) // Limpiar verificaciones expiradas
   @@map("verification")
 }
 
@@ -183,9 +183,9 @@ model Category {
   id            String          @id @default(dbgenerated("gen_random_uuid()"))
   uuid          String          @unique @default(cuid())
   name          String          @unique
-  created_at    DateTime        @default(now())
+  createdAt     DateTime        @default(now()) @map("created_at")
   priority      Int             @default(0)
-  updated_at    DateTime        @updatedAt
+  updatedAt     DateTime        @updatedAt @map("updated_at")
   subcategories Subcategories[] @relation("subcategories:category")
   products      Product[]       @relation("product:category")
 
@@ -215,15 +215,15 @@ model Subcategories {
 }
 
 model ProductResources {
-  id                   String   @id @default(cuid())
-  product_id           String
-  resource_description String
-  resource_url         String
-  created_at           DateTime @default(now())
-  updated_at           DateTime @updatedAt
-  product              Product  @relation("product_sources:product", fields: [product_id], references: [id])
+  id                  String   @id @default(cuid())
+  productId           String   @map("product_id")
+  resourceDescription String   @map("resource_description")
+  resourceUrl         String   @map("resource_url")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  product             Product  @relation("product_sources:product", fields: [productId], references: [id])
 
-  @@index([product_id]) // Buscar recursos de un producto
+  @@index([productId]) // Buscar recursos de un producto
   @@map("product_resources")
 }
 
@@ -295,14 +295,14 @@ model ProductVersion {
 }
 
 model ProductVersionImages {
-  id                 String         @id @default(cuid())
-  product_version_id String
-  image_url          String
-  main_image         Boolean        @default(false)
-  product_version    ProductVersion @relation("product_version_images:product_version", fields: [product_version_id], references: [id], onDelete: Cascade)
+  id               String         @id @default(cuid())
+  productVersionId String         @map("product_version_id")
+  imageUrl         String         @map("image_url")
+  mainImage        Boolean        @default(false) @map("main_image")
+  productVersion   ProductVersion @relation("product_version_images:product_version", fields: [productVersionId], references: [id], onDelete: Cascade)
 
-  @@index([product_version_id]) // Buscar imágenes de una versión
-  @@index([main_image]) // Buscar imagen principal
+  @@index([productVersionId]) // Buscar imágenes de una versión
+  @@index([mainImage]) // Buscar imagen principal
   @@map("product_version_images")
 }
 
@@ -381,7 +381,7 @@ model Order {
   updated_at DateTime @updatedAt
 
   // Relaciones
-  shipping_info   OrderShippingInfo?
+  shipping_info   OrderShippingInfo[]
   shipping        Shipping[]            @relation("shipping:order")
   payment_details OrderPaymentDetails[] @relation("order_payment_details:order")
   order_items     OrderItemsDetails[]   @relation("order_items_details:order")
@@ -437,7 +437,8 @@ model OrderItemsDetails {
 
 model OrderShippingInfo {
   id                     String  @id @default(cuid())
-  order_id               String  @unique
+  order_id               String
+  label                  String  @db.VarChar(20)
   recipient_name         String  @db.VarChar(40)
   recipient_last_name    String  @db.VarChar(60)
   country                String  @db.VarChar(40)
@@ -458,6 +459,7 @@ model OrderShippingInfo {
   order    Order     @relation(fields: [order_id], references: [id])
   shipping Shipping?
 
+  @@unique([order_id, label])
   @@map("order_shipping_info")
 }
 

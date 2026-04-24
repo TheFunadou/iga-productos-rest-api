@@ -18,7 +18,7 @@ export class CreateOrderHandler implements ICommandHandler<CreateOrderCommand> {
         return await this.prisma.$transaction(async (tx) => {
             const context: OrderContext = {
                 orderUUID: crypto.randomUUID().toString(),
-                isGuest: !command.customerUUID,
+                isGuest: command.customerUUID ? true : false,
                 customerUUID: command.customerUUID,
                 addressUUID: command.addressUUID,
                 sessionId: command.sessionId,

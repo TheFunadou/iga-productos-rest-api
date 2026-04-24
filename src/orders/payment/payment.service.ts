@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { GetPaymentDetailsQueryDTO, MercadoPagoWebhook } from './payment.dto';
 import { ConfigService } from '@nestjs/config';
@@ -6,7 +6,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import { MercadoPagoProcessWebhookCommand } from './domain/commands/mercadopago-proccess-webhook/process-webhook.command';
 import { OrderProcessingStatus } from './payment.interfaces';
 import { GetPaymentDetailsService } from './services/get-payment-details.service';
-import { PaymentDetailsI } from './application/interfaces/payment.interfaces';
+import { PaymentDetailsExtendedI, PaymentDetailsI } from './application/interfaces/payment.interfaces';
+import { ShippingService } from 'src/shipping/shipping.service';
 
 @Injectable()
 export class PaymentService {
@@ -17,7 +18,8 @@ export class PaymentService {
         private readonly cacheService: CacheService,
         private readonly config: ConfigService,
         private readonly commandBus: CommandBus,
-        private readonly getPaymentDetails: GetPaymentDetailsService
+        private readonly getPaymentDetails: GetPaymentDetailsService,
+        private readonly shippingService: ShippingService
 
     ) {
         this.nodeEnv = this.config.get<string>("NODE_ENV", "DEV");
@@ -66,10 +68,24 @@ export class PaymentService {
         return status || null;
     };
 
-    async getDetails(args: { orderUUID: string, query: GetPaymentDetailsQueryDTO, customerUUID?: string }): Promise<PaymentDetailsI> {
-        const { orderUUID, query, customerUUID } = args;
-        return await this.getPaymentDetails.executeV2({ orderUUID, query, customerUUID });
+    async getDetails(args: { orderUUID: string, query: GetPaymentDetailsQueryDTO, customerUUID?: string, scope: "adminpanel" | "client" }): Promise<PaymentDetailsI> {
+        const { orderUUID, query, customerUUID, scope } = args;
+        return await this.getPaymentDetails.executeV2({ orderUUID, query, customerUUID, scope });
     };
 
+    async getDetailsExtendedClient(args: { orderUUID: string, query: GetPaymentDetailsQueryDTO, customerUUID?: string }): Promise<PaymentDetailsExtendedI> {
+        const { orderUUID, query, customerUUID } = args;
+        const details = await this.getPaymentDetails.executeV2({ orderUUID, query, customerUUID, scope: "client" });
+        const shippingAddresses = await this.shippingService.getShippingsByOrderUUID({ orderUUID });
+        if (!details.order) throw new NotFoundException("No se pudieron recuperar los detalles de la orden");
+        return { order: details.order, shippings: shippingAddresses };
+    };
 
+    async getDetailsExtendedAdminPanel(args: { orderUUID: string, query: GetPaymentDetailsQueryDTO }): Promise<PaymentDetailsExtendedI> {
+        const { orderUUID, query } = args;
+        const details = await this.getPaymentDetails.executeV2({ orderUUID, query, scope: "adminpanel" });
+        const shippingAddresses = await this.shippingService.getShippingsByOrderUUID({ orderUUID });
+        if (!details.order) throw new NotFoundException("No se pudieron recuperar los detalles de la orden");
+        return { order: details.order, shippings: shippingAddresses };
+    };
 };

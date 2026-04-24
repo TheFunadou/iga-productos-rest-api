@@ -4,6 +4,7 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { DashboardCommonQueryDTO } from "src/common/DTO/common.dto";
 import { Prisma } from "@prisma/client";
 import { UserLogsDashboard } from "./application/interfaces/audit.interface";
+import { handleLimit } from "src/common/helpers/helpers";
 
 @Injectable()
 export class AuditService {
@@ -15,7 +16,7 @@ export class AuditService {
 
     async dashboard({ query }: { query: DashboardCommonQueryDTO }): Promise<UserLogsDashboard> {
         const page = query.page ?? 1;
-        const limit = query.limit ?? 15;
+        const limit = handleLimit(query.limit);
         const orderBy = query.orderBy ?? "asc";
         const user = query.target;
 
@@ -36,8 +37,8 @@ export class AuditService {
                     take: limit,
                     skip,
                     where,
-                    orderBy: { created_at: orderBy },
-                    omit: { id: true, user_id: true, entity_id: true, },
+                    orderBy: { createdAt: orderBy },
+                    omit: { id: true, userId: true, entityId: true, },
                     include: {
                         user: { select: { uuid: true, username: true, name: true, last_name: true } }
                     }

@@ -1,15 +1,17 @@
 import { OrderContext } from "../order.context";
 import { OrderPipelineStepI } from "../interfaces/pipeline-step.interface";
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { CreateOrderStrategyFactory } from "src/orders/domain/factories/create-order-v2.factory";
 
 @Injectable()
 export class CreatePaymentStep implements OrderPipelineStepI {
+    private readonly logger = new Logger(CreatePaymentStep.name);
     constructor(
         private readonly createPaymentFactory: CreateOrderStrategyFactory
     ) { };
 
     async execute(context: OrderContext): Promise<void> {
+        this.logger.log("[CREATE_PAYMENT_STEP] Ejecutando paso de creacion de pago");
         const { orderUUID, paymentProvider, customer, frontendUrl, notificationUrl, orderShoppingCart, orderResume } = context;
         const createOrderStrategy = this.createPaymentFactory.create(paymentProvider);
         if (!customer) throw new BadRequestException("Error al crear orden, no se encontraron los datos del cliente");

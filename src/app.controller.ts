@@ -4,7 +4,7 @@ import { Controller, Get } from '@nestjs/common';
 export class AppController {
   constructor() { }
 
-  @Get()
+  @Get("/")
   async init(): Promise<string> {
     return "ok";
   };

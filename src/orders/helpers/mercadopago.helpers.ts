@@ -86,7 +86,7 @@ export const buildMercadoPagoPreferenceBodyV2 = (args: MercadoPagoPreferenceBody
             payer: {
                 email: customer.customer.email,
                 name: customer.customer.name,
-                surname: customer.customer.last_name,
+                surname: customer.customer.lastName,
             },
             back_urls: {
                 success: new URL("pagar-productos/pago-exitoso", frontendUrl).href,
@@ -96,8 +96,8 @@ export const buildMercadoPagoPreferenceBodyV2 = (args: MercadoPagoPreferenceBody
             shipments: {
                 cost: parseFloat(shippingCost),
                 receiver_address: {
-                    zip_code: customer.customerAddress.zip_code,
-                    street_name: customer.customerAddress.street_name,
+                    zip_code: customer.customerAddress.zipCode,
+                    street_name: customer.customerAddress.streetName,
                     city_name: customer.customerAddress.city,
                     state_name: customer.customerAddress.state,
                     street_number: customer.customerAddress.number,

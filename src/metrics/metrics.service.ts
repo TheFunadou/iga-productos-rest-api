@@ -58,15 +58,15 @@ export class MetricsService {
                     include: {
                         product: { select: { product_name: true } },
                         product_version_images: {
-                            where: { main_image: true },
+                            where: { mainImage: true },
                             take: 1,
-                            select: { image_url: true }
+                            select: { imageUrl: true }
                         }
                     }
                 });
 
                 return products.map(p => ({
-                    image_url: p.product_version_images[0]?.image_url || "",
+                    image_url: p.product_version_images[0]?.imageUrl || "",
                     product_name: p.product.product_name,
                     sku: p.sku,
                     stock: p.stock
@@ -137,9 +137,9 @@ export class MetricsService {
                             }
                         },
                         product_version_images: {
-                            where: { main_image: true },
+                            where: { mainImage: true },
                             take: 1,
-                            select: { image_url: true }
+                            select: { imageUrl: true }
                         }
                     }
                 });
@@ -151,7 +151,7 @@ export class MetricsService {
                     const details = detailsMap.get(id);
                     if (!details) return null;
                     return {
-                        image_url: details.product_version_images[0]?.image_url || "",
+                        image_url: details.product_version_images[0]?.imageUrl || "",
                         category: details.product.category.name,
                         product_name: details.product.product_name,
                         sku: details.sku

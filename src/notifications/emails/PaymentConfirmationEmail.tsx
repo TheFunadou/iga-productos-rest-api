@@ -117,26 +117,26 @@ export default function PaymentConfirmationEmail({ data }: PaymentConfirmationEm
                     </Section>
 
                     {/* ── DIRECCIÓN DE ENVÍO ── */}
-                    {address && (
-                        <Section className="sec-pad" style={{ padding: "0 30px 20px" }}>
+                    {address.map((address, index) => (
+                        <Section key={index} className="sec-pad" style={{ padding: "0 30px 20px" }}>
                             <div style={{ padding: "20px", backgroundColor: colors.bgLight, borderRadius: "8px", border: `1px solid ${colors.border}`, borderLeft: `4px solid ${colors.navy}` }}>
                                 <Text style={{ fontSize: "14px", fontWeight: "700", color: colors.navy, margin: "0 0 12px" }}>Información de Envío</Text>
                                 <Text style={{ fontSize: "13px", color: colors.textDark, margin: "0 0 8px", lineHeight: "1.5" }}>
-                                    <strong style={{ color: colors.textMid }}>Recibe:</strong> {address.recipient_name} {address.recipient_last_name}<br />
-                                    <strong style={{ color: colors.textMid }}>Domicilio:</strong> {address.street_name} #{address.number}{address.aditional_number ? ` int. ${address.aditional_number}` : ""}<br />
+                                    <strong style={{ color: colors.textMid }}>Recibe:</strong> {address.recipientName} {address.recipientLastName}<br />
+                                    <strong style={{ color: colors.textMid }}>Domicilio:</strong> {address.streetName} #{address.number}{address.aditionalNumber ? ` int. ${address.aditionalNumber}` : ""}<br />
                                     Col. {address.neighborhood}, {address.city}, {address.state}<br />
-                                    C.P. {address.zip_code}, {address.country}<br />
-                                    <strong style={{ color: colors.textMid }}>Contacto:</strong> {address.country_phone_code} {address.contact_number}
+                                    C.P. {address.zipCode}, {address.country}<br />
+                                    <strong style={{ color: colors.textMid }}>Contacto:</strong> {address.countryPhoneCode} {address.contactNumber}
                                 </Text>
-                                {address.references_or_comments && (
+                                {address.referencesOrComments && (
                                     <div style={{ marginTop: "12px", padding: "10px", backgroundColor: "#fffbeb", borderRadius: "6px" }}>
                                         <Text style={{ fontSize: "12px", fontWeight: "600", color: "#d97706", margin: "0 0 4px" }}>Referencias:</Text>
-                                        <Text style={{ fontSize: "12px", color: "#92400e", margin: "0" }}>{address.references_or_comments}</Text>
+                                        <Text style={{ fontSize: "12px", color: "#92400e", margin: "0" }}>{address.referencesOrComments}</Text>
                                     </div>
                                 )}
                             </div>
                         </Section>
-                    )}
+                    ))}
 
                     {/* ── PRODUCTOS ── */}
                     <Section className="sec-pad" style={{ padding: "10px 30px 20px" }}>

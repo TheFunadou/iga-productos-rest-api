@@ -15,7 +15,7 @@ export class CreateOrderStep implements OrderPipelineStepI {
             data: {
                 uuid: orderUUID,
                 buyer_name: customer.customer.name,
-                buyer_surname: customer.customer.last_name,
+                buyer_surname: customer.customer.lastName,
                 buyer_email: customer.customer.email,
                 external_order_id: paymentId,
                 session_id: customerUUID ? undefined : sessionId,

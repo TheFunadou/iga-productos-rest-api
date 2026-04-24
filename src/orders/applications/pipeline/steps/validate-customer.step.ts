@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { CacheService } from "src/cache/cache.service";
-import { CreateOrderShippingInfo } from "src/customer/customer-addresses/customer-addresses.dto";
 import { OrderRequestFormGuestDTO } from "src/orders/payment/application/DTO/order.dto";
 import { buildValidatedAuthCustomerData, buildValidatedGuestCustomerData } from "src/orders/orders.helpers";
 import { OrderPipelineStepI } from "../interfaces/pipeline-step.interface";
 import { OrderContext } from "../order.context";
+import { CreateShippingInfoI } from "../interfaces/order.interface";
 
 @Injectable()
 export class ValidateCustomerStep implements OrderPipelineStepI {
@@ -28,13 +28,13 @@ export class ValidateCustomerStep implements OrderPipelineStepI {
             });
             const validatedData = buildValidatedGuestCustomerData({ guestForm });
             context.customer = validatedData;
-            const { first_name, last_name, consent, email, ...shippingInfo } = guestForm;
-            const shippingAddress: CreateOrderShippingInfo = shippingInfo
+            const { firstName, lastName, consent, email, ...shippingInfo } = guestForm;
+            const shippingAddress: CreateShippingInfoI = shippingInfo
             context.shipppingAddress = shippingAddress;
             return;
         };
 
-        if (!customerUUID || !addressUUID) throw new BadRequestException("Error al crear orden de pago, no se encotraron los datos del cliente");
+        if (!customerUUID || !addressUUID) throw new BadRequestException("Error al crear orden de pago, no se encotraron los datos del cliente registrado");
         const customerData = await tx.customer.findUnique({
             where: { uuid: customerUUID },
             select: {
@@ -56,17 +56,42 @@ export class ValidateCustomerStep implements OrderPipelineStepI {
         if (!customerData || !addressData) throw new BadRequestException("Error al crear orden de pago, no se encotraron los datos del cliente");
         const customerAddressData = {
             id: addressData.id,
-            zip_code: addressData.zip_code,
-            street_name: addressData.street_name,
+            zipCode: addressData.zip_code,
+            streetName: addressData.street_name,
             city: addressData.city,
             state: addressData.state,
             number: addressData.number,
             country: addressData.country
         }
-        const validatedData = buildValidatedAuthCustomerData({ customerAddressData, customerData });
+        const validatedData = buildValidatedAuthCustomerData({
+            customerAddressData,
+            customerData: {
+                id: customerData.id,
+                name: customerData.name,
+                lastName: customerData.last_name,
+                email: customerData.email
+            }
+        });
         context.customer = validatedData;
         const { id, ...shippingData } = addressData;
-        const shippingAddress: CreateOrderShippingInfo = shippingData
+        const shippingAddress: CreateShippingInfoI = {
+            recipientName: shippingData.recipient_name,
+            recipientLastName: shippingData.recipient_last_name,
+            zipCode: shippingData.zip_code,
+            streetName: shippingData.street_name,
+            city: shippingData.city,
+            state: shippingData.state,
+            number: shippingData.number,
+            country: shippingData.country,
+            addressType: shippingData.address_type,
+            contactNumber: shippingData.contact_number,
+            countryPhoneCode: shippingData.country_phone_code,
+            locality: shippingData.locality,
+            neighborhood: shippingData.neighborhood,
+            aditionalNumber: shippingData.aditional_number,
+            floor: shippingData.floor,
+            referencesOrComments: shippingData.references_or_comments
+        }
         context.shipppingAddress = shippingAddress;
         return;
     }

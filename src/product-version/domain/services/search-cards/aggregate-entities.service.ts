@@ -104,14 +104,14 @@ export class AggregateCardEntitiesService {
                                         id: true,
                                         sku: true,
                                         color_code: true,
-                                        product_version_images: { take: 1, select: { image_url: true } }
+                                        product_version_images: { take: 1, select: { imageUrl: true } }
                                     },
                                     orderBy: { sku: "asc" }
                                 },
                             }
                         },
                         product_version_images: {
-                            select: { main_image: true, image_url: true }
+                            select: { mainImage: true, imageUrl: true }
                         },
                         reviews: { select: { rating: true }, },
                         created_at: true,
@@ -128,8 +128,8 @@ export class AggregateCardEntitiesService {
                         color: { line: r.color_line, code: r.color_code, name: r.color_name },
                         status: r.status,
                         technicalSheetUrl: r.technical_sheet_url,
-                        parents: r.product.product_versions.map(v => ({ id: v.id, sku: v.sku, colorCode: v.color_code, imageUrl: v.product_version_images[0].image_url })),
-                        images: r.product_version_images.map(i => ({ url: i.image_url, mainImage: i.main_image })),
+                        parents: r.product.product_versions.map(v => ({ id: v.id, sku: v.sku, colorCode: v.color_code, imageUrl: v.product_version_images[0].imageUrl })),
+                        images: r.product_version_images.map(i => ({ url: i.imageUrl, mainImage: i.mainImage })),
                         rating: r.reviews.map(r => ({ rating: r.rating })).reduce((acc, r) => acc + r.rating, 0) / r.reviews.length,
                         createdAt: r.created_at,
                         updatedAt: r.updated_at

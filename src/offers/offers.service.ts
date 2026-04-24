@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserLogEvent } from 'src/audit/user-log.event';
 import { Prisma } from '@prisma/client';
+import { handleLimit } from 'src/common/helpers/helpers';
 
 @Injectable()
 export class OffersService {
@@ -152,7 +153,7 @@ export class OffersService {
 
     async dashboard({ query }: { query: OffersDashboardQueryDTO }): Promise<GetOffers> {
         const page = query.page ?? 1;
-        const limit = query.limit ?? 10;
+        const limit = handleLimit(query.limit);
         const orderBy = query.orderBy ?? "asc";
         const targetType = query.type;
 

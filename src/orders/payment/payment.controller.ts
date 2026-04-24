@@ -2,11 +2,14 @@ import { Controller, Post, Query, Headers, Get, Param, UseGuards } from '@nestjs
 import { PaymentService } from './payment.service';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { OrderProcessingStatus } from './payment.interfaces';
-import { PaymentDetailsI } from './application/interfaces/payment.interfaces';
+import { PaymentDetailsExtendedI, PaymentDetailsI } from './application/interfaces/payment.interfaces';
 import { GetPaymentDetailsQueryDTO } from './payment.dto';
 import { OptionalCustomerAuthGuard } from 'src/customer_auth/customer_auth.optional.guard';
 import { OptionalCustomer } from 'src/customer_auth/customer_auth.optional.decorator';
 import { CustomerPayload } from 'src/customer_auth/customer_auth.dto';
+import { RequiredUserAuthGuard } from 'src/user_auth/user_auth.required.guard';
+import { UserModulePermissionsGuard } from 'src/user_auth/user_auth.module.permissions.guard';
+import { RequirePermissions } from 'src/user_auth/user_auth.module.permissions.decorator';
 
 @Controller('payment')
 export class PaymentController {
@@ -46,7 +49,7 @@ export class PaymentController {
     };
 
 
-    @Get("order/details/:uuid")
+    @Get("details/:uuid")
     @UseGuards(OptionalCustomerAuthGuard)
     @ApiOperation({ summary: "Obtiene el estado de una orden por UUID" })
     @ApiParam({ name: 'uuid', description: 'UUID de la orden' })
@@ -56,7 +59,32 @@ export class PaymentController {
         @Param('uuid') uuid: string,
         @Query() query: GetPaymentDetailsQueryDTO
     ): Promise<PaymentDetailsI> {
-        return await this.paymentService.getDetails({ orderUUID: uuid, query, customerUUID: customer?.uuid });
+        return await this.paymentService.getDetails({ orderUUID: uuid, query, customerUUID: customer?.uuid, scope: "client" });
+    };
+
+    @Get("details/client/extended/:uuid")
+    @UseGuards(OptionalCustomerAuthGuard)
+    @ApiOperation({ summary: "Obtiene el estado de una orden por UUID" })
+    @ApiParam({ name: 'uuid', description: 'UUID de la orden' })
+    @ApiResponse({ status: 200, description: "Estado de la orden", type: Object })
+    async getOrderDetailsExtendedClient(
+        @OptionalCustomer() customer: CustomerPayload,
+        @Param('uuid') uuid: string,
+        @Query() query: GetPaymentDetailsQueryDTO
+    ): Promise<PaymentDetailsExtendedI> {
+        return await this.paymentService.getDetailsExtendedClient({ orderUUID: uuid, query, customerUUID: customer?.uuid });
+    };
+
+    @Get("details/adminpanel/extended/:uuid")
+    @UseGuards(RequiredUserAuthGuard, UserModulePermissionsGuard)
+    @RequirePermissions({ ORDERS: ["READ"] })
+    @ApiOperation({ summary: "Obtiene el estado de una orden por UUID" })
+    @ApiParam({ name: 'uuid', description: 'UUID de la orden' })
+    @ApiResponse({ status: 200, description: "Estado de la orden", type: Object })
+    async getOrderDetailsExtendedAdminPanel(
+        @Param('uuid') uuid: string,
+    ): Promise<PaymentDetailsExtendedI> {
+        return await this.paymentService.getDetailsExtendedAdminPanel({ orderUUID: uuid, query: { enablePolling: false } });
     };
 
 };

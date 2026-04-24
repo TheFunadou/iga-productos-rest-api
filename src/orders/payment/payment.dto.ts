@@ -166,4 +166,4 @@ export class GetPaymentDetailsQueryDTO {
     @IsArray()
     @IsEnum(OrderAndPaymentStatus, { each: true })
     requiredStatus?: OrderAndPaymentStatus[];
-}
+};

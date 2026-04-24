@@ -14,7 +14,7 @@ export class GetPaymentDetailsService {
         private readonly ordersService: OrdersService
     ) { };
 
-    private async getDetailsV2({ orderUUID, customerUUID }: { orderUUID: string, customerUUID?: string }): Promise<OrderDescriptionI> {
+    private async getDetailsV2({ orderUUID, customerUUID, scope }: { orderUUID: string, customerUUID?: string, scope: "adminpanel" | "client" }): Promise<OrderDescriptionI> {
         const paymentDetails = await this.cache.remember({
             method: "staleWhileRevalidate",
             entity: "customer:order:payment-details",
@@ -59,7 +59,7 @@ export class GetPaymentDetailsService {
             }
         });
 
-        if (paymentDetails.is_guest_order === false && !customerUUID) throw new BadRequestException("No tienes permisos para ver esta orden");
+        if (scope === "client" && paymentDetails.is_guest_order === false && !customerUUID) throw new BadRequestException("No tienes permisos para ver esta orden");
 
         const order = await this.ordersService.getCheckoutOrderV2({ orderUUID });
 
@@ -115,8 +115,8 @@ export class GetPaymentDetailsService {
     };
 
 
-    async executeV2(args: { orderUUID: string, query: GetPaymentDetailsQueryDTO, customerUUID?: string }): Promise<PaymentDetailsI> {
-        const { orderUUID, query, customerUUID } = args;
+    async executeV2(args: { orderUUID: string, query: GetPaymentDetailsQueryDTO, customerUUID?: string, scope: "adminpanel" | "client" }): Promise<PaymentDetailsI> {
+        const { orderUUID, query, customerUUID, scope } = args;
         let finalStatus: OrderAndPaymentStatus;
         if (query.enablePolling && query.requiredStatus && query.requiredStatus.length > 0) {
             const { includesRequiredStatus, status } = await this.pollingStatus({ orderUUID, requiredStatus: query.requiredStatus });
@@ -132,7 +132,7 @@ export class GetPaymentDetailsService {
                 staleTimeMilliseconds: 1000 * 60 * 3
             },
             fallback: async () => {
-                const order = await this.getDetailsV2({ orderUUID, customerUUID });
+                const order = await this.getDetailsV2({ orderUUID, customerUUID, scope });
                 return { status: finalStatus, order } satisfies PaymentDetailsI
             }
         })

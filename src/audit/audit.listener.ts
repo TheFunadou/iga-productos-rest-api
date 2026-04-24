@@ -19,10 +19,10 @@ export class AuditListener {
         await this.prisma.userLogs.create({
             data: {
                 entity: event.entity,
-                entity_id: event.entityId,
+                entityId: event.entityId,
                 action: event.action,
                 metadata: event.metadata || {},
-                user_id: user.id
+                userId: user.id
             }
         });
     }

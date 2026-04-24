@@ -38,12 +38,7 @@ export class CategoriesService {
             { category_name: category.name },
             userUUID
         ));
-        return {
-            uuid: category.uuid,
-            name: category.name,
-            createdAt: category.created_at,
-            updatedAt: category.updated_at
-        };
+        return category;
     };
 
     async findAll(): Promise<CategorieI[]> {
@@ -56,13 +51,7 @@ export class CategoriesService {
                 staleTimeMilliseconds: 1000 * 60 * 50
             },
             fallback: async () => {
-                const categories = await this.prisma.category.findMany({ omit: { id: true } });
-                return categories.map(category => ({
-                    uuid: category.uuid,
-                    name: category.name,
-                    createdAt: category.created_at,
-                    updatedAt: category.updated_at
-                }));
+                return await this.prisma.category.findMany({ omit: { id: true } });
             }
         });
     };
@@ -86,12 +75,7 @@ export class CategoriesService {
             { category_name: updated.name },
             userUUID
         ));
-        return {
-            uuid: updated.uuid,
-            name: updated.name,
-            createdAt: updated.created_at,
-            updatedAt: updated.updated_at
-        };
+        return updated;
     };
 
     async delete({ uuid, userUUID }: { uuid: string, userUUID: string }): Promise<string> {
@@ -144,7 +128,7 @@ export class CategoriesService {
                             sku: true,
                             product_version_images: {
                                 take: 1,
-                                select: { image_url: true }
+                                select: { imageUrl: true }
                             },
                             product: {
                                 select: { product_name: true }
@@ -157,7 +141,7 @@ export class CategoriesService {
                         productVersion: product_versions.map(pv => ({
                             sku: pv.sku,
                             productName: pv.product.product_name,
-                            imageUrl: pv.product_version_images[0]?.image_url ?? null
+                            imageUrl: pv.product_version_images[0]?.imageUrl ?? null
                         }))
                     });
                 }

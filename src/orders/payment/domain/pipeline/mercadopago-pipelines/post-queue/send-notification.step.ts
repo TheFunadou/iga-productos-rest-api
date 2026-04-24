@@ -19,7 +19,7 @@ export class SendNotificationStep implements IStep<MercadoPagoPaymentContext> {
         if (!orderUUID) throw new Error("No se encontro el folio de la orden");
 
         const paymentSummary = await this.payment.executeV2({
-            orderUUID, query: { enablePolling: false }
+            orderUUID, query: { enablePolling: false }, scope: "client"
         });
         if (paymentSummary.status !== "APPROVED") return;
         if (!paymentSummary.order) return;

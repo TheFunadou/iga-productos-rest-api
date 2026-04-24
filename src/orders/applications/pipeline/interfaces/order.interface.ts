@@ -1,8 +1,7 @@
 import { OrderValidatedCustomerData } from "src/orders/payment/application/DTO/order.dto";
 import { Items as MercadoPagoItems } from "mercadopago/dist/clients/commonTypes";
 import { ShoppingCartResumeI } from "src/customer/shopping-cart/application/interfaces/shopping-cart.interface";
-import { GetCustomerAddressOrder } from "src/customer/customer-addresses/customer-addresses.dto";
-import { OrderAndPaymentStatus, Prisma } from "@prisma/client";
+import { OrderAndPaymentStatus } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export interface OrderShoppingCartI {
@@ -40,7 +39,7 @@ export interface CheckoutOrderI {
     resume: ShoppingCartResumeI;
     couponCode: string | null;
     externalId: string;
-    shippingAddress: GetCustomerAddressOrder;
+    shippingAddress: ShippingInfoI[];
 };
 
 export interface OrderStrategyArgsI {
@@ -97,8 +96,8 @@ export const PrismaOrderItemsSelectI = {
                     color_name: true,
                     color_code: true,
                     product_version_images: {
-                        select: { main_image: true, image_url: true },
-                        orderBy: { main_image: "desc" as const }
+                        select: { mainImage: true, imageUrl: true },
+                        orderBy: { mainImage: "desc" as const }
                     },
                     product: {
                         select: {
@@ -136,10 +135,31 @@ export interface PrismaOrderItemI {
             }[];
         };
         product_version_images: {
-            main_image: boolean;
-            image_url: string;
+            mainImage: boolean;
+            imageUrl: string;
         }[];
     };
 };
 
+export interface ShippingInfoI {
+    id: string;
+    recipientName: string;
+    recipientLastName: string;
+    country: string;
+    state: string;
+    city: string;
+    locality: string;
+    streetName: string;
+    neighborhood: string;
+    zipCode: string;
+    addressType: string;
+    floor?: string | null;
+    number: string;
+    aditionalNumber?: string | null;
+    referencesOrComments?: string | null;
+    countryPhoneCode: string;
+    contactNumber: string;
+};
+
+export interface CreateShippingInfoI extends Omit<ShippingInfoI, "id"> { };
 

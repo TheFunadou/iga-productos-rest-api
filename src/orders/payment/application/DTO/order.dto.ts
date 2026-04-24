@@ -1,14 +1,14 @@
 import { ApiProperty, OmitType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
-import { GetCustomerAddressOrder, GuestAddressDTO } from 'src/customer/customer-addresses/customer-addresses.dto';
-import { CustomerAttributes } from "src/customer/customer.dto";
+import { GetCustomerAddressOrder } from 'src/customer/customer-addresses/customer-addresses.dto';
 import { OrderAndPaymentStatus, Prisma, ShippingStatus } from "@prisma/client";
 import { PaginationDTO } from "src/common/DTO/common.dto";
 import { Items as MercadoPagoItems } from "mercadopago/dist/clients/commonTypes";
 import { ShoppingCartDTO } from "src/customer/shopping-cart/shopping-cart.dto";
 import { ProductVersionCard } from "src/product-version/product-version.dto";
 import { OrderItems, OrderResume, OrderShoppingCartDTO, PaymentProviders } from "../../payment.dto";
+import { GuestAddressDTO } from "src/customer/customer-addresses/application/DTO/customer-addresses.dto";
 
 
 export class Order {
@@ -123,14 +123,6 @@ export class OrderPaymentDetails {
     updated_at: Date;
 };
 
-export class GuestOrderData {
-    @ApiProperty({ description: "Datos del invitado", type: CustomerAttributes })
-    customer: CustomerAttributes;
-    @ApiProperty({ description: "Domicilio de envio del producto", type: GuestAddressDTO })
-    address: GuestAddressDTO;
-    @ApiProperty({ description: "Fecha de creación", type: Date })
-    createdAt: Date | string;
-};
 
 export class SafeOrder extends OmitType(Order, ["id", "external_order_id", "customer_id", "customer_address_id"] as const) { };
 export class LightGetOrders extends OmitType(SafeOrder, ["is_guest_order", "exchange", "payment_provider", "coupon_code" as const]) { };
@@ -141,12 +133,12 @@ export class OrderRequestFormGuestDTO extends GuestAddressDTO {
     @ApiProperty({ description: "Nombre del invitado", type: String })
     @IsString()
     @IsNotEmpty({ message: "El campo first_name (nombre del invitado) no puede estar vacio" })
-    first_name: string;
+    firstName: string;
 
     @ApiProperty({ description: "Apellido del invitado", type: String })
     @IsString()
     @IsNotEmpty({ message: "El campo last_name (apellido del invitado) no puede estar vacio" })
-    last_name: string;
+    lastName: string;
 
     @ApiProperty({ description: "Correo electronico del invitado", type: String })
     @IsString()
@@ -275,12 +267,6 @@ export class GetOrdersQueryDTO {
 };
 
 export class OrdersDashboardParams extends PaginationDTO {
-    @ApiProperty({ description: "Ordenamiento (asc por defecto)", enum: ["asc", "desc"] })
-    @IsString()
-    @IsOptional()
-    @Type(() => String)
-    orderby?: "asc" | "desc";
-
     @ApiProperty({ example: "xxxx-xxxxx-xxxx-xxxx", description: "UUID de la orden" })
     @IsString()
     @IsOptional()
@@ -340,6 +326,7 @@ export class CancelOrAbandonOrderDTO {
     type: "ABANDONED" | "CANCELLED";
 };
 
+
 export interface MercadoPagoPreferenceBody {
     internalOrderId: string,
     items: MercadoPagoItems[],
@@ -365,13 +352,13 @@ export interface OrderValidatedCustomerData {
     customer: {
         id?: string,
         name: string,
-        last_name: string,
+        lastName: string,
         email: string
     },
     customerAddress: {
         id?: string,
-        zip_code: string,
-        street_name: string,
+        zipCode: string,
+        streetName: string,
         city: string,
         state: string,
         number: string,

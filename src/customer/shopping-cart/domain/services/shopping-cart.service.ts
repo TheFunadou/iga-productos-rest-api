@@ -384,11 +384,7 @@ export class ShoppingCartService {
 
 
     async loadShoppingCart({ customerUUID, sessionId }: { customerUUID?: string, sessionId: string }): Promise<LoadShoppingCartI> {
-        console.log("customerUUID", customerUUID);
-        console.log("sessionId", sessionId);
         const { clientUUID, isCustomer } = this.resolveClient({ customerUUID, sessionId });
-        console.log("clientUUID", clientUUID);
-        console.log("isCustomer", isCustomer);
         const shoppingCart = await this.getShoppingCart({ clientUUID, isCustomer });
         if (!shoppingCart || shoppingCart.length === 0) return {
             cards: [],

@@ -1,15 +1,14 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CacheService } from 'src/cache/cache.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { BuyNowItemDTO } from './payment/payment.dto';
+import { BuyNowItemDTO, PaymentProviders } from './payment/payment.dto';
 import { OrderAndPaymentStatus, Prisma } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { CommandBus } from '@nestjs/cqrs';
 import { toOrderCheckoutItemI } from './orders.helpers';
-import { GetCustomerAddressOrder } from 'src/customer/customer-addresses/customer-addresses.dto';
 import { CreateOrderCommand } from './applications/commands/create-order.command';
-import { CheckoutOrderI, GetOrdersSummaryI, PrismaOrderItemsSelectI } from './applications/pipeline/interfaces/order.interface';
-import { calcResume } from './helpers/order.helpers';
+import { CheckoutOrderI, CreateShippingInfoI, GetOrdersSummaryI, PrismaOrderItemsSelectI, ShippingInfoI } from './applications/pipeline/interfaces/order.interface';
+import { calcResume, formatPrice } from './helpers/order.helpers';
 import { LoadShoppingCartI, ShoppingCartItemsResumeI } from 'src/customer/shopping-cart/application/interfaces/shopping-cart.interface';
 import { ProductVersionService } from 'src/product-version/product-version.service';
 import { ProductListI } from 'src/product-version/application/pipelines/interfaces/get-cards.interface';
@@ -17,6 +16,8 @@ import { toShoppingCartItemsResumeI } from 'src/customer/shopping-cart/helpers';
 import { ShoppingCartDTO } from 'src/customer/shopping-cart/application/DTO/shopping-cart.dto';
 import { ShoppingCartService } from 'src/customer/shopping-cart/domain/services/shopping-cart.service';
 import { CreatedOrder, GetOrdersDashboard, GetOrdersQueryDTO, OrderRequestV2DTO, OrdersDashboardParams } from './payment/application/DTO/order.dto';
+import { OrdersDashboardI } from './applications/interfaces/orders.interfaces';
+import { handleLimit } from 'src/common/helpers/helpers';
 
 @Injectable()
 export class OrdersService {
@@ -52,8 +53,10 @@ export class OrdersService {
     };
 
     async getOrders({ customerUUID, query }: { customerUUID: string, query: GetOrdersQueryDTO }): Promise<GetOrdersSummaryI> {
-        const { limit, page, orderBy } = query;
-        const skip = ((page ?? 1) - 1) * (limit ?? 15);
+        const page = query.page ?? 1;
+        const limit = handleLimit(query.limit);
+        const orderBy = query.orderBy ?? "recent" === "recent" ? "desc" : "asc";
+        const skip = (page - 1) * limit;
 
         return await this.cache.remember<GetOrdersSummaryI>({
             method: "staleWhileRevalidate",
@@ -66,9 +69,9 @@ export class OrdersService {
             fallback: async () => {
                 const orders = await this.prisma.order.findMany({
                     where: { customer: { uuid: customerUUID } },
-                    take: limit ?? 15,
+                    take: limit,
                     skip,
-                    orderBy: { created_at: orderBy ?? "recent" === "recent" ? "desc" : "asc" },
+                    orderBy: { created_at: orderBy },
                     select: {
                         uuid: true,
                         created_at: true,
@@ -120,16 +123,31 @@ export class OrdersService {
                         payment_provider: true,
                         coupon_code: true,
                         ...PrismaOrderItemsSelectI,
-                        shipping_info: { omit: { id: true, order_id: true } }
+                        shipping_info: { omit: { order_id: true } }
                     }
                 });
 
                 if (!order) throw new NotFoundException("No se encontro la orden");
                 if (!order.shipping_info) throw new NotFoundException("No se encontro la dirección de envio de la orden");
-                const shippingAddress: GetCustomerAddressOrder = {
-                    ...order.shipping_info,
-                    default_address: true
-                };
+                const shippingAddress: ShippingInfoI[] = order.shipping_info.map(info => ({
+                    id: info.id,
+                    recipientName: info.recipient_name,
+                    recipientLastName: info.recipient_last_name,
+                    zipCode: info.zip_code,
+                    streetName: info.street_name,
+                    city: info.city,
+                    state: info.state,
+                    number: info.number,
+                    country: info.country,
+                    addressType: info.address_type,
+                    contactNumber: info.contact_number,
+                    countryPhoneCode: info.country_phone_code,
+                    locality: info.locality,
+                    neighborhood: info.neighborhood,
+                    aditionalNumber: info.aditional_number,
+                    floor: info.floor,
+                    referencesOrComments: info.references_or_comments
+                }));
                 const items = toOrderCheckoutItemI({ data: order.order_items });
 
                 const resumeItems: ShoppingCartItemsResumeI[] = items.map(item => ({
@@ -204,16 +222,16 @@ export class OrdersService {
     };
 
 
-    async dashboard({ query }: { query: OrdersDashboardParams }): Promise<GetOrdersDashboard> {
+    async dashboard({ query }: { query: OrdersDashboardParams }): Promise<OrdersDashboardI> {
         const page = query.page ?? 1;
-        const limit = query.limit ?? 10;
-        const orderBy = query.orderby ?? "asc";
+        const limit = handleLimit(query.limit);
+        const orderBy = query.orderBy ?? "asc";
         const uuid = query.uuid;
         const skip = (page - 1) * limit;
         let where: Prisma.OrderWhereInput = {};
         if (uuid) where = { uuid };
 
-        return await this.cache.remember<GetOrdersDashboard>({
+        return await this.cache.remember<OrdersDashboardI>({
             method: "staleWhileRevalidateWithLock",
             entity: "orders:dashboard",
             query: uuid ? { limit, page, orderBy, uuid } : { limit, page, orderBy },
@@ -231,26 +249,33 @@ export class OrdersService {
                         id: true,
                         external_order_id: true,
                         customer_id: true,
-                    },
-                    include: {
-                        shipping: { select: { shipping_status: true } },
-                        customer: { select: { uuid: true } }
                     }
                 });
 
                 const totalRecords = await this.prisma.order.count({ where });
                 const totalPages = Math.ceil(totalRecords / limit);
-                const response: GetOrdersDashboard = {
+                return {
                     data: data.map((order) => ({
-                        ...order,
-                        total_amount: order.total_amount.toString(),
-                        shipping_status: order.shipping[0]?.shipping_status ? order.shipping[0].shipping_status : null,
-                        customer_uuid: order.customer?.uuid
+                        uuid: order.uuid,
+                        buyer: {
+                            name: order.buyer_name,
+                            surname: order.buyer_surname,
+                            email: order.buyer_email,
+                            phone: order.buyer_phone
+                        },
+                        isGuestOrder: order.is_guest_order,
+                        paymentProvider: order.payment_provider as PaymentProviders,
+                        status: order.status,
+                        totalAmount: formatPrice({ val: order.total_amount, currency: order.exchange as "MXN" | "USD" }),
+                        couponCode: order.coupon_code,
+                        exchange: order.exchange as "MXN" | "USD",
+                        createdAt: order.created_at,
+                        updatedAt: order.updated_at
                     })),
                     totalRecords,
                     totalPages,
+                    currentPage: page
                 };
-                return response;
             }
         })
     };

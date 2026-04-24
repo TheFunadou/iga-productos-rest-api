@@ -8,13 +8,13 @@ import { OrderCheckoutItemI, PrismaOrderItemI } from "./applications/pipeline/in
 export const buildValidatedAuthCustomerData = (args: {
     customerData: {
         name: string,
-        last_name: string,
+        lastName: string,
         email: string
         id?: string,
     },
     customerAddressData: {
-        zip_code: string,
-        street_name: string,
+        zipCode: string,
+        streetName: string,
         city: string,
         state: string,
         number: string,
@@ -27,13 +27,13 @@ export const buildValidatedAuthCustomerData = (args: {
         customer: {
             id: customerData.id,
             name: customerData.name,
-            last_name: customerData.last_name,
+            lastName: customerData.lastName,
             email: customerData.email
         },
         customerAddress: {
             id: customerAddressData.id,
-            zip_code: customerAddressData.zip_code,
-            street_name: customerAddressData.street_name,
+            zipCode: customerAddressData.zipCode,
+            streetName: customerAddressData.streetName,
             city: customerAddressData.city,
             state: customerAddressData.state,
             number: customerAddressData.number,
@@ -48,14 +48,14 @@ export const buildValidatedGuestCustomerData = ({ guestForm }: {
     return {
         customer: {
             id: undefined,
-            name: guestForm.first_name,
-            last_name: guestForm.last_name,
+            name: guestForm.firstName,
+            lastName: guestForm.lastName,
             email: guestForm.email
         },
         customerAddress: {
             id: undefined,
-            zip_code: guestForm.zip_code,
-            street_name: guestForm.street_name,
+            zipCode: guestForm.zipCode,
+            streetName: guestForm.streetName,
             city: guestForm.city,
             state: guestForm.state,
             number: guestForm.number,
@@ -124,8 +124,8 @@ export const toOrderCheckoutItemI = ({ data }: { data: PrismaOrderItemI[] }): Or
         },
         subtotal: items.subtotal.toString(),
         images: items.product_version.product_version_images.map((image) => ({
-            url: image.image_url,
-            mainImage: image.main_image,
+            url: image.imageUrl,
+            mainImage: image.mainImage,
         })),
     }))
 };

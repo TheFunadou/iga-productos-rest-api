@@ -92,7 +92,7 @@ export class CustomerService {
 
 
     async findManyReviews(args: { customerUUID: string }): Promise<GetCustomerReviews[]> {
-        return await this.cache.remember({
+        return await this.cache.remember<GetCustomerReviews[]>({
             method: "staleWhileRevalidate",
             entity: "customer:product-version:reviews",
             query: { customerUUID: args.customerUUID },
@@ -111,8 +111,8 @@ export class CustomerService {
                                 color_line: true,
                                 product_version_images: {
                                     take: 1,
-                                    where: { main_image: true },
-                                    select: { image_url: true }
+                                    where: { mainImage: true },
+                                    select: { imageUrl: true }
                                 },
                                 product: {
                                     select: {
@@ -133,11 +133,13 @@ export class CustomerService {
                         color_name: reviews.product_version.color_name,
                         color_code: reviews.product_version.color_code,
                         color_line: reviews.product_version.color_line,
-                        product_version_images: reviews.product_version.product_version_images,
+                        product_version_images: reviews.product_version.product_version_images.map(i => ({
+                            image_url: i.imageUrl,
+                        })),
                         category_name: reviews.product_version.product.category.name,
                         subcategories: reviews.product_version.product.subcategories.map((subcategories) => subcategories.subcategories.description),
                     }
-                }))
+                })) satisfies GetCustomerReviews[];
             }
         });
     };

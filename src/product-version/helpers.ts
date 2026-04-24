@@ -36,9 +36,9 @@ export const PRODUCT_VERSION_CARD_BASE_SELECT = {
     color_code: true,
     stock: true,
     product_version_images: {
-        where: { main_image: true },
-        select: { main_image: true, image_url: true },
-        orderBy: { main_image: "desc" as const }
+        where: { mainImage: true },
+        select: { mainImage: true, imageUrl: true },
+        orderBy: { mainImage: "desc" as const }
     },
     product: {
         select: {
@@ -63,8 +63,8 @@ export interface ProductVersionDetailSelect {
     unit_price: string;
     technical_sheet_url: string;
     product_version_images: {
-        main_image: boolean;
-        image_url: string;
+        mainImage: boolean;
+        imageUrl: string;
     }[];
     product: {
         id: string;

@@ -214,7 +214,7 @@ export class ProductService {
                         user: { select: { name: true, last_name: true } },
                         product_versions: {
                             select: {
-                                product_version_images: { select: { main_image: true, image_url: true } },
+                                product_version_images: { select: { mainImage: true, imageUrl: true } },
                                 color_name: true,
                                 color_code: true,
                                 color_line: true,
@@ -255,7 +255,10 @@ export class ProductService {
                     created_by: `${result.user.name} ${result.user.last_name}`,
                     versions: result.product_versions.map(ver => ({
                         ...ver,
-                        version_images: ver.product_version_images,
+                        version_images: ver.product_version_images.map(img => ({
+                            image_url: img.imageUrl,
+                            main_image: img.mainImage
+                        })),
                         main_version: true
                     }))
                 }
@@ -425,9 +428,9 @@ export class ProductService {
                                     select: { product_name: true }
                                 },
                                 product_version_images: {
-                                    where: { main_image: true },
+                                    where: { mainImage: true },
                                     take: 1,
-                                    select: { image_url: true }
+                                    select: { imageUrl: true }
                                 }
                             }
                         }
@@ -444,7 +447,7 @@ export class ProductService {
                         customer: `${review.customer.name} ${review.customer.last_name}`,
                         sku: review.product_version.sku,
                         product_name: review.product_version.product.product_name,
-                        image_url: review.product_version.product_version_images[0].image_url
+                        image_url: review.product_version.product_version_images[0].imageUrl
                     })),
                     totalRecords,
                     totalPages

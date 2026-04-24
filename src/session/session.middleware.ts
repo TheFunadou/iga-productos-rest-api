@@ -25,7 +25,7 @@ export class SessionMiddleware implements NestMiddleware {
     const origin = req.headers.origin || req.headers.referer || "";
 
     // Si el origen contiene 'adminpanel', usamos los nombres de admin
-    if (origin.includes('adminpanel') || origin.includes('localhost:5174')) {
+    if (origin.includes('adminpanel') || origin.includes('localhost:5173')) {
       return {
         session: 'iga_user_session_id',
         csrf: 'iga_user_csrf_token'
